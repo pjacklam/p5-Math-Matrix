@@ -5,9 +5,9 @@
 # Author          : Ulrich Pfeifer
 # Created On      : Fri Oct 27 11:19:11 1995
 # Last Modified By: Ulrich Pfeifer
-# Last Modified On: Fri Oct 27 11:36:25 1995
+# Last Modified On: Wed Jul 10 19:53:42 1996
 # Language        : Perl
-# Update Count    : 7
+# Update Count    : 8
 # Status          : Unknown, Use with caution!
 # 
 # (C) Copyright 1995, Universität Dortmund, all rights reserved.
@@ -20,13 +20,10 @@
 use ExtUtils::MakeMaker;
 use Config;
 
-$Version = '0.1';
-
 &WriteMakefile(
                'NAME'     => 'Math::Matrix',
-#               'DISTNAME' => 'Matrix',
-               'LINKTYPE' => '$(INST_PM)',,
-               'VERSION'  => $Version,
+               'LINKTYPE' => '$(INST_PM)',
+               'VERSION_FROM'  => 'Matrix.pm',
                'dist'     => { SUFFIX => 'gz', COMPRESS => 'gzip -f' },
                'clean' 	  => {'FILES' => '*~'},
 );

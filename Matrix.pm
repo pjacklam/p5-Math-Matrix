@@ -1,29 +1,33 @@
-#!/usr/local/ls6/perl/bin/perl
 #                              -*- Mode: Perl -*- 
 # Matrix.pm -- 
 # ITIID           : $ITI$ $Header $__Header$
 # Author          : Ulrich Pfeifer
 # Created On      : Tue Oct 24 18:34:08 1995
 # Last Modified By: Ulrich Pfeifer
-# Last Modified On: Wed Oct 25 11:07:07 1995
+# Last Modified On: Wed Jul 10 20:12:18 1996
 # Language        : Perl
-# Update Count    : 134
+# Update Count    : 143
 # Status          : Unknown, Use with caution!
 # 
 # (C) Copyright 1995, Universität Dortmund, all rights reserved.
 # 
 # $Locker: pfeifer $
 # $Log: Matrix.pm,v $
-# Revision 1.1  1995/10/25  09:48:39  pfeifer
+# Revision 0.2  1996/07/10 17:48:14  pfeifer
+# Fixes from Mike Beachy <beachy@chem.columbia.edu>
+#
+# Revision 0.1  1995/10/25  09:48:39  pfeifer
 # Initial revision
 #
 # 
 
 =head1 NAME
 
-Math::Matrix
+Math::Matrix - Multiply and invert Matrices
 
-=head1 METHODS
+=head1 DESCRIPTION
+
+The following methods are available:
 
 =head2 new
 
@@ -92,19 +96,18 @@ Ulrich Pfeifer <pfeifer@ls6.informatik.uni-dortmund.de>
 
 package Math::Matrix;
 
-$RCS_Id = '$Id: Matrix.pm,v 1.1 1995/10/25 09:48:39 pfeifer Exp pfeifer $ ';
-($my_name, $my_version) = $RCS_Id =~ /: (.+).pm,v ([\d.]+)/;
+$VERSION = substr(q$Revision: 0.2 $,10);
 
 sub version {
-    return "Math::$my_name $my_version";
+    return "Math::Matrix $VERSION";
 }
 
 sub new {
     my $type = shift;
     my $self = [];
-    my $len = length(@{$_[0]});
+    my $len = scalar(@{$_[0]});
     for (@_) {
-        return undef if length(@{$_}) != $len;
+        return undef if scalar(@{$_}) != $len;
         push(@{$self}, [@{$_}]);
     }
     bless $self, $type;
@@ -115,7 +118,7 @@ sub concat {
     my $other = shift;
     my $result = new Math::Matrix (@{$self});
     
-    return undef if length(@{$self}) != length(@{$other});
+    return undef if scalar(@{$self}) != scalar(@{$other});
     for $i (0 .. $#{$self}) {	
 	push @{$result->[$i]}, @{$other->[$i]};
     }
@@ -141,7 +144,7 @@ sub transpose {
 
 sub vekpro {
     my($a, $b) = @_;
-    my $result;
+    my $result=0;
 
     for $i (0 .. $#{$a}) {
         $result += $a->[$i] * $b->[$i];
@@ -206,7 +209,7 @@ sub solve {
 sub print {
     my $self = shift;
     
-    print @_ if $#_ >= $_;
+    print @_ if scalar(@_);
     for $row (@{$self}) {
         for $col (@{$row}) {
             printf "%10.5f ", $col;
