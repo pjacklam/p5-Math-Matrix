@@ -4,14 +4,15 @@
 # Author          : Ulrich Pfeifer
 # Created On      : Tue Oct 24 18:34:08 1995
 # Last Modified By: Ulrich Pfeifer
-# Last Modified On: Tue Apr 17 09:50:43 2001
+# Last Modified On: Fri Sep 14 21:57:54 2001
 # Language        : Perl
-# Update Count    : 181
+# Update Count    : 191
 # Status          : Unknown, Use with caution!
 #
 # Copyright (C) 2001, Brian J. Watson <bjbrew@power.net>, all rights reserved.
 # Copyright (C) 2001, Ulrich Pfeifer <pfeifer@wait.de>, all rights reserved.
 # Copyright (C) 1995, Universität Dortmund, all rights reserved.
+# Copyright (C)  2001, Matthew Brett <matthew.brett@mrc-cbu.cam.ac.uk>
 #
 # Permission to use this software is granted under the same
 # restrictions as for Perl itself.
@@ -47,6 +48,20 @@ error.
         $a = new Math::Matrix ([rand,rand,rand],
                                [rand,rand,rand],
                                [rand,rand,rand]);
+
+If you call  C<new> as method, a zero filled matrix with identical deminsions is returned.
+
+=head2 clone
+
+You can clone a matrix by calling:
+
+        $b = $a->clone;
+
+=head2 size
+
+You can determine the dimensions of a matrix by calling:
+
+        ($m, $n) = $a->size;
 
 =head2 concat
 
@@ -86,6 +101,10 @@ dimensions with each element scaled with the scalar.
 =head2 add
 
 Add two matrices of the same dimensions.
+
+=head2 substract
+
+Shorthand for C<add($other-E<gt>negative)>
 
 =head2 equal
 
@@ -140,8 +159,11 @@ these are printed before the matrix is printed.
 
 =head1 AUTHOR
 
-Ulrich Pfeifer E<lt>F<pfeifer@ls6.informatik.uni-dortmund.de>E<gt>,
+Ulrich Pfeifer E<lt>F<pfeifer@ls6.informatik.uni-dortmund.de>E<gt>
+
 Brian J. Watson E<lt>F<bjbrew@power.net>E<gt>
+
+Matthew Brett E<lt>matthew.brett@mrc-cbu.cam.ac.ukE<gt>
 
 =cut
 
@@ -149,28 +171,64 @@ package Math::Matrix;
 use vars qw($VERSION $eps);
 use strict;
 
-$VERSION = 0.3;
+$VERSION = 0.4;
+
+use overload
+       '~'  => 'transpose',
+       '+'  => 'add',
+       '-'  => 'subtract',
+       '*'  => 'multiply',
+       '""' => 'as_string';
 
 sub version {
     return "Math::Matrix $VERSION";
 }
 
+# Implement - array copy, inheritance 
+
+# class call - new matrix as input
+# object call - creates matrix with same dimensions matrix
+
 sub new {
-    my $type = shift;
+    my $that = shift;
+    my $class = ref($that) || $that;
     my $self = [];
-    my $len = scalar(@{$_[0]});
-    for (@_) {
-        return undef if scalar(@{$_}) != $len;
+    if (ref($that) && (@_ == 0)) { # object call no args -> copy matrix
+	for (@$that) {
+	    push(@{$self}, [map {0} @{$_}]);
+	}
+    } else { # class call / object call -> matrix as input
+	my $len = scalar(@{$_[0]});
+	for (@_) {
+	    return undef if scalar(@{$_}) != $len;
+	    push(@{$self}, [@{$_}]);
+	}
+    }
+    bless $self, $class;
+}
+
+sub clone {
+    my $that = shift;
+    my $self = [];
+
+    for (@$that) {
         push(@{$self}, [@{$_}]);
     }
-    bless $self, $type;
+    bless $self, ref($that)||$that;
+}
+
+sub size {
+    my $self = shift;
+    my $m = @{$self};
+    my $n = @{$self->[0]};
+    ($m, $n);
 }
 
 sub concat {
-    my $self = shift;
-    my $other = shift;
-    my $result = new Math::Matrix (@{$self});
-    
+    my $self   = shift;
+    my $other  = shift;
+    my $result =  $self->clone();
+
     return undef if scalar(@{$self}) != scalar(@{$other});
     for my $i (0 .. $#{$self}) {	
 	push @{$result->[$i]}, @{$other->[$i]};
@@ -180,6 +238,7 @@ sub concat {
 
 sub transpose {
     my $self = shift;
+    my $class = ref($self);
     my @result;
     my $m;
 
@@ -192,7 +251,7 @@ sub transpose {
             push(@{$result[$m++]}, $col);
         }
     }
-    new Math::Matrix @result;
+    $class->new(@result);
 }
 
 sub vekpro {
@@ -204,13 +263,14 @@ sub vekpro {
     }
     $result;
 }
-                  
+
 sub multiply {
     my $self  = shift;
+    my $class = ref($self);
     my $other = shift->transpose;
     my @result;
     my $m;
-    
+
     return undef if $#{$self->[0]} != $#{$other->[0]};
     for my $row (@{$self}) {
         my $rescol = [];
@@ -219,13 +279,16 @@ sub multiply {
         }
         push(@result, $rescol);
     }
-    new Math::Matrix @result;
+    $class->new(@result);
 }
 
 $eps = 0.00001;
 
 sub solve {
-    my $m    = new Math::Matrix (@{$_[0]});
+    my $self  = shift;
+    my $class = ref($self);
+
+    my $m    = $self->clone();
     my $mr   = $#{$m};
     my $mc   = $#{$m->[0]};
     my $f;
@@ -255,24 +318,32 @@ sub solve {
             }
         }
     }
-# Answer is in augmented column    
-    transpose new Math::Matrix @{$m->transpose}[$mr+1 .. $mc];
+# Answer is in augmented column
+    transpose $class->new(@{$m->transpose}[$mr+1 .. $mc]);
 }
 
 sub print {
     my $self = shift;
-    
+
     print @_ if scalar(@_);
+    print $self->as_string;
+}
+
+sub as_string {
+    my $self = shift;
+    my $out = "";
     for my $row (@{$self}) {
         for my $col (@{$row}) {
-            printf "%10.5f ", $col;
+            $out = $out . sprintf "%10.5f ", $col;
         }
-        print "\n";
+        $out = $out . sprintf "\n";
     }
+    $out;
 }
 
 sub new_identity {
   my $type = shift;
+  my $class = ref($type) || $type;
   my $self = [];
   my $size = shift;
 
@@ -283,13 +354,17 @@ sub new_identity {
     }
     push @$self, $row;
   }
-  bless $self, $type;
+  bless $self, $class;
+}
+
+sub eye {
+    &new_identity(@_);
 }
 
 sub multiply_scalar {
   my $self = shift;
   my $factor = shift;
-  my $result = new Math::Matrix (@{$self});
+  my $result = $self->new();
 
   my $last = $#{$self->[0]};
   for my $i (0 .. $#{$self}) {
@@ -302,6 +377,12 @@ sub multiply_scalar {
 
 sub negative {
   shift->multiply_scalar(-1);
+}
+
+sub subtract {
+    my $self = shift;
+    my $other = shift;
+    $self->add($other->negative);
 }
 
 sub equal {
@@ -321,7 +402,7 @@ sub equal {
 sub add {
   my $self = shift;
   my $other = shift;
-  my $result = new Math::Matrix (@{$self});
+  my $result = $self->new();
 
   return undef
     if $#{$self} != $#{$other};
@@ -339,7 +420,8 @@ sub add {
 
 sub slice {
   my $self = shift;
-  my $result = new Math::Matrix([]);
+  my $class = ref($self);
+  my $result = $class->new([]);
 
   foreach my $j (@_) {
     for my $i (0..$#{$self}) {
@@ -351,6 +433,7 @@ sub slice {
 
 sub determinant {
   my $self = shift;
+  my $class = ref($self);
   my $last= $#{$self->[0]};
 
   return undef
@@ -362,7 +445,7 @@ sub determinant {
     my $result = 0;
     foreach my $col (0..$last) {
       my $matrix = $self->slice(0..$col-1,$col+1..$last);
-      $matrix = new Math::Matrix (@$matrix[1..$last]);
+      $matrix = $class->new(@$matrix[1..$last]);
       my $term += $matrix->determinant();
       $term *= $self->[0][$col];
       $term *= $col % 2 ? -1 : 1;
@@ -408,6 +491,7 @@ sub normalize {
 
 sub cross_product {
   my $vectors = shift;
+  my $class = ref($vectors);
 
   my $dimensions = @{$vectors->[0]};
   return undef
@@ -421,7 +505,7 @@ sub cross_product {
     $scalar *= ($column % 2) ? -1 : 1;
     push @axis, $scalar;
   }
-  my $axis = new Math::Matrix(\@axis);
+  my $axis = $class->new(\@axis);
   $axis = $axis->multiply_scalar(($dimensions % 2) ? 1 : -1);
 }
 

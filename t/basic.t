@@ -7,7 +7,7 @@
 # Change 1..1 below to 1..last_test_to_print .
 # (It may become useful if the test is moved to ./t subdirectory.)
 
-BEGIN { $| = 1; print "1..9\n"; }
+BEGIN { $| = 1; print "1..10\n"; }
 END {print "not ok 1\n" unless $loaded;}
 use Math::Matrix;
 $loaded = 1;
@@ -35,7 +35,7 @@ $x = $M->solve;
 $x->print("The solution x");
 print "ok 5\n";
 $u = $A->multiply($x)->transpose;
-$u->print("The prove that A*x yields v?");
+$u->print("The proof that A*x yields v?");
 print "ok 6\n";
 
 for (0..2) {
@@ -45,6 +45,20 @@ for (0..2) {
     printf "not ok %d\n", $_ + 7;
   }
 }
+
+# operator overloading
+eval {
+$b = ~($A * $x);
+$b->print("transpose(A*x) overloaded");
+$c = $b - $v;
+$c->print("=v (transpose(A*x) - v   ");
+};
+if ($@) {
+  print "not ok 10\n";
+} else {
+  print "ok 10\n";
+}
+
 
 sub equal {
   my ($a,$b) = @_;

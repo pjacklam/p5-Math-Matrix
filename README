@@ -17,6 +17,21 @@ DESCRIPTION
                                    [rand,rand,rand],
                                    [rand,rand,rand]);
 
+    If you call `new' as method, a zero filled matrix with identical
+    deminsions is returned.
+
+  clone
+
+    You can clone a matrix by calling:
+
+            $b = $a->clone;
+
+  size
+
+    You can determine the dimensions of a matrix by calling:
+
+            ($m, $n) = $a->size;
+
   concat
 
     Concatenates two matrices of same row count. The result is a new
@@ -55,6 +70,10 @@ DESCRIPTION
   add
 
     Add two matrices of the same dimensions.
+
+  substract
+
+    Shorthand for `add($other->negative)'
 
   equal
 
@@ -107,6 +126,9 @@ EXAMPLE
             $a->multiply($s)->print("A*s\n");
 
 AUTHOR
-    Ulrich Pfeifer <pfeifer@ls6.informatik.uni-dortmund.de>, Brian
-    J. Watson
+    Ulrich Pfeifer <pfeifer@ls6.informatik.uni-dortmund.de>
+
+    Brian J. Watson <bjbrew@power.net>
+
+    Matthew Brett <matthew.brett@mrc-cbu.cam.ac.uk>
 
