@@ -1,126 +1,112 @@
 NAME
-       Math::Matrix - Multiply and invert Matrices
+    Math::Matrix - Multiply and invert Matrices
+
+SYNOPSIS
+    use Math::Matrix;
 
 DESCRIPTION
-       The following methods are available:
+    The following methods are available:
 
-       new
+  new
 
-       Constructor arguments are a list of references to arrays
-       of the same length.  The arrays are copied. The method
-       returns undef in case of error.
+    Constructor arguments are a list of references to arrays of the
+    same length. The arrays are copied. The method returns undef in
+    case of error.
 
-               $a = new Math::Matrix ([rand,rand,rand],
-                                      [rand,rand,rand],
-                                      [rand,rand,rand]);
+            $a = new Math::Matrix ([rand,rand,rand],
+                                   [rand,rand,rand],
+                                   [rand,rand,rand]);
 
+  concat
 
-       concat
+    Concatenates two matrices of same row count. The result is a new
+    matrix or undef in case of error.
 
-       Concatenates two matrices of same row count. The result is
-       a new matrix or undef in case of error.
+            $b = new Math::Matrix ([rand],[rand],[rand]);
+            $c = $a->concat($b);
 
-               $b = new Math::Matrix ([rand],[rand],[rand]);
-               $c = $a->concat($b);
+  transpose
 
+    Returns the transposed matrix. This is the matrix where colums
+    and rows of the argument matrix are swaped.
 
-       transpose
+  multiply
 
-       Returns the transposed matrix. This is the matrix where
-       colums and rows of the argument matrix are swaped.
+    Multiplies two matrices where the length of the rows in the
+    first matrix is the same as the length of the columns in the
+    second matrix. Returns the product or undef in case of error.
 
-       multiply
+  solve
 
-       Multiplies two matrices where the length of the rows in
-       the first matrix is the same as the length of the columns
-       in the second matrix. Returns the product or undef in case
-       of error.
+    Solves a equation system given by the matrix. The number of
+    colums must be greater than the number of rows. If variables are
+    dependent from each other, the second and all further of the
+    dependent coefficients are 0. This means the method can handle
+    such systems. The method returns a matrix containing the
+    solutions in its columns or undef in case of error.
 
-       solve
+  multiply_scalar
 
-       Solves a equation system given by the matrix. The number
-       of colums must be greater than the number of rows. If
-       variables are dependent from each other, the second and
-       all further of the dependent coefficients are 0. This
-       means the method can handle such systems. The method
-       returns a matrix containing the solutions in its columns
-       or undef in case of error.
+    Multiplies a matrix and a scalar resulting in a matrix of the
+    same dimensions with each element scaled with the scalar.
 
-       print
+      $a->multiply_scalar(2);  scale matrix by factor 2
 
-       Prints the matrix on STDOUT. If the method has additional
-       parameters, these are printed before the matrix is
-       printed.
+  add
 
+    Add two matrices of the same dimensions.
 
+  equal
 
+    Decide if two matrices are equal. Beware of rounding errors!
 
-10/Jul/96                     perl                              1
+  slice
 
+    Extract columns:
 
+      a->slice(1,3,5);
 
+  determinant
 
+    Compute the determinant of a matrix.
 
-MATRIX(1)      User Contributed Perl Documentation      MATRIX(1)
+  dot_product
 
+    Compute the dot product of two vectors.
+
+  absolute
+
+    Compute the absolute value of a vector.
+
+  normalizing
+
+    Normalize a vector.
+
+  cross_product
+
+    Compute the cross-product of vectors.
+
+  print
+
+    Prints the matrix on STDOUT. If the method has additional
+    parameters, these are printed before the matrix is printed.
 
 EXAMPLE
-               use Math::Matrix;
+            use Math::Matrix;
 
-               srand(time);
-               $a = new Math::Matrix ([rand,rand,rand],
-                                [rand,rand,rand],
-                                [rand,rand,rand]);
-               $x = new Math::Matrix ([rand,rand,rand]);
-               $a->print("A\n");
-               $E = $a->concat($x->transpose);
-               $E->print("Equation system\n");
-               $s = $E->solve;
-               $s->print("Solutions s\n");
-               $a->multiply($s)->print("A*s\n");
-
+            srand(time);
+            $a = new Math::Matrix ([rand,rand,rand], 
+                             [rand,rand,rand], 
+                             [rand,rand,rand]);
+            $x = new Math::Matrix ([rand,rand,rand]);
+            $a->print("A\n");
+            $E = $a->concat($x->transpose);
+            $E->print("Equation system\n");
+            $s = $E->solve;
+            $s->print("Solutions s\n");
+            $a->multiply($s)->print("A*s\n");
 
 AUTHOR
-       Ulrich Pfeifer <pfeifer@ls6.informatik.uni-dortmund.de>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-10/Jul/96                     perl                              2
-
+    Ulrich Pfeifer <pfeifer@ls6.informatik.uni-dortmund.de>, Brian
+    J. Watson
 

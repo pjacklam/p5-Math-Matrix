@@ -2,4 +2,5 @@ MANIFEST
 Makefile.PL
 Matrix.pm
 t/basic.t
+t/extension.t
 README

@@ -4,26 +4,35 @@
 # Author          : Ulrich Pfeifer
 # Created On      : Tue Oct 24 18:34:08 1995
 # Last Modified By: Ulrich Pfeifer
-# Last Modified On: Wed Jul 10 20:12:18 1996
+# Last Modified On: Tue Apr 17 09:50:43 2001
 # Language        : Perl
-# Update Count    : 143
+# Update Count    : 181
 # Status          : Unknown, Use with caution!
-# 
-# (C) Copyright 1995, Universität Dortmund, all rights reserved.
-# 
-# $Locker: pfeifer $
-# $Log: Matrix.pm,v $
+#
+# Copyright (C) 2001, Brian J. Watson <bjbrew@power.net>, all rights reserved.
+# Copyright (C) 2001, Ulrich Pfeifer <pfeifer@wait.de>, all rights reserved.
+# Copyright (C) 1995, Universität Dortmund, all rights reserved.
+#
+# Permission to use this software is granted under the same
+# restrictions as for Perl itself.
+#
+# Revision 0.3  2001/04/17 11:10:15
+# Extensions from Brian Watson
+#
 # Revision 0.2  1996/07/10 17:48:14  pfeifer
 # Fixes from Mike Beachy <beachy@chem.columbia.edu>
 #
 # Revision 0.1  1995/10/25  09:48:39  pfeifer
 # Initial revision
 #
-# 
 
 =head1 NAME
 
 Math::Matrix - Multiply and invert Matrices
+
+=head1 SYNOPSIS
+
+use Math::Matrix;
 
 =head1 DESCRIPTION
 
@@ -35,8 +44,8 @@ Constructor arguments are a list of references to arrays of the same
 length.  The arrays are copied. The method returns B<undef> in case of
 error.
 
-        $a = new Math::Matrix ([rand,rand,rand], 
-                               [rand,rand,rand], 
+        $a = new Math::Matrix ([rand,rand,rand],
+                               [rand,rand,rand],
                                [rand,rand,rand]);
 
 =head2 concat
@@ -67,6 +76,47 @@ coefficients are 0. This means the method can handle such systems. The
 method returns a matrix containing the solutions in its columns or
 B<undef> in case of error.
 
+=head2 multiply_scalar
+
+Multiplies a matrix and a scalar resulting in a matrix of the same
+dimensions with each element scaled with the scalar.
+
+  $a->multiply_scalar(2);  scale matrix by factor 2
+
+=head2 add
+
+Add two matrices of the same dimensions.
+
+=head2 equal
+
+Decide if two matrices are equal.  Beware of rounding errors!
+
+=head2 slice
+
+Extract columns:
+
+  a->slice(1,3,5);
+
+=head2 determinant
+
+Compute the determinant of a matrix.
+
+=head2 dot_product
+
+Compute the dot product of two vectors.
+
+=head2 absolute
+
+Compute the absolute value of a vector.
+
+=head2 normalizing
+
+Normalize a vector.
+
+=head2 cross_product
+
+Compute the cross-product of vectors.
+
 =head2 print
 
 Prints the matrix on STDOUT. If the method has additional parameters,
@@ -90,13 +140,16 @@ these are printed before the matrix is printed.
 
 =head1 AUTHOR
 
-Ulrich Pfeifer <pfeifer@ls6.informatik.uni-dortmund.de>
+Ulrich Pfeifer E<lt>F<pfeifer@ls6.informatik.uni-dortmund.de>E<gt>,
+Brian J. Watson E<lt>F<bjbrew@power.net>E<gt>
 
 =cut
 
 package Math::Matrix;
+use vars qw($VERSION $eps);
+use strict;
 
-$VERSION = substr(q$Revision: 0.2 $,10);
+$VERSION = 0.3;
 
 sub version {
     return "Math::Matrix $VERSION";
@@ -119,7 +172,7 @@ sub concat {
     my $result = new Math::Matrix (@{$self});
     
     return undef if scalar(@{$self}) != scalar(@{$other});
-    for $i (0 .. $#{$self}) {	
+    for my $i (0 .. $#{$self}) {	
 	push @{$result->[$i]}, @{$other->[$i]};
     }
     $result;
@@ -130,12 +183,12 @@ sub transpose {
     my @result;
     my $m;
 
-    for $col (@{$self->[0]}) {
+    for my $col (@{$self->[0]}) {
         push @result, [];
     }
-    for $row (@{$self}) {
+    for my $row (@{$self}) {
         $m=0;
-        for $col (@{$row}) {
+        for my $col (@{$row}) {
             push(@{$result[$m++]}, $col);
         }
     }
@@ -146,7 +199,7 @@ sub vekpro {
     my($a, $b) = @_;
     my $result=0;
 
-    for $i (0 .. $#{$a}) {
+    for my $i (0 .. $#{$a}) {
         $result += $a->[$i] * $b->[$i];
     }
     $result;
@@ -159,9 +212,9 @@ sub multiply {
     my $m;
     
     return undef if $#{$self->[0]} != $#{$other->[0]};
-    for $row (@{$self}) {
+    for my $row (@{$self}) {
         my $rescol = [];
-	for $col (@{$other}) {
+	for my $col (@{$other}) {
             push(@{$rescol}, vekpro($row,$col));
         }
         push(@result, $rescol);
@@ -179,7 +232,7 @@ sub solve {
     my $try;
 
     return undef if $mc <= $mr;
-    ROW: for($i = 0; $i <= $mr; $i++) {
+    ROW: for(my $i = 0; $i <= $mr; $i++) {
 	$try=$i;
 	# make diagonal element nonzero if possible
 	while (abs($m->[$i]->[$i]) < $eps) {
@@ -190,14 +243,14 @@ sub solve {
 
 	# normalize row
 	$f = $m->[$i]->[$i];
-	for($k = 0; $k <= $mc; $k++) {
+	for(my $k = 0; $k <= $mc; $k++) {
             $m->[$i]->[$k] /= $f;
 	}
 	# subtract multiple of designated row from other rows
-        for($j = 0; $j <= $mr; $j++) {
+        for(my $j = 0; $j <= $mr; $j++) {
 	    next if $i == $j;
             $f = $m->[$j]->[$i];
-            for($k = 0; $k <= $mc; $k++) {
+            for(my $k = 0; $k <= $mc; $k++) {
                 $m->[$j]->[$k] -= $m->[$i]->[$k] * $f;
             }
         }
@@ -210,12 +263,166 @@ sub print {
     my $self = shift;
     
     print @_ if scalar(@_);
-    for $row (@{$self}) {
-        for $col (@{$row}) {
+    for my $row (@{$self}) {
+        for my $col (@{$row}) {
             printf "%10.5f ", $col;
         }
         print "\n";
     }
+}
+
+sub new_identity {
+  my $type = shift;
+  my $self = [];
+  my $size = shift;
+
+  for my $i (1..$size) {
+    my $row = [];
+    for my $j (1..$size) {
+      push @$row, $i==$j ? 1 : 0;
+    }
+    push @$self, $row;
+  }
+  bless $self, $type;
+}
+
+sub multiply_scalar {
+  my $self = shift;
+  my $factor = shift;
+  my $result = new Math::Matrix (@{$self});
+
+  my $last = $#{$self->[0]};
+  for my $i (0 .. $#{$self}) {
+    for my $j (0 .. $last) {
+      $result->[$i][$j] = $factor * $self->[$i][$j];
+    }
+  }
+  $result;
+}
+
+sub negative {
+  shift->multiply_scalar(-1);
+}
+
+sub equal {
+  my $A = shift;
+  my $B = shift;
+  my $ok = 1;
+
+  my $last = $#{$A->[0]};
+  for my $i (0 .. $#{$A}) {
+    for my $j (0 .. $last) {
+      $A->[$i][$j] == $B->[$i][$j] or $ok=0;
+    }
+  }
+  $ok;
+}
+
+sub add {
+  my $self = shift;
+  my $other = shift;
+  my $result = new Math::Matrix (@{$self});
+
+  return undef
+    if $#{$self} != $#{$other};
+
+  my $last= $#{$self->[0]};
+  return undef
+    if $last != $#{$other->[0]};
+  for my $i (0 .. $#{$self}) {
+    for my $j (0 .. $last) {
+      $result->[$i][$j] = $self->[$i][$j] + $other->[$i][$j];
+    }
+  }
+  $result;
+}
+
+sub slice {
+  my $self = shift;
+  my $result = new Math::Matrix([]);
+
+  foreach my $j (@_) {
+    for my $i (0..$#{$self}) {
+      push @{$result->[$i]}, $self->[$i][$j];
+    }
+  }
+  $result;
+}
+
+sub determinant {
+  my $self = shift;
+  my $last= $#{$self->[0]};
+
+  return undef
+    unless $last == $#{$self};
+
+  if ($last == 0) {
+    return $self->[0][0];
+  } else {
+    my $result = 0;
+    foreach my $col (0..$last) {
+      my $matrix = $self->slice(0..$col-1,$col+1..$last);
+      $matrix = new Math::Matrix (@$matrix[1..$last]);
+      my $term += $matrix->determinant();
+      $term *= $self->[0][$col];
+      $term *= $col % 2 ? -1 : 1;
+      $result += $term;
+    }
+    return $result;
+  }
+}
+
+#
+# For vectors only
+#
+
+sub dot_product {
+  my $vector1 = shift;
+  my $vector2 = shift;
+
+  $vector1 = $vector1->transpose()
+    unless @$vector1 == 1;
+  return undef
+    unless @$vector1 == 1;
+
+  $vector2 = $vector2->transpose()
+    unless @{$vector2->[0]} == 1;
+  return undef
+    unless @{$vector2->[0]} == 1;
+
+  return $vector1->multiply($vector2)->[0][0];
+}
+
+sub absolute {
+  my $vector = shift;
+  sqrt $vector->dot_product($vector);
+}
+
+sub normalize {
+  my $vector = shift;
+  my $length = $vector->absolute();
+  return undef
+    unless $length;
+  $vector->multiply_scalar(1 / $length);
+}
+
+sub cross_product {
+  my $vectors = shift;
+
+  my $dimensions = @{$vectors->[0]};
+  return undef
+    unless $dimensions == @$vectors + 1;
+
+  my @axis;
+  foreach my $column (0..$dimensions-1) {
+    my $tmp = $vectors->slice(0..$column-1,
+                              $column+1..$dimensions-1);
+    my $scalar = $tmp->determinant;
+    $scalar *= ($column % 2) ? -1 : 1;
+    push @axis, $scalar;
+  }
+  my $axis = new Math::Matrix(\@axis);
+  $axis = $axis->multiply_scalar(($dimensions % 2) ? 1 : -1);
 }
 
 1;
