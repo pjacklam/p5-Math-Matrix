@@ -1,11 +1,11 @@
 #!/usr/bin/perl -w
 #                              -*- Mode: Perl -*- 
 # $Basename$
-# $Revision: 1.2 $
+# $Revision: 1.3 $
 # Author          : Ulrich Pfeifer
 # Created On      : Mon Apr 16 11:12:57 2001
 # Last Modified By: Ulrich Pfeifer
-# Last Modified On: Tue Apr 17 09:52:45 2001
+# Last Modified On: Wed Oct 24 09:30:58 2001
 # Language        : CPerl
 # 
 # (C) Copyright 2001, UUNET Deutschland GmbH, Germany
@@ -13,7 +13,7 @@
 
 use strict;
 use Test;
-BEGIN { plan tests => 10};
+BEGIN { plan tests => 11};
 
 use Math::Matrix;
 
@@ -61,3 +61,7 @@ ok($o->absolute < 0.000001);
 my $E = Math::Matrix->new_identity(3);
 my $G = $A->multiply($E);
 ok($A->equal($G));
+
+my $Ai = $A->invert;
+my $P  = $A->multiply($Ai);
+ok($P->equal($E));

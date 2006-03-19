@@ -4,11 +4,12 @@
 # Author          : Ulrich Pfeifer
 # Created On      : Tue Oct 24 18:34:08 1995
 # Last Modified By: Ulrich Pfeifer
-# Last Modified On: Fri Sep 14 21:57:54 2001
+# Last Modified On: Sun Nov 16 10:52:30 2003
 # Language        : Perl
-# Update Count    : 191
+# Update Count    : 202
 # Status          : Unknown, Use with caution!
 #
+# Copyright (C) 2002, Bill Denney <gte273i@prism.gatech.edu>, all rights reserved.
 # Copyright (C) 2001, Brian J. Watson <bjbrew@power.net>, all rights reserved.
 # Copyright (C) 2001, Ulrich Pfeifer <pfeifer@wait.de>, all rights reserved.
 # Copyright (C) 1995, Universität Dortmund, all rights reserved.
@@ -16,6 +17,9 @@
 #
 # Permission to use this software is granted under the same
 # restrictions as for Perl itself.
+#
+# Revision 0.5  2002/06/02 15:47:40
+# Bill Denney added pinvert function
 #
 # Revision 0.3  2001/04/17 11:10:15
 # Extensions from Brian Watson
@@ -91,6 +95,10 @@ coefficients are 0. This means the method can handle such systems. The
 method returns a matrix containing the solutions in its columns or
 B<undef> in case of error.
 
+=head2 invert
+
+Invert a Matrix using C<solve>.
+
 =head2 multiply_scalar
 
 Multiplies a matrix and a scalar resulting in a matrix of the same
@@ -108,7 +116,8 @@ Shorthand for C<add($other-E<gt>negative)>
 
 =head2 equal
 
-Decide if two matrices are equal.  Beware of rounding errors!
+Decide if two matrices are equal.  The criterion is, that each pair
+of elements differs less than $Math::Matrix::eps.
 
 =head2 slice
 
@@ -141,6 +150,10 @@ Compute the cross-product of vectors.
 Prints the matrix on STDOUT. If the method has additional parameters,
 these are printed before the matrix is printed.
 
+=head2 pinvert
+
+Compute the pseudo-inverse of the matrix: ((A'A)^-1)A'
+
 =head1 EXAMPLE
 
         use Math::Matrix;
@@ -171,7 +184,7 @@ package Math::Matrix;
 use vars qw($VERSION $eps);
 use strict;
 
-$VERSION = 0.4;
+$VERSION = 0.5;
 
 use overload
        '~'  => 'transpose',
@@ -322,6 +335,15 @@ sub solve {
     transpose $class->new(@{$m->transpose}[$mr+1 .. $mc]);
 }
 
+sub pinvert {
+    my $self  = shift;
+    my $class = ref($self);
+
+    my $m    = $self->clone();
+
+    $m->transpose->multiply($m)->invert->multiply($m->transpose);
+}    
+
 sub print {
     my $self = shift;
 
@@ -393,7 +415,7 @@ sub equal {
   my $last = $#{$A->[0]};
   for my $i (0 .. $#{$A}) {
     for my $j (0 .. $last) {
-      $A->[$i][$j] == $B->[$i][$j] or $ok=0;
+      abs($A->[$i][$j]-$B->[$i][$j])<$eps or $ok=0;
     }
   }
   $ok;
@@ -507,6 +529,16 @@ sub cross_product {
   }
   my $axis = $class->new(\@axis);
   $axis = $axis->multiply_scalar(($dimensions % 2) ? 1 : -1);
+}
+
+sub invert {
+  my $M = shift;
+  my ($m, $n) = $M->size;
+  my (@I);
+  die "Matrix dimensions are $m X $n. -- Matrix not invertible.\n"
+    if $m != $n;
+  my $I = $M->new_identity($n);
+  ($M->concat($I))->solve;
 }
 
 1;
