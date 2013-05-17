@@ -4,19 +4,23 @@
 # Author          : Ulrich Pfeifer
 # Created On      : Tue Oct 24 18:34:08 1995
 # Last Modified By: Ulrich Pfeifer
-# Last Modified On: Sun Nov 16 10:52:30 2003
+# Last Modified On: Fri May 17 10:26:29 2013
 # Language        : Perl
-# Update Count    : 202
+# Update Count    : 204
 # Status          : Unknown, Use with caution!
 #
+# Copyright (C) 2013, John M. Gamble <jgamble@ripco.com>, all rights reserved.
 # Copyright (C) 2002, Bill Denney <gte273i@prism.gatech.edu>, all rights reserved.
 # Copyright (C) 2001, Brian J. Watson <bjbrew@power.net>, all rights reserved.
 # Copyright (C) 2001, Ulrich Pfeifer <pfeifer@wait.de>, all rights reserved.
 # Copyright (C) 1995, Universität Dortmund, all rights reserved.
-# Copyright (C)  2001, Matthew Brett <matthew.brett@mrc-cbu.cam.ac.uk>
+# Copyright (C) 2001, Matthew Brett <matthew.brett@mrc-cbu.cam.ac.uk>
 #
 # Permission to use this software is granted under the same
 # restrictions as for Perl itself.
+#
+# Revision 0.6  2013/05/17 10:24:40
+# John M. Gamble added diagonal() and tridiagonal() methods
 #
 # Revision 0.5  2002/06/02 15:47:40
 # Bill Denney added pinvert function
@@ -60,6 +64,40 @@ If you call  C<new> as method, a zero filled matrix with identical deminsions is
 You can clone a matrix by calling:
 
         $b = $a->clone;
+
+=head2 diagonal
+
+A constructor method that creates a diagonal matrix from a single list
+or array of numbers.
+
+        $p = Math::Matrix->diagonal(1, 4, 4, 8);
+        $q = Math::Matrix->diagonal([1, 4, 4, 8]);
+
+The matrix is zero filled except for the diagonal members, which take the
+value of the vector
+
+The method returns B<undef> in case of error.
+
+=head2 tridiagonal
+
+A constructor method that creates a matrix from vectors of numbers.
+
+        $p = Math::Matrix->tridiagonal([1, 4, 4, 8]);
+        $q = Math::Matrix->tridiagonal([1, 4, 4, 8], [9, 12, 15]);
+        $r = Math::Matrix->tridiagonal([1, 4, 4, 8], [9, 12, 15], [4, 3, 2]);
+
+In the first case, the main diagonal takes the values of the vector, while
+both of the upper and lower diagonals's values are all set to one.
+
+In the second case, the main diagonal takes the values of the first vector,
+while the upper and lower diagonals are each set to the values of the
+second vector.
+
+In the third case, the main diagonal takes the values of the first vector,
+while the upper diagonal is set to the values of the second vector, and the
+lower diagonal is set to the values of the third vector.
+
+The method returns B<undef> in case of error.
 
 =head2 size
 
@@ -125,6 +163,18 @@ Extract columns:
 
   a->slice(1,3,5);
 
+=head2 diagonal_vector
+
+Extract the diagonal as an array:
+
+  $diag = $a->diagonal_vector;
+
+=head2 tridiagonal_vector
+
+Extract the diagonals that make up a tridiagonal matrix:
+
+  ($main_d, $upper_d, $lower_d) = $a->tridiagonal_vector;
+
 =head2 determinant
 
 Compute the determinant of a matrix.
@@ -184,7 +234,7 @@ package Math::Matrix;
 use vars qw($VERSION $eps);
 use strict;
 
-$VERSION = 0.5;
+$VERSION = 0.6;
 
 use overload
        '~'  => 'transpose',
@@ -228,6 +278,124 @@ sub clone {
         push(@{$self}, [@{$_}]);
     }
     bless $self, ref($that)||$that;
+}
+
+#
+# Either class or object call, create a square matrix with the same
+# dimensions as the passed-in list or array.
+#
+sub diagonal {
+    my $that = shift;
+    my $class = ref($that) || $that;
+    my @diag = @_;
+    my $self = [];
+
+    @diag = @{$diag[0]} if (ref $diag[0] eq "ARRAY");
+
+    my $len = scalar @diag;
+    return undef if ($len == 0);
+
+    for my $idx (0..$len-1) {
+        my @r = (0) x $len;
+        $r[$idx] = $diag[$idx];
+        push(@{$self}, [@r]);
+    }
+    bless $self, $class;
+}
+
+#
+# Either class or object call, create a square matrix with the same
+# dimensions as the passed-in list or array.
+#
+sub tridiagonal {
+    my $that = shift;
+    my $class = ref($that) || $that;
+    my(@up_d, @main_d, @low_d);
+    my $self = [];
+
+    #
+    # Handle the different ways the tridiagonal vectors could
+    # be passed in. 
+    #
+    if (ref $_[0] eq "ARRAY") {
+        @main_d = @{$_[0]};
+
+        if (ref $_[1] eq "ARRAY") {
+            @up_d = @{$_[1]};
+
+            if (ref $_[2] eq "ARRAY") {
+                @low_d = @{$_[2]};
+            }
+        }
+    }
+    else {
+        @main_d = @_;
+    }
+
+    my $len = scalar @main_d;
+    return undef if ($len == 0);
+
+    #
+    # Default the upper and lower diagonals if no vector
+    # was passed in for them.
+    #
+    @up_d = (1) x ($len -1) if (scalar @up_d == 0);
+    @low_d = @up_d if (scalar @low_d == 0);
+
+    #
+    # First row...
+    #
+    my @arow = (0) x $len;
+    @arow[0..1] = ($main_d[0], $up_d[0]);
+    push (@{$self}, [@arow]);
+
+    #
+    # Bulk of the matrix...
+    #
+    for my $idx (1 .. $#main_d - 1) {
+        my @r = (0) x $len;
+        @r[$idx-1 .. $idx+1] = ($low_d[$idx-1], $main_d[$idx], $up_d[$idx]);
+        push (@{$self}, [@r]);
+    }
+
+    #
+    # Last row.
+    #
+    my @zrow = (0) x $len;
+    @zrow[$len-2..$len-1] = ($low_d[$#main_d -1], $main_d[$#main_d]);
+    push (@{$self}, [@zrow]);
+
+    bless $self, $class;
+}
+
+sub diagonal_vector {
+  my $self = shift;
+  my @diag;
+  my $idx = 0;
+  my($m, $n) = $self->size();
+
+  die "Not a square matrix" if ($m != $n);
+
+  foreach my $r (@{$self}) {
+    push @diag, $r->[$idx++];
+  }
+  return \@diag;
+}
+
+sub tridiagonal_vector {
+  my $self = shift;
+  my(@main_d, @up_d, @low_d);
+  my($m, $n) = $self->size();
+  my $idx = 0;
+
+  die "Not a square matrix" if ($m != $n);
+
+  foreach my $r (@{$self}) {
+    push @low_d, $r->[$idx - 1] if ($idx > 0);
+    push @main_d, $r->[$idx++];
+    push @up_d, $r->[$idx] if ($idx < $m);
+  }
+  return ([@main_d],[@up_d],[@low_d]);
 }
 
 sub size {
