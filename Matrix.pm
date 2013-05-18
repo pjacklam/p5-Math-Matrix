@@ -4,12 +4,13 @@
 # Author          : Ulrich Pfeifer
 # Created On      : Tue Oct 24 18:34:08 1995
 # Last Modified By: Ulrich Pfeifer
-# Last Modified On: Fri May 17 10:26:29 2013
+# Last Modified On: Sat May 18 22:01:31 2013
 # Language        : Perl
-# Update Count    : 204
+# Update Count    : 208
 # Status          : Unknown, Use with caution!
 #
 # Copyright (C) 2013, John M. Gamble <jgamble@ripco.com>, all rights reserved.
+# Copyright (C) 2009, oshalla https://rt.cpan.org/Public/Bug/Display.html?id=42919
 # Copyright (C) 2002, Bill Denney <gte273i@prism.gatech.edu>, all rights reserved.
 # Copyright (C) 2001, Brian J. Watson <bjbrew@power.net>, all rights reserved.
 # Copyright (C) 2001, Ulrich Pfeifer <pfeifer@wait.de>, all rights reserved.
@@ -18,6 +19,9 @@
 #
 # Permission to use this software is granted under the same
 # restrictions as for Perl itself.
+#
+# Revision 0.7  2013/05/18 08:15
+# Replaced transpose functions (https://rt.cpan.org/Public/Bug/Display.html?id=42919)
 #
 # Revision 0.6  2013/05/17 10:24:40
 # John M. Gamble added diagonal() and tridiagonal() methods
@@ -234,7 +238,7 @@ package Math::Matrix;
 use vars qw($VERSION $eps);
 use strict;
 
-$VERSION = 0.6;
+$VERSION = 0.7;
 
 use overload
        '~'  => 'transpose',
@@ -417,23 +421,15 @@ sub concat {
     $result;
 }
 
-sub transpose {
-    my $self = shift;
-    my $class = ref($self);
-    my @result;
-    my $m;
-
-    for my $col (@{$self->[0]}) {
-        push @result, [];
-    }
-    for my $row (@{$self}) {
-        $m=0;
-        for my $col (@{$row}) {
-            push(@{$result[$m++]}, $col);
-        }
-    }
-    $class->new(@result);
-}
+sub transpose { 
+    my ($matrix) = shift ; 
+    my @result = () ; 
+    my $lc = $#{$matrix->[0]}; 
+    for my $col (0..$lc) { 
+	push @result, [map $_->[$col], @$matrix]; 
+    } 
+    return( bless \@result, ref $matrix ); 
+} 
 
 sub vekpro {
     my($a, $b) = @_;
