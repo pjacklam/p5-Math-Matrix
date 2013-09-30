@@ -13,7 +13,7 @@
 
 use strict;
 use Test;
-BEGIN { plan tests => 11};
+BEGIN { plan tests => 12};
 
 use Math::Matrix;
 
@@ -65,3 +65,10 @@ ok($A->equal($G));
 my $Ai = $A->invert;
 my $P  = $A->multiply($Ai);
 ok($P->equal($E));
+
+my $Z = new Math::Matrix ([0,0,0],
+                          [0,0,0],
+                          [0,0,0]);
+my $Q=$Z->subtract($P);
+my $J=-$Q;
+ok($J->equal($P));

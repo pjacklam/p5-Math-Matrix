@@ -20,6 +20,9 @@
 # Permission to use this software is granted under the same
 # restrictions as for Perl itself.
 #
+# Revision 0.8  2013/09/30 09:21
+# Add support for unary minus ([rt.cpan.org #88821] support for overload of unary minus, Diab Jerius)
+#
 # Revision 0.7  2013/05/18 08:15
 # Replaced transpose functions (https://rt.cpan.org/Public/Bug/Display.html?id=42919)
 #
@@ -152,7 +155,7 @@ dimensions with each element scaled with the scalar.
 
 Add two matrices of the same dimensions.
 
-=head2 substract
+=head2 subtract
 
 Shorthand for C<add($other-E<gt>negative)>
 
@@ -238,7 +241,7 @@ package Math::Matrix;
 use vars qw($VERSION $eps);
 use strict;
 
-$VERSION = 0.7;
+$VERSION = 0.8;
 
 use overload
        '~'  => 'transpose',
@@ -568,7 +571,17 @@ sub negative {
 sub subtract {
     my $self = shift;
     my $other = shift;
-    $self->add($other->negative);
+
+    # if $swap is present, $other operand isn't a Math::Matrix.  in
+    # general that's undefined, but, if called as 
+    #   subtract($self,0,1)
+    # we've been called as unary minus, which is defined.
+    if ( @_  && $_[0] && ! ref $other && $other == 0 ) {
+        $self->negative;
+    }
+    else {
+        $self->add($other->negative);
+    }
 }
 
 sub equal {
