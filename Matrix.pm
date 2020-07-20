@@ -241,7 +241,7 @@ package Math::Matrix;
 use vars qw($VERSION $eps);
 use strict;
 
-$VERSION = 0.8;
+$VERSION = 0.9;
 
 use overload
        '~'  => 'transpose',
