@@ -13,9 +13,9 @@ DESCRIPTION
     same length. The arrays are copied. The method returns undef in
     case of error.
 
-            $a = new Math::Matrix ([rand,rand,rand],
-                                   [rand,rand,rand],
-                                   [rand,rand,rand]);
+        $a = new Math::Matrix ([rand,rand,rand],
+                               [rand,rand,rand],
+                               [rand,rand,rand]);
 
     If you call `new' as method, a zero filled matrix with identical
     deminsions is returned.
@@ -24,21 +24,21 @@ DESCRIPTION
 
     You can clone a matrix by calling:
 
-            $b = $a->clone;
+        $b = $a->clone;
 
   size
 
     You can determine the dimensions of a matrix by calling:
 
-            ($m, $n) = $a->size;
+        ($m, $n) = $a->size;
 
   concat
 
     Concatenates two matrices of same row count. The result is a new
     matrix or undef in case of error.
 
-            $b = new Math::Matrix ([rand],[rand],[rand]);
-            $c = $a->concat($b);
+        $b = new Math::Matrix ([rand],[rand],[rand]);
+        $c = $a->concat($b);
 
   transpose
 
@@ -111,19 +111,19 @@ DESCRIPTION
     parameters, these are printed before the matrix is printed.
 
 EXAMPLE
-            use Math::Matrix;
+        use Math::Matrix;
 
-            srand(time);
-            $a = new Math::Matrix ([rand,rand,rand], 
-                             [rand,rand,rand], 
-                             [rand,rand,rand]);
-            $x = new Math::Matrix ([rand,rand,rand]);
-            $a->print("A\n");
-            $E = $a->concat($x->transpose);
-            $E->print("Equation system\n");
-            $s = $E->solve;
-            $s->print("Solutions s\n");
-            $a->multiply($s)->print("A*s\n");
+        srand(time);
+        $a = new Math::Matrix ([rand,rand,rand],
+                         [rand,rand,rand],
+                         [rand,rand,rand]);
+        $x = new Math::Matrix ([rand,rand,rand]);
+        $a->print("A\n");
+        $E = $a->concat($x->transpose);
+        $E->print("Equation system\n");
+        $s = $E->solve;
+        $s->print("Solutions s\n");
+        $a->multiply($s)->print("A*s\n");
 
 AUTHOR
     Ulrich Pfeifer <pfeifer@ls6.informatik.uni-dortmund.de>
@@ -131,4 +131,3 @@ AUTHOR
     Brian J. Watson <bjbrew@power.net>
 
     Matthew Brett <matthew.brett@mrc-cbu.cam.ac.uk>
-

@@ -1,5 +1,5 @@
 #!/usr/bin/perl -w
-#                              -*- Mode: Perl -*- 
+#                              -*- Mode: Perl -*-
 
 use strict;
 use Test;
