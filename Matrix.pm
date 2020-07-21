@@ -61,12 +61,14 @@ The following methods are available:
 Constructor arguments are a list of references to arrays of the same length.
 The arrays are copied. The method returns B<undef> in case of error.
 
-    $a = new Math::Matrix ([rand,rand,rand],
+    $a = Math::Matrix->new([rand,rand,rand],
                            [rand,rand,rand],
                            [rand,rand,rand]);
 
-If you call C<new> as method, a zero filled matrix with identical deminsions is
-returned.
+If you call C<new> with no input arguments, a zero filled matrix with identical
+dimensions is returned:
+
+    $b = $a->new();     # $b is a zero matrix with the size of $a
 
 =head2 clone
 
@@ -257,24 +259,30 @@ sub version {
 
 # Implement - array copy, inheritance
 
-# class call - new matrix as input
-# object call - creates matrix with same dimensions matrix
-
 sub new {
     my $that = shift;
     my $class = ref($that) || $that;
     my $self = [];
-    if (ref($that) && (@_ == 0)) { # object call no args -> copy matrix
+
+    # If called as an instance method and no arguments are given, return a
+    # zero matrix of the same size as the invocand.
+
+    if (ref($that) && (@_ == 0)) {
         for (@$that) {
             push(@{$self}, [map {0} @{$_}]);
         }
-    } else {                    # class call / object call -> matrix as input
+    }
+
+    # Otherwise return a new matrix based on the input arguments.
+
+    else {
         my $len = scalar(@{$_[0]});
         for (@_) {
             return undef if scalar(@{$_}) != $len;
             push(@{$self}, [@{$_}]);
         }
     }
+
     bless $self, $class;
 }
 
