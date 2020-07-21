@@ -72,7 +72,7 @@ dimensions is returned:
 
 =head2 clone
 
-You can clone a matrix by calling:
+Clones a matrix and returns the clone.
 
     $b = $a->clone;
 
@@ -164,6 +164,7 @@ Shorthand for C<add($other-E<gt>negative)>
 
 =head2 equal
 
+
 Decide if two matrices are equal. The criterion is, that each pair of elements
 differs less than $Math::Matrix::eps.
 
@@ -243,6 +244,7 @@ Matthew Brett E<lt>matthew.brett@mrc-cbu.cam.ac.ukE<gt>
 package Math::Matrix;
 use vars qw($VERSION $eps);
 use strict;
+use Carp;
 
 $VERSION = 0.9;
 
@@ -287,6 +289,7 @@ sub new {
 }
 
 sub clone {
+    croak "Too many arguments for ", (caller(0))[3] if @_ > 1;
     my $that = shift;
     my $self = [];
 
