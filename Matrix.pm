@@ -84,8 +84,8 @@ of numbers.
     $p = Math::Matrix->diagonal(1, 4, 4, 8);
     $q = Math::Matrix->diagonal([1, 4, 4, 8]);
 
-The matrix is zero filled except for the diagonal members, which take the value
-of the vector
+The matrix is zero filled except for the diagonal members, which take the
+values of the vector.
 
 The method returns B<undef> in case of error.
 
@@ -309,6 +309,7 @@ sub diagonal {
     my @diag = @_;
     my $self = [];
 
+    # diagonal([2,3]) -> diagonal(2,3)
     @diag = @{$diag[0]} if (ref $diag[0] eq "ARRAY");
 
     my $len = scalar @diag;
