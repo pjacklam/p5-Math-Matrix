@@ -207,7 +207,10 @@ an object.
 
 =head2 absolute
 
-Compute the absolute value of a vector.
+Compute the absolute value (i.e., length) of a vector.
+
+    $v = Math::Matrix -> new([3, 4]);
+    $a = $v -> absolute();                  # $v = 5
 
 =head2 normalizing
 
