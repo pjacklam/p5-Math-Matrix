@@ -194,7 +194,16 @@ Compute the determinant of a matrix.
 
 =head2 dot_product
 
-Compute the dot product of two vectors.
+Compute the dot product of two vectors. The second operand does not have to be
+an object.
+
+    # $x and $y are both objects
+    $x = Math::Matrix -> new([1, 2, 3]);
+    $y = Math::Matrix -> new([4, 5, 6]);
+    $p = $x -> dot_product($y);             # $p = 32
+
+    # Only $x is an object.
+    $p = $x -> dot_product([4, 5, 6]);      # $p = 32
 
 =head2 absolute
 
@@ -673,7 +682,19 @@ sub determinant {
 
 sub dot_product {
     my $vector1 = shift;
+    my $class = ref $vector1;
+
     my $vector2 = shift;
+
+    # Allow the input to be an ordinary array, i.e., not an object. Ideally, we
+    # should use the following test, but that requires the Scalar::Util module,
+    # which might not be installed.
+    #
+    #   $vector2 = $class -> new($vector2)
+    #     unless blessed($vector2) && $vector2 -> isa($class);
+
+    $vector2 = $class -> new($vector2)
+      if ref($vector2) eq 'ARRAY';
 
     $vector1 = $vector1->transpose()
       unless @$vector1 == 1;
