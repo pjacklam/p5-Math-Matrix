@@ -212,9 +212,12 @@ Compute the absolute value (i.e., length) of a vector.
     $v = Math::Matrix -> new([3, 4]);
     $a = $v -> absolute();                  # $v = 5
 
-=head2 normalizing
+=head2 normalize
 
-Normalize a vector.
+Normalize a vector, i.e., scale a vector so its length becomes 1.
+
+    $v = Math::Matrix -> new([3, 4]);
+    $u = $v -> normalize();                 # $u = [ 0.6, 0.8 ]
 
 =head2 cross_product
 
