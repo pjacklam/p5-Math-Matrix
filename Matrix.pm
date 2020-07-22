@@ -190,6 +190,8 @@ Extract the diagonals that make up a tridiagonal matrix:
 
 Compute the determinant of a matrix.
 
+    $det = $a->determinant;
+
 =head2 dot_product
 
 Compute the dot product of two vectors.
