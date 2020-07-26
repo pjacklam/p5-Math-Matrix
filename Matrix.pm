@@ -190,7 +190,9 @@ Extract the diagonals that make up a tridiagonal matrix:
 
 Compute the determinant of a matrix.
 
-    $det = $a->determinant;
+    $a = Math::Matrix->new([3, 1],
+                           [4, 2]);
+    $d = $a->determinant;                   # $d = 2
 
 =head2 dot_product
 
