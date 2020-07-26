@@ -70,6 +70,16 @@ dimensions is returned:
 
     $b = $a->new();     # $b is a zero matrix with the size of $a
 
+=head2 new_identity
+
+Returns a new identity matrix.
+
+    $a = Math::Matrix -> new(3);        # $a is a 3-by-3 identity matrix
+
+=head2 eye
+
+This is an alias for C<new_identity>.
+
 =head2 clone
 
 Clones a matrix and returns the clone.
