@@ -223,6 +223,10 @@ Normalize a vector, i.e., scale a vector so its length becomes 1.
 
 Compute the cross-product of vectors.
 
+    $x = Math::Matrix -> new([1,3,2],
+                             [5,4,2]);
+    $p = $x -> cross_product();             # $p = [ -2, 8, -11 ]
+
 =head2 print
 
 Prints the matrix on STDOUT. If the method has additional parameters, these are
