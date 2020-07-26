@@ -140,6 +140,13 @@ rows. The result is a new matrix or B<undef> in case of error.
 Returns the transposed matrix. This is the matrix where colums and rows of the
 argument matrix are swaped.
 
+=head2 negative
+
+Negate a matrix and return it.
+
+    $a = Math::Matrix -> new([-2, 3]);
+    $b = $a -> negative();                  # $b = [[2, -3]]
+
 =head2 multiply
 
 Multiplies two matrices where the length of the rows in the first matrix is the
