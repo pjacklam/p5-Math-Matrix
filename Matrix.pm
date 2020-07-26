@@ -128,11 +128,12 @@ You can determine the dimensions of a matrix by calling:
 
 =head2 concat
 
-Concatenates two matrices of same row count. The result is a new matrix or
-B<undef> in case of error.
+Concatenate matrices horizontally. The matrices must have the same number or
+rows. The result is a new matrix or B<undef> in case of error.
 
-    $b = new Math::Matrix ([rand],[rand],[rand]);
-    $c = $a->concat($b);
+    $x = Math::Matrix -> new([1, 2], [4, 5]);   # 2-by-2 matrix
+    $y = Math::Matrix -> new([3], [6]);         # 2-by-1 matrix
+    $z = $x -> concat($y);                      # 2-by-3 matrix
 
 =head2 transpose
 
