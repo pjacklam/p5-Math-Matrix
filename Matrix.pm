@@ -247,6 +247,13 @@ Compute the cross-product of vectors.
                              [5,4,2]);
     $p = $x -> cross_product();             # $p = [ -2, 8, -11 ]
 
+=head2 as_string
+
+Creates a string representation of the matrix and returns it.
+
+    $x = Math::Matrix -> new([1, 2], [3, 4]);
+    $s = $x -> as_string();
+
 =head2 print
 
 Prints the matrix on STDOUT. If the method has additional parameters, these are
