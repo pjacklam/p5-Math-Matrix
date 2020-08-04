@@ -263,6 +263,42 @@ printed before the matrix is printed.
 
 Compute the pseudo-inverse of the matrix: ((A'A)^-1)A'
 
+=head1 OVERLOADING
+
+The following operators are overloaded.
+
+=over
+
+=item C<+> and C<+=>
+
+Matrix addition. The two operands must have the same size.
+
+    $C  = $A + $B;      # assign $A + $B to $C
+    $A += $B;           # assign $A + $B to $A
+
+=item C<-> and C<-=>
+
+Matrix subtraction. The two operands must have the same size.
+
+    $C  = $A + $B;      # assign $A - $B to $C
+    $A += $B;           # assign $A - $B to $A
+
+=item C<*> and C<*=>
+
+Matrix multiplication. The number of columns in the first operand must be equal
+to the number of rows in the second operand.
+
+    $C  = $A * $B;      # assign $A * $B to $C
+    $A *= $B;           # assign $A * $B to $A
+
+=item C<~>
+
+Transpose.
+
+    $B = ~$A;           # $B is the transpose of $A
+
+=back
+
 =head1 EXAMPLE
 
     use Math::Matrix;
@@ -297,11 +333,12 @@ use Carp;
 $VERSION = 0.9;
 
 use overload
-  '~'  => 'transpose',
   '+'  => 'add',
   '-'  => 'subtract',
   '*'  => 'multiply',
-  '""' => 'as_string';
+  '~'  => 'transpose',
+  '""' => 'as_string',
+  '='  => 'clone';
 
 sub version {
     return "Math::Matrix $VERSION";
