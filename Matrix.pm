@@ -679,14 +679,14 @@ sub add {
 sub slice {
     my $self = shift;
     my $class = ref($self);
-    my $result = $class->new([]);
+    my $result = [];
 
-    foreach my $j (@_) {
-        for my $i (0..$#{$self}) {
-            push @{$result->[$i]}, $self->[$i][$j];
-        }
+    for my $i (0 .. $#$self) {
+        push @$result, [ @{$self->[$i]}[@_] ];
     }
-    $result;
+
+    bless $result, $class;
+    $result -> clone();
 }
 
 sub determinant {
