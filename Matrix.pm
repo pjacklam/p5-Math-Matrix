@@ -729,21 +729,28 @@ sub slice {
 sub determinant {
     my $self = shift;
     my $class = ref($self);
-    my $last= $#{$self->[0]};
+    my $imax = $#$self;
+    my $jmax = $#{$self->[0]};
 
-    return undef
-      unless $last == $#{$self};
+    return undef unless $imax == $jmax;     # input must be a square matrix
 
-    if ($last == 0) {
+    if ($imax == 0) {
         return $self->[0][0];
     } else {
         my $result = 0;
-        foreach my $col (0..$last) {
-            my $matrix = $self->slice(0..$col-1,$col+1..$last);
-            $matrix = $class->new(@$matrix[1..$last]);
-            my $term += $matrix->determinant();
-            $term *= $self->[0][$col];
-            $term *= $col % 2 ? -1 : 1;
+
+        # Create a matrix with row 0 removed. We only need to do this once.
+        my $matrix0 = $class -> new(@$self[1 .. $jmax]);
+
+        foreach my $j (0 .. $jmax) {
+
+            # Create a matrix with row 0 and column $j removed.
+            my $matrix0j = $matrix0 -> slice(0 .. $j-1, $j+1 .. $jmax);
+
+            my $term = $matrix0j -> determinant();
+            $term *= $j % 2 ? -$self->[0][$j]
+                            :  $self->[0][$j];
+
             $result += $term;
         }
         return $result;

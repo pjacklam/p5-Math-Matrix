@@ -480,9 +480,12 @@ sub new {
       if $selfref;
 
     my $val = shift;
-    my $ref = ref $val;
+    croak "Input must be a defined value in ", (caller(0))[3]
+      unless defined $val;
 
+    my $ref = ref $val;
     croak "Input must be a scalar, not a $ref in ", (caller(0))[3] if $ref;
+
     croak "Input argument doesn't look like a number in ", (caller(0))[3]
       unless $val =~ /^[+-]?(\d+(\.\d*)?|\.\d+)([Ee][+-]?\d+)?\z/;
 
