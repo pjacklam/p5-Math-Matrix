@@ -266,6 +266,10 @@ Creates a string representation of the matrix and returns it.
 Prints the matrix on STDOUT. If the method has additional parameters, these are
 printed before the matrix is printed.
 
+=item version
+
+Returns a string contining the package name and version number.
+
 =back
 
 =head1 OVERLOADING
