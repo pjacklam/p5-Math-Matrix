@@ -1,62 +1,60 @@
-#                              -*- Mode: Perl -*-
-# Matrix.pm --
-# ITIID           : $ITI$ $Header $__Header$
-# Author          : Ulrich Pfeifer
-# Created On      : Tue Oct 24 18:34:08 1995
-# Last Modified By: Ulrich Pfeifer
-# Last Modified On: Sat May 18 22:01:31 2013
-# Language        : Perl
-# Update Count    : 208
-# Status          : Unknown, Use with caution!
-#
-# Copyright (C) 2013, John M. Gamble <jgamble@ripco.com>, all rights reserved.
-# Copyright (C) 2009, oshalla https://rt.cpan.org/Public/Bug/Display.html?id=42919
-# Copyright (C) 2002, Bill Denney <gte273i@prism.gatech.edu>, all rights reserved.
-# Copyright (C) 2001, Brian J. Watson <bjbrew@power.net>, all rights reserved.
-# Copyright (C) 2001, Ulrich Pfeifer <pfeifer@wait.de>, all rights reserved.
-# Copyright (C) 1995, Universit‰t Dortmund, all rights reserved.
-# Copyright (C) 2001, Matthew Brett <matthew.brett@mrc-cbu.cam.ac.uk>
-#
-# Permission to use this software is granted under the same
-# restrictions as for Perl itself.
-#
-# Revision 0.8  2013/09/30 09:21
-# Add support for unary minus ([rt.cpan.org #88821] support for overload of unary minus, Diab Jerius)
-#
-# Revision 0.7  2013/05/18 08:15
-# Replaced transpose functions (https://rt.cpan.org/Public/Bug/Display.html?id=42919)
-#
-# Revision 0.6  2013/05/17 10:24:40
-# John M. Gamble added diagonal() and tridiagonal() methods
-#
-# Revision 0.5  2002/06/02 15:47:40
-# Bill Denney added pinvert function
-#
-# Revision 0.3  2001/04/17 11:10:15
-# Extensions from Brian Watson
-#
-# Revision 0.2  1996/07/10 17:48:14  pfeifer
-# Fixes from Mike Beachy <beachy@chem.columbia.edu>
-#
-# Revision 0.1  1995/10/25  09:48:39  pfeifer
-# Initial revision
-#
+# -*- mode: perl; coding: utf-8-unix -*-
 
 =pod
 
+=encoding utf8
+
 =head1 NAME
 
-Math::Matrix - Multiply and invert Matrices
+Math::Matrix - multiply and invert matrices
 
 =head1 SYNOPSIS
 
-use Math::Matrix;
+    use Math::Matrix;
+
+    # Generate a random 3-by-3 matrix.
+    srand(time);
+    $A = Math::Matrix -> new([rand, rand, rand],
+                             [rand, rand, rand],
+                             [rand, rand, rand]);
+    $A -> print("A\n");
+
+    # Append a fourth column to $A.
+    $x = Math::Matrix -> new([rand, rand, rand]);
+    $E = $A -> concat($x -> transpose);
+    $E -> print("Equation system\n");
+
+    # Compute the solution.
+    $s = $E -> solve;
+    $s -> print("Solutions s\n");
+
+    # Verify that the solution equals $x.
+    $A -> multiply($s) -> print("A*s\n");
 
 =head1 DESCRIPTION
 
-The following methods are available:
+This module implements various constructors and methods for creating and
+manipulating matrices.
 
-=head2 new
+All methods return new objects, so, for example, C<$X-E<gt>add($Y)> does not
+modify C<$X>.
+
+    $X -> add($Y);         # $X not modified; output is lost
+    $X = $X -> add($Y);    # this works
+
+Some operators are overloaded (see L</OVERLOADING>) and allow the operand to be
+modified directly.
+
+    $X = $X + $Y;          # this works
+    $X += $Y;              # so does this
+
+=head1 METHODS
+
+=head2 Constructors
+
+=over
+
+=item new
 
 Constructor arguments are a list of references to arrays of the same length.
 The arrays are copied. The method returns B<undef> in case of error.
@@ -70,23 +68,23 @@ dimensions is returned:
 
     $b = $a->new();     # $b is a zero matrix with the size of $a
 
-=head2 new_identity
+=item new_identity
 
 Returns a new identity matrix.
 
     $a = Math::Matrix -> new(3);        # $a is a 3-by-3 identity matrix
 
-=head2 eye
+=item eye
 
 This is an alias for C<new_identity>.
 
-=head2 clone
+=item clone
 
 Clones a matrix and returns the clone.
 
     $b = $a->clone;
 
-=head2 diagonal
+=item diagonal
 
 A constructor method that creates a diagonal matrix from a single list or array
 of numbers.
@@ -99,7 +97,7 @@ values of the vector.
 
 The method returns B<undef> in case of error.
 
-=head2 tridiagonal
+=item tridiagonal
 
 A constructor method that creates a matrix from vectors of numbers.
 
@@ -120,13 +118,19 @@ lower diagonal is set to the values of the third vector.
 
 The method returns B<undef> in case of error.
 
-=head2 size
+=back
+
+=head2 Other methods
+
+=over
+
+=item size
 
 You can determine the dimensions of a matrix by calling:
 
     ($m, $n) = $a->size;
 
-=head2 concat
+=item concat
 
 Concatenate matrices horizontally. The matrices must have the same number or
 rows. The result is a new matrix or B<undef> in case of error.
@@ -135,25 +139,25 @@ rows. The result is a new matrix or B<undef> in case of error.
     $y = Math::Matrix -> new([3], [6]);         # 2-by-1 matrix
     $z = $x -> concat($y);                      # 2-by-3 matrix
 
-=head2 transpose
+=item transpose
 
 Returns the transposed matrix. This is the matrix where colums and rows of the
-argument matrix are swaped.
+argument matrix are swapped.
 
-=head2 negative
+=item negative
 
 Negate a matrix and return it.
 
     $a = Math::Matrix -> new([-2, 3]);
     $b = $a -> negative();                  # $b = [[2, -3]]
 
-=head2 multiply
+=item multiply
 
 Multiplies two matrices where the length of the rows in the first matrix is the
 same as the length of the columns in the second matrix. Returns the product or
 B<undef> in case of error.
 
-=head2 solve
+=item solve
 
 Solves a equation system given by the matrix. The number of colums must be
 greater than the number of rows. If variables are dependent from each other,
@@ -161,50 +165,53 @@ the second and all further of the dependent coefficients are 0. This means the
 method can handle such systems. The method returns a matrix containing the
 solutions in its columns or B<undef> in case of error.
 
-=head2 invert
+=item invert
 
 Invert a Matrix using C<solve>.
 
-=head2 multiply_scalar
+=item pinvert
+
+Compute the pseudo-inverse of the matrix: ((A'A)^-1)A'
+
+=item multiply_scalar
 
 Multiplies a matrix and a scalar resulting in a matrix of the same dimensions
 with each element scaled with the scalar.
 
     $a->multiply_scalar(2);  scale matrix by factor 2
 
-=head2 add
+=item add
 
 Add two matrices of the same dimensions.
 
-=head2 subtract
+=item subtract
 
 Shorthand for C<add($other-E<gt>negative)>
 
-=head2 equal
-
+=item equal
 
 Decide if two matrices are equal. The criterion is, that each pair of elements
 differs less than $Math::Matrix::eps.
 
-=head2 slice
+=item slice
 
 Extract columns:
 
     a->slice(1,3,5);
 
-=head2 diagonal_vector
+=item diagonal_vector
 
 Extract the diagonal as an array:
 
     $diag = $a->diagonal_vector;
 
-=head2 tridiagonal_vector
+=item tridiagonal_vector
 
 Extract the diagonals that make up a tridiagonal matrix:
 
     ($main_d, $upper_d, $lower_d) = $a->tridiagonal_vector;
 
-=head2 determinant
+=item determinant
 
 Compute the determinant of a matrix.
 
@@ -212,7 +219,7 @@ Compute the determinant of a matrix.
                            [4, 2]);
     $d = $a->determinant;                   # $d = 2
 
-=head2 dot_product
+=item dot_product
 
 Compute the dot product of two vectors. The second operand does not have to be
 an object.
@@ -225,21 +232,21 @@ an object.
     # Only $x is an object.
     $p = $x -> dot_product([4, 5, 6]);      # $p = 32
 
-=head2 absolute
+=item absolute
 
 Compute the absolute value (i.e., length) of a vector.
 
     $v = Math::Matrix -> new([3, 4]);
     $a = $v -> absolute();                  # $v = 5
 
-=head2 normalize
+=item normalize
 
 Normalize a vector, i.e., scale a vector so its length becomes 1.
 
     $v = Math::Matrix -> new([3, 4]);
     $u = $v -> normalize();                 # $u = [ 0.6, 0.8 ]
 
-=head2 cross_product
+=item cross_product
 
 Compute the cross-product of vectors.
 
@@ -247,21 +254,19 @@ Compute the cross-product of vectors.
                              [5,4,2]);
     $p = $x -> cross_product();             # $p = [ -2, 8, -11 ]
 
-=head2 as_string
+=item as_string
 
 Creates a string representation of the matrix and returns it.
 
     $x = Math::Matrix -> new([1, 2], [3, 4]);
     $s = $x -> as_string();
 
-=head2 print
+=item print
 
 Prints the matrix on STDOUT. If the method has additional parameters, these are
 printed before the matrix is printed.
 
-=head2 pinvert
-
-Compute the pseudo-inverse of the matrix: ((A'A)^-1)A'
+=back
 
 =head1 OVERLOADING
 
@@ -299,27 +304,74 @@ Transpose.
 
 =back
 
-=head1 EXAMPLE
+=head1 BUGS
 
-    use Math::Matrix;
+Please report any bugs through the web interface at
+L<https://rt.cpan.org/Ticket/Create.html?Queue=Math-Matrix>
+(requires login). We will be notified, and then you'll automatically be
+notified of progress on your bug as I make changes.
 
-    srand(time);
-    $a = new Math::Matrix ([rand,rand,rand],
-                           [rand,rand,rand],
-                           [rand,rand,rand]);
-    $x = new Math::Matrix ([rand,rand,rand]);
-    $a->print("A\n");
-    $E = $a->concat($x->transpose);
-    $E->print("Equation system\n");
-    $s = $E->solve;
-    $s->print("Solutions s\n");
-    $a->multiply($s)->print("A*s\n");
+=head1 SUPPORT
 
-=head1 AUTHOR
+You can find documentation for this module with the perldoc command.
 
-Ulrich Pfeifer E<lt>F<pfeifer@ls6.informatik.uni-dortmund.de>E<gt>
+    perldoc Math::Matrix
 
-Brian J. Watson E<lt>F<bjbrew@power.net>E<gt>
+You can also look for information at:
+
+=over 4
+
+=item * GitHub Source Repository
+
+L<https://github.com/pjacklam/p5-Math-Matrix>
+
+=item * RT: CPAN's request tracker
+
+L<https://rt.cpan.org/Public/Dist/Display.html?Name=Math-Matrix>
+
+=item * CPAN Ratings
+
+L<https://cpanratings.perl.org/dist/Math-Matrix>
+
+=item * MetaCPAN
+
+L<https://metacpan.org/release/Math-Matrix>
+
+=item * CPAN Testers Matrix
+
+L<http://matrix.cpantesters.org/?dist=Math-Matrix>
+
+=back
+
+=head1 LICENSE AND COPYRIGHT
+
+Copyright (c) 2020, Peter John Acklam.
+
+Copyright (C) 2013, John M. Gamble <jgamble@ripco.com>, all rights reserved.
+
+Copyright (C) 2009, oshalla
+https://rt.cpan.org/Public/Bug/Display.html?id=42919
+
+Copyright (C) 2002, Bill Denney <gte273i@prism.gatech.edu>, all rights
+reserved.
+
+Copyright (C) 2001, Brian J. Watson <bjbrew@power.net>, all rights reserved.
+
+Copyright (C) 2001, Ulrich Pfeifer <pfeifer@wait.de>, all rights reserved.
+Copyright (C) 1995, Universit√§t Dortmund, all rights reserved.
+
+Copyright (C) 2001, Matthew Brett <matthew.brett@mrc-cbu.cam.ac.uk>
+
+This program is free software; you may redistribute it and/or modify it under
+the same terms as Perl itself.
+
+=head1 AUTHORS
+
+Peter John Acklam E<lt>pjacklam@gmail.comE<gt> (2020)
+
+Ulrich Pfeifer E<lt>pfeifer@ls6.informatik.uni-dortmund.deE<gt> (1995-2013)
+
+Brian J. Watson E<lt>bjbrew@power.netE<gt>
 
 Matthew Brett E<lt>matthew.brett@mrc-cbu.cam.ac.ukE<gt>
 
