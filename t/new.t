@@ -4,28 +4,111 @@ use strict;
 use warnings;
 
 use Math::Matrix;
-use Test::More tests => 8;
+use Test::More tests => 41;
 
-my ($x, $xdata, $y, $ydata);
+my ($x, $y);
 
-# Class method.
+###############################################################################
 
-$xdata = [[1, 2, 3], [4, 5, 6]];
-$x = Math::Matrix -> new(@$xdata);
-isa_ok($x, 'Math::Matrix');
-is_deeply([ @$x ], $xdata, '$x has the right values');
+note("\n\$x = Math::Matrix -> new([1, 2, 3], [4, 5, 6]);\n\n");
+$x = Math::Matrix -> new([1, 2, 3], [4, 5, 6]);
+is(ref($x), 'Math::Matrix', '$x is a Math::Matrix');
+is_deeply([ @$x ], [[1, 2, 3], [4, 5, 6]], '$x has the right values');
 
-# Instance method without arguments.
+note("\n\$x = Math::Matrix -> new([[1, 2, 3], [4, 5, 6]]);\n\n");
+$x = Math::Matrix -> new([[1, 2, 3], [4, 5, 6]]);
+is(ref($x), 'Math::Matrix', '$x is a Math::Matrix');
+is_deeply([ @$x ], [[1, 2, 3], [4, 5, 6]], '$x has the right values');
 
+note("\n\$x = Math::Matrix -> new([1, 2, 3]);\n\n");
+$x = Math::Matrix -> new([1, 2, 3]);
+is(ref($x), 'Math::Matrix', '$x is a Math::Matrix');
+is_deeply([ @$x ], [[1, 2, 3]], '$x has the right values');
+
+note("\n\$x = Math::Matrix -> new([[1, 2, 3]]);\n\n");
+$x = Math::Matrix -> new([[1, 2, 3]]);
+is(ref($x), 'Math::Matrix', '$x is a Math::Matrix');
+is_deeply([ @$x ], [[1, 2, 3]], '$x has the right values');
+
+note("\n\$x = Math::Matrix -> new(3);\n\n");
+$x = Math::Matrix -> new(3);
+is(ref($x), 'Math::Matrix', '$x is a Math::Matrix');
+is_deeply([ @$x ], [[ 3 ]], '$x has the right values');
+
+note("\n\$x = Math::Matrix -> new([3]);\n\n");
+$x = Math::Matrix -> new([3]);
+is(ref($x), 'Math::Matrix', '$x is a Math::Matrix');
+is_deeply([ @$x ], [[ 3 ]], '$x has the right values');
+
+note("\n\$x = Math::Matrix -> new([[3]]);\n\n");
+$x = Math::Matrix -> new([[3]]);
+is(ref($x), 'Math::Matrix', '$x is a Math::Matrix');
+is_deeply([ @$x ], [[ 3 ]], '$x has the right values');
+
+note("\n\$x = Math::Matrix -> new();\n\n");
+$x = Math::Matrix -> new();
+is(ref($x), 'Math::Matrix', '$x is a Math::Matrix');
+is_deeply([ @$x ], [], '$x has the right values');
+
+note("\n\$x = Math::Matrix -> new([]);\n\n");
+$x = Math::Matrix -> new([]);
+is(ref($x), 'Math::Matrix', '$x is a Math::Matrix');
+is_deeply([ @$x ], [], '$x has the right values');
+
+note("\n\$x = Math::Matrix -> new([[]]);\n\n");
+$x = Math::Matrix -> new([[]]);
+is(ref($x), 'Math::Matrix', '$x is a Math::Matrix');
+is_deeply([ @$x ], [], '$x has the right values');
+
+###############################################################################
+
+note("\n\$x -> new([1, 2, 3], [4, 5, 6]); \$y = \$x -> new([9, 8, 7], [6, 5, 4])\n\n");
+$x = Math::Matrix -> new([1, 2, 3], [4, 5, 6]);
+$y = $x -> new([9, 8, 7], [6, 5, 4]);
+is_deeply([ @$x ], [[1, 2, 3], [4, 5, 6]], '$x is unmodified');
+is(ref($y), 'Math::Matrix', '$y is a Math::Matrix');
+is_deeply([ @$y ], [[9, 8, 7], [6, 5, 4]], '$y has the right values');
+
+note("\n\$x -> new([1, 2, 3], [4, 5, 6]); \$y = \$x -> new([9, 8, 7]);\n\n");
+$x = Math::Matrix -> new([1, 2, 3], [4, 5, 6]);
+$y = $x -> new([9, 8, 7]);
+is_deeply([ @$x ], [[1, 2, 3], [4, 5, 6]], '$x is unmodified');
+is(ref($y), 'Math::Matrix', '$y is a Math::Matrix');
+is_deeply([ @$y ], [[9, 8, 7]], '$y has the right values');
+
+note("\n\$x -> new([1, 2, 3], [4, 5, 6]); \$y = \$x -> new(9);\n\n");
+$x = Math::Matrix -> new([1, 2, 3], [4, 5, 6]);
+$y = $x -> new(9);
+is_deeply([ @$x ], [[1, 2, 3], [4, 5, 6]], '$x is unmodified');
+is(ref($y), 'Math::Matrix', '$y is a Math::Matrix');
+is_deeply([ @$y ], [[9]], '$y has the right values');
+
+###############################################################################
+
+note("\n\$x = Math::Matrix -> new([1, 2, 3], [4, 5, 6]); \$y = \$x -> new();\n\n");
+$x = Math::Matrix -> new([1, 2, 3], [4, 5, 6]);
 $y = $x -> new();
-isa_ok($y, 'Math::Matrix');
-is_deeply([ @$x ], $xdata, '$x is unmodified');
-is_deeply([ @$y ], [[0, 0, 0], [0, 0, 0]], '$y is a zero matrix');
+is_deeply([ @$x ], [[1, 2, 3], [4, 5, 6]], '$x is unmodified');
+is(ref($y), 'Math::Matrix', '$y is a Math::Matrix');
+is_deeply([ @$y ], [[0, 0, 0], [0, 0, 0]], '$y has the right values');
 
-# Instance method with arguments.
+note("\n\$x = Math::Matrix -> new([1, 2, 3]); \$y = \$x -> new();\n\n");
+$x = Math::Matrix -> new([1, 2, 3]);
+$y = $x -> new();
+is_deeply([ @$x ], [[1, 2, 3]], '$x is unmodified');
+is(ref($y), 'Math::Matrix', '$y is a Math::Matrix');
+is_deeply([ @$y ], [[0, 0, 0]], '$y has the right values');
 
-$ydata = [[9, 8, 7], [6, 5, 4]];
-$y = $x -> new(@$ydata);
-isa_ok($y, 'Math::Matrix');
-is_deeply([ @$x ], $xdata, '$x is unmodified');
-is_deeply([ @$y ], $ydata, '$y has the right values');
+note("\n\$x = Math::Matrix -> new(1); \$y = \$x -> new();\n\n");
+$x = Math::Matrix -> new(1);
+$y = $x -> new();
+is_deeply([ @$x ], [[1]], '$x is unmodified');
+is(ref($y), 'Math::Matrix', '$y is a Math::Matrix');
+is_deeply([ @$y ], [[0]], '$y has the right values');
+
+note("\n\$x = Math::Matrix -> new([]); \$y = \$x -> new();\n\n");
+$x = Math::Matrix -> new([]);
+$y = $x -> new();
+is_deeply([ @$x ], [], '$x is unmodified');
+is(ref($y), 'Math::Matrix', '$y is a Math::Matrix');
+is_deeply([ @$y ], [], '$y has the right values');

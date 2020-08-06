@@ -56,17 +56,41 @@ modified directly.
 
 =item new
 
-Constructor arguments are a list of references to arrays of the same length.
-The arrays are copied. The method returns B<undef> in case of error.
+Creates a new object from the input arguments and returns it.
 
-    $a = Math::Matrix->new([rand,rand,rand],
-                           [rand,rand,rand],
-                           [rand,rand,rand]);
+If a single input argument is given, and that argument is a reference to array
+whose first element is itself a reference to an array, it is assumed that the
+argument contains the whole matrix, like this:
 
-If you call C<new> with no input arguments, a zero filled matrix with identical
-dimensions is returned:
+    $x = Math::Matrix->new([[1, 2, 3], [4, 5, 6]]); # 2-by-3 matrix
+    $x = Math::Matrix->new([[1, 2, 3]]);            # 1-by-3 matrix
+    $x = Math::Matrix->new([[1], [2], [3]]);        # 3-by-1 matrix
+
+If a single input argument is given, and that argument is not a reference to an
+array, a 1-by-1 matrix is returned.
+
+    $x = Math::Matrix->new(1);                      # 1-by-1 matrix
+
+Otherwise it is assumed that each input argument is a row, like this:
+
+    $x = Math::Matrix->new([1, 2, 3], [4, 5, 6]);   # 2-by-3 matrix
+    $x = Math::Matrix->new([1, 2, 3]);              # 1-by-3 matrix
+    $x = Math::Matrix->new([1], [2], [3]);          # 3-by-1 matrix
+
+Note that all the folling cases result in an empty matrix:
+
+    $x = Math::Matrix->new([[], [], []]);
+    $x = Math::Matrix->new([[]]);
+    $x = Math::Matrix->new([]);
+
+If C<new> is called as an instance method with no input arguments, a zero
+filled matrix with identical dimensions is returned:
 
     $b = $a->new();     # $b is a zero matrix with the size of $a
+
+Each row must contain the same number of elements.
+
+In case of an erry, B<undef> is returned.
 
 =item new_identity
 
@@ -416,13 +440,77 @@ sub new {
         }
     }
 
-    # Otherwise return a new matrix based on the input arguments.
+    # Otherwise return a new matrix based on the input arguments. The object
+    # data is a blessed reference to an array containing the matrix data. This
+    # array contains a list of arrays, one for each row, which in turn contains
+    # a list of elements. An empty matrix has no rows.
+    #
+    #   [[ 1, 2, 3 ], [ 4, 5, 6 ]]  2-by-3 matrix
+    #   [[ 1, 2, 3 ]]               1-by-3 matrix
+    #   [[ 1 ], [ 2 ], [ 3 ]]       3-by-1 matrix
+    #   [[ 1 ]]                     1-by-1 matrix
+    #   []                          empty matrix
 
     else {
-        my $len = scalar(@{$_[0]});
-        for (@_) {
-            return undef if scalar(@{$_}) != $len;
-            push(@{$self}, [@{$_}]);
+
+        my $data;
+
+        # If there is a single argument, and that is not a reference,
+        # assume new() has been called as, e.g., $class -> new(3).
+
+        if (@_ == 1 && !ref($_[0])) {
+            $data = [[ $_[0] ]];
+        }
+
+        # If there is a single argument, and that is a reference to an array,
+        # and that array contains at least one element, and that element is
+        # itself a reference to an array, then assume new() has been called
+        # with the matrix as one argument, i.e., a reference to an array of
+        # arrays, e.g., $class -> new([ [1, 2], [3, 4] ]) ...
+
+        elsif (@_ == 1 && ref($_[0]) eq 'ARRAY'
+               && @{$_[0]} > 0 && ref($_[0][0]) eq 'ARRAY')
+        {
+            $data = $_[0];
+        }
+
+        # ... otherwise assume that each argument to new() is a row. Note that
+        # new() called with no arguments results in an empty matrix.
+
+        else {
+            $data = [ @_ ];
+        }
+
+        # Sanity checking.
+
+        if (@$data) {
+            my $nrow = @$data;
+            my $ncol;
+
+            for (my $i = 0 ; $i < $nrow ; ++$i) {
+                my $row = $data -> [$i];
+
+                # Verify that the row is a reference to an array.
+
+                croak "row with index $i is not a reference to an array"
+                  unless ref($row) eq 'ARRAY';
+
+                # In the first round, get the number of elements, i.e., the
+                # number of columns in the matrix. In the successive
+                # rounds, verify that each row has the same number of
+                # elements.
+
+                if ($i == 0) {
+                    $ncol = @$row;
+                } else {
+                    croak "each row must have the same number of elements"
+                      unless @$row == $ncol;
+                }
+            }
+
+            # Copy the data into $self only if the matrix is non-emtpy.
+
+            @$self = map { [ @$_ ] } @$data if $ncol;
         }
     }
 
