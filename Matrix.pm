@@ -54,7 +54,7 @@ modified directly.
 
 =over
 
-=item new
+=item new()
 
 Creates a new object from the input arguments and returns it.
 
@@ -92,23 +92,23 @@ Each row must contain the same number of elements.
 
 In case of an erry, B<undef> is returned.
 
-=item new_identity
+=item new_identity()
 
 Returns a new identity matrix.
 
     $a = Math::Matrix -> new(3);        # $a is a 3-by-3 identity matrix
 
-=item eye
+=item eye()
 
 This is an alias for C<new_identity>.
 
-=item clone
+=item clone()
 
 Clones a matrix and returns the clone.
 
     $b = $a->clone;
 
-=item diagonal
+=item diagonal()
 
 A constructor method that creates a diagonal matrix from a single list or array
 of numbers.
@@ -121,7 +121,7 @@ values of the vector.
 
 The method returns B<undef> in case of error.
 
-=item tridiagonal
+=item tridiagonal()
 
 A constructor method that creates a matrix from vectors of numbers.
 
@@ -148,13 +148,13 @@ The method returns B<undef> in case of error.
 
 =over
 
-=item size
+=item size()
 
 You can determine the dimensions of a matrix by calling:
 
     ($m, $n) = $a->size;
 
-=item concat
+=item concat()
 
 Concatenate matrices horizontally. The matrices must have the same number or
 rows. The result is a new matrix or B<undef> in case of error.
@@ -163,25 +163,25 @@ rows. The result is a new matrix or B<undef> in case of error.
     $y = Math::Matrix -> new([3], [6]);         # 2-by-1 matrix
     $z = $x -> concat($y);                      # 2-by-3 matrix
 
-=item transpose
+=item transpose()
 
 Returns the transposed matrix. This is the matrix where colums and rows of the
 argument matrix are swapped.
 
-=item negative
+=item negative()
 
 Negate a matrix and return it.
 
     $a = Math::Matrix -> new([-2, 3]);
     $b = $a -> negative();                  # $b = [[2, -3]]
 
-=item multiply
+=item multiply()
 
 Multiplies two matrices where the length of the rows in the first matrix is the
 same as the length of the columns in the second matrix. Returns the product or
 B<undef> in case of error.
 
-=item solve
+=item solve()
 
 Solves a equation system given by the matrix. The number of colums must be
 greater than the number of rows. If variables are dependent from each other,
@@ -189,53 +189,53 @@ the second and all further of the dependent coefficients are 0. This means the
 method can handle such systems. The method returns a matrix containing the
 solutions in its columns or B<undef> in case of error.
 
-=item invert
+=item invert()
 
 Invert a Matrix using C<solve>.
 
-=item pinvert
+=item pinvert()
 
 Compute the pseudo-inverse of the matrix: ((A'A)^-1)A'
 
-=item multiply_scalar
+=item multiply_scalar()
 
 Multiplies a matrix and a scalar resulting in a matrix of the same dimensions
 with each element scaled with the scalar.
 
     $a->multiply_scalar(2);  scale matrix by factor 2
 
-=item add
+=item add()
 
 Add two matrices of the same dimensions.
 
-=item subtract
+=item subtract()
 
 Shorthand for C<add($other-E<gt>negative)>
 
-=item equal
+=item equal()
 
 Decide if two matrices are equal. The criterion is, that each pair of elements
 differs less than $Math::Matrix::eps.
 
-=item slice
+=item slice()
 
 Extract columns:
 
     a->slice(1,3,5);
 
-=item diagonal_vector
+=item diagonal_vector()
 
 Extract the diagonal as an array:
 
     $diag = $a->diagonal_vector;
 
-=item tridiagonal_vector
+=item tridiagonal_vector()
 
 Extract the diagonals that make up a tridiagonal matrix:
 
     ($main_d, $upper_d, $lower_d) = $a->tridiagonal_vector;
 
-=item determinant
+=item determinant()
 
 Compute the determinant of a matrix.
 
@@ -243,7 +243,7 @@ Compute the determinant of a matrix.
                            [4, 2]);
     $d = $a->determinant;                   # $d = 2
 
-=item dot_product
+=item dot_product()
 
 Compute the dot product of two vectors. The second operand does not have to be
 an object.
@@ -256,21 +256,21 @@ an object.
     # Only $x is an object.
     $p = $x -> dot_product([4, 5, 6]);      # $p = 32
 
-=item absolute
+=item absolute()
 
 Compute the absolute value (i.e., length) of a vector.
 
     $v = Math::Matrix -> new([3, 4]);
     $a = $v -> absolute();                  # $v = 5
 
-=item normalize
+=item normalize()
 
 Normalize a vector, i.e., scale a vector so its length becomes 1.
 
     $v = Math::Matrix -> new([3, 4]);
     $u = $v -> normalize();                 # $u = [ 0.6, 0.8 ]
 
-=item cross_product
+=item cross_product()
 
 Compute the cross-product of vectors.
 
@@ -278,19 +278,19 @@ Compute the cross-product of vectors.
                              [5,4,2]);
     $p = $x -> cross_product();             # $p = [ -2, 8, -11 ]
 
-=item as_string
+=item as_string()
 
 Creates a string representation of the matrix and returns it.
 
     $x = Math::Matrix -> new([1, 2], [3, 4]);
     $s = $x -> as_string();
 
-=item print
+=item print()
 
 Prints the matrix on STDOUT. If the method has additional parameters, these are
 printed before the matrix is printed.
 
-=item version
+=item version()
 
 Returns a string contining the package name and version number.
 
@@ -675,7 +675,7 @@ sub transpose {
     return( bless \@result, ref $matrix );
 }
 
-sub vekpro {
+sub _vekpro {
     my($a, $b) = @_;
     my $result=0;
 
@@ -696,7 +696,7 @@ sub multiply {
     for my $row (@{$self}) {
         my $rescol = [];
         for my $col (@{$other}) {
-            push(@{$rescol}, vekpro($row,$col));
+            push(@{$rescol}, _vekpro($row,$col));
         }
         push(@result, $rescol);
     }
