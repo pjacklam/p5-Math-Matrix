@@ -412,7 +412,7 @@ package Math::Matrix;
 
 use Carp;
 
-our $VERSION = 0.9;
+our $VERSION = '0.9';
 our $eps = 0.00001;
 
 use overload
