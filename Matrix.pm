@@ -405,12 +405,15 @@ Matthew Brett E<lt>matthew.brett@mrc-cbu.cam.ac.ukE<gt>
 
 =cut
 
-package Math::Matrix;
-use vars qw($VERSION $eps);
 use strict;
+use warnings;
+
+package Math::Matrix;
+
 use Carp;
 
-$VERSION = 0.9;
+our $VERSION = 0.9;
+our $eps = 0.00001;
 
 use overload
   '+'  => 'add',
@@ -702,8 +705,6 @@ sub multiply {
     }
     $class->new(@result);
 }
-
-$eps = 0.00001;
 
 sub solve {
     my $self  = shift;
