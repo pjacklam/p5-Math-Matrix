@@ -1,0 +1,41 @@
+.*
+!.gitignore
+/MANIFEST*
+!/MANIFEST.SKIP
+/META.json
+/META.yml
+/MYMETA.json
+/MYMETA.yml
+/Makefile*
+!Makefile.PL
+/SIGNATURE
+/blib/
+/inc/
+/pm_to_blib
+pod2htm*
+
+# edits and editors
+
+.#*
+[#]*#
+*~
+*.*~*
+*.bak
+*.old
+*.orig
+*.tmp
+
+# patch and diff
+
+*.patch
+*.rej
+*.diff
+
+# development files
+
+/devel/
+/dev/
+
+# distribution-specific
+
+/Math-Matrix-[0-9]*
