@@ -14,18 +14,18 @@ Math::Matrix - multiply and invert matrices
 
     # Generate a random 3-by-3 matrix.
     srand(time);
-    $A = Math::Matrix -> new([rand, rand, rand],
-                             [rand, rand, rand],
-                             [rand, rand, rand]);
+    my $A = Math::Matrix -> new([rand, rand, rand],
+                                [rand, rand, rand],
+                                [rand, rand, rand]);
     $A -> print("A\n");
 
     # Append a fourth column to $A.
-    $x = Math::Matrix -> new([rand, rand, rand]);
-    $E = $A -> concat($x -> transpose);
+    my $x = Math::Matrix -> new([rand, rand, rand]);
+    my $E = $A -> concat($x -> transpose);
     $E -> print("Equation system\n");
 
     # Compute the solution.
-    $s = $E -> solve;
+    my $s = $E -> solve;
     $s -> print("Solutions s\n");
 
     # Verify that the solution equals $x.
@@ -405,10 +405,10 @@ Matthew Brett E<lt>matthew.brett@mrc-cbu.cam.ac.ukE<gt>
 
 =cut
 
+package Math::Matrix;
+
 use strict;
 use warnings;
-
-package Math::Matrix;
 
 use Carp;
 
@@ -693,7 +693,6 @@ sub multiply {
     my $class = ref($self);
     my $other = shift->transpose;
     my @result;
-    my $m;
 
     return undef if $#{$self->[0]} != $#{$other->[0]};
     for my $row (@{$self}) {
@@ -746,8 +745,6 @@ sub solve {
 
 sub pinvert {
     my $self  = shift;
-    my $class = ref($self);
-
     my $m    = $self->clone();
 
     $m->transpose->multiply($m)->invert->multiply($m->transpose);
@@ -971,7 +968,6 @@ sub cross_product {
 sub invert {
     my $M = shift;
     my ($m, $n) = $M->size;
-    my (@I);
     die "Matrix dimensions are $m X $n. -- Matrix not invertible.\n"
       if $m != $n;
     my $I = $M->new_identity($n);
