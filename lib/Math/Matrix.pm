@@ -253,13 +253,14 @@ Clones a matrix and returns the clone.
 
 sub clone {
     croak "Too many arguments for ", (caller(0))[3] if @_ > 1;
-    my $that = shift;
-    my $self = [];
+    my $x = shift;
+    my $class = ref $x;
 
-    for (@$that) {
-        push(@{$self}, [@{$_}]);
-    }
-    bless $self, ref($that)||$that;
+    croak +(caller(0))[3], " is an instance method, not a class method"
+      unless $class;
+
+    my $y = [ map { [ @$_ ] } @$x ];
+    bless $y, $class;
 }
 
 =pod
