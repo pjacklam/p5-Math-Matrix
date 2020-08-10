@@ -418,6 +418,94 @@ sub size {
 
 =pod
 
+=item nelm()
+
+Returns the number of elements in the matrix.
+
+    $n = $x->nelm();
+
+=cut
+
+sub nelm {
+    croak "Not enough arguments for ", (caller(0))[3] if @_ < 1;
+    croak "Too many arguments for ", (caller(0))[3] if @_ > 1;
+    my $x = shift;
+    return @$x ? @$x * @{$x->[0]} : 0;
+}
+
+=item nrow()
+
+Returns the number of rows.
+
+    $m = $x->nrow();
+
+=cut
+
+sub nrow {
+    croak "Not enough arguments for ", (caller(0))[3] if @_ < 1;
+    croak "Too many arguments for ", (caller(0))[3] if @_ > 1;
+    my $x = shift;
+    return scalar @$x;
+}
+
+=pod
+
+=item ncol()
+
+Returns the number of columns.
+
+    $n = $x->ncol();
+
+=cut
+
+sub ncol {
+    croak "Not enough arguments for ", (caller(0))[3] if @_ < 1;
+    croak "Too many arguments for ", (caller(0))[3] if @_ > 1;
+    my $x = shift;
+    return @$x ? @{$x->[0]} : 0;
+}
+
+=pod
+
+=item npag()
+
+Returns the number of pages.
+
+    $n = $x->pag();
+
+=cut
+
+sub npag {
+    croak "Not enough arguments for ", (caller(0))[3] if @_ < 1;
+    croak "Too many arguments for ", (caller(0))[3] if @_ > 1;
+    my $x = shift;
+    return @$x ? 1 : 0;
+}
+
+=pod
+
+=item ndim()
+
+Returns the number of dimensions. This is the number of dimensions along which
+the length is different from one.
+
+    $n = $x->ndim();
+
+=cut
+
+sub ndim {
+    croak "Not enough arguments for ", (caller(0))[3] if @_ < 1;
+    croak "Too many arguments for ", (caller(0))[3] if @_ > 1;
+    my $x = shift;
+    my ($nrow, $ncol) = $x -> size();
+    my $ndim = 0;
+    ++$ndim if $nrow != 1;
+    ++$ndim if $ncol != 1;
+    return $ndim;
+}
+
+=pod
+
 =item concat()
 
 Concatenate matrices horizontally. The matrices must have the same number or
