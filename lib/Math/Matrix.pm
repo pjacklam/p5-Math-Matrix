@@ -243,6 +243,86 @@ sub eye {
 
 =pod
 
+=item zeros()
+
+Create a zero matrix.
+
+    # Create an $m-by-1 matrix where each element is 0.
+    $x = Math::Matrix -> zeros($m);
+
+    # Create an $m-by-$n matrix where each element is 0.
+    $x = Math::Matrix -> zeros($m, $n);
+
+=cut
+
+sub zeros {
+    croak "Not enough arguments for ", (caller(0))[3] if @_ < 1;
+    croak "Too many arguments for ", (caller(0))[3] if @_ > 3;
+    my $self = shift;
+    $self -> constant(0, @_);
+};
+
+=pod
+
+=item ones()
+
+Create a matrix of ones.
+
+    # Create an $m-by-1 matrix where each element is 1.
+    $x = Math::Matrix -> ones($m);
+
+    # Create an $m-by-$n matrix where each element is 1.
+    $x = Math::Matrix -> ones($m, $n);
+
+=cut
+
+sub ones {
+    croak "Not enough arguments for ", (caller(0))[3] if @_ < 1;
+    croak "Too many arguments for ", (caller(0))[3] if @_ > 3;
+    my $self = shift;
+    $self -> constant(1, @_);
+};
+
+=pod
+
+=item constant()
+
+Returns a constant matrix, i.e., a matrix whose elements all have the same
+value.
+
+    # Create an $m-by-1 matrix where each element is $c.
+    $x = Math::Matrix -> constant($c, $m);
+
+    # Create an $m-by-$n matrix where each element is $c.
+    $x = Math::Matrix -> constant($c, $m, $n);
+
+=cut
+
+sub constant {
+    croak "Not enough arguments for ", (caller(0))[3] if @_ < 2;
+    croak "Too many arguments for ", (caller(0))[3] if @_ > 4;
+    my $class = shift;
+
+    croak +(caller(0))[3], " is a class method, not an instance method"
+      if ref $class;
+
+    my $c = shift;
+    my ($nrow, $ncol) = @_ == 0 ? (0, 0)
+                      : @_ == 1 ? (@_, 1)
+                      :           (@_);
+
+    my $x = bless [], $class;
+    for (my $i = 0 ; $i < $nrow ; ++ $i) {
+        for (my $j = 0 ; $j < $ncol ; ++ $j) {
+            $x -> [$i][$j] = $c;
+        }
+    }
+
+    return $x;
+}
+
+=pod
+
 =item clone()
 
 Clones a matrix and returns the clone.
