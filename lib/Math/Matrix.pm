@@ -412,7 +412,7 @@ You can determine the dimensions of a matrix by calling:
 sub size {
     my $self = shift;
     my $m = @{$self};
-    my $n = @{$self->[0]};
+    my $n = $m ? @{$self->[0]} : 0;
     ($m, $n);
 }
 
