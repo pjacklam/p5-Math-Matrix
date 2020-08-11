@@ -477,6 +477,884 @@ sub tridiagonal {
 
 =back
 
+=head2 Methods for identifying matrices
+
+=over
+
+=item is_empty()
+
+Returns 1 is the invocand is empty, i.e., it has no elements.
+
+    $bool = $x -> is_empty();
+
+=cut
+
+sub is_empty {
+    croak "Not enough arguments for ", (caller(0))[3] if @_ < 1;
+    croak "Too many arguments for ", (caller(0))[3] if @_ > 1;
+    my $x = shift;
+    return $x -> nelm() == 0;
+}
+
+=pod
+
+=item is_scalar()
+
+Returns 1 is the invocand is a scalar, i.e., it has one element.
+
+    $bool = $x -> is_scalar();
+
+=cut
+
+sub is_scalar {
+    croak "Not enough arguments for ", (caller(0))[3] if @_ < 1;
+    croak "Too many arguments for ", (caller(0))[3] if @_ > 1;
+    my $x = shift;
+    return $x -> nelm() == 1 ? 1 : 0;
+}
+
+=pod
+
+=item is_vector()
+
+Returns 1 is the invocand is a vector, i.e., a row vector or a column vector.
+
+    $bool = $x -> is_vector();
+
+=cut
+
+sub is_vector {
+    croak "Not enough arguments for ", (caller(0))[3] if @_ < 1;
+    croak "Too many arguments for ", (caller(0))[3] if @_ > 1;
+    my $x = shift;
+    return $x -> is_col() || $x -> is_row() ? 1 : 0;
+}
+
+=pod
+
+=item is_row()
+
+Returns 1 if the invocand has exactly one row, and 0 otherwise.
+
+    $bool = $x -> is_row();
+
+=cut
+
+sub is_row {
+    croak "Not enough arguments for ", (caller(0))[3] if @_ < 1;
+    croak "Too many arguments for ", (caller(0))[3] if @_ > 1;
+    my $x = shift;
+    return $x -> nrow() == 1 ? 1 : 0;
+}
+
+=pod
+
+=item is_col()
+
+Returns 1 if the invocand has exactly one column, and 0 otherwise.
+
+    $bool = $x -> is_col();
+
+=cut
+
+sub is_col {
+    croak "Not enough arguments for ", (caller(0))[3] if @_ < 1;
+    croak "Too many arguments for ", (caller(0))[3] if @_ > 1;
+    my $x = shift;
+    return $x -> ncol() == 1 ? 1 : 0;
+}
+
+=pod
+
+=item is_square()
+
+Returns 1 is the invocand is square, and 0 otherwise.
+
+    $bool = $x -> is_square();
+
+=cut
+
+sub is_square {
+    croak "Not enough arguments for ", (caller(0))[3] if @_ < 1;
+    croak "Too many arguments for ", (caller(0))[3] if @_ > 1;
+    my $x = shift;
+    my ($nrow, $ncol) = $x -> size();
+    return $nrow == $ncol ? 1 : 0;
+}
+
+=pod
+
+=item is_symmetric()
+
+Returns 1 is the invocand is symmetric, and 0 otherwise.
+
+    $bool = $x -> is_symmetric();
+
+An symmetric matrix satisfies x(i,j) = x(j,i) for all i and j, for example
+
+    [  1  2 -3 ]
+    [  2 -4  5 ]
+    [ -3  5  6 ]
+
+=cut
+
+sub is_symmetric {
+    croak "Not enough arguments for ", (caller(0))[3] if @_ < 1;
+    croak "Too many arguments for ", (caller(0))[3] if @_ > 1;
+    my $x = shift;
+
+    my ($nrow, $ncol) = $x -> size();
+    return 0 unless $nrow == $ncol;
+
+    for (my $i = 1 ; $i < $nrow ; ++$i) {
+        for (my $j = 0 ; $j < $i ; ++$j) {
+            return 0 unless $x -> [$i][$j] == $x -> [$j][$i];
+        }
+    }
+
+    return 1;
+}
+
+=pod
+
+=item is_antisymmetric()
+
+Returns 1 is the invocand is antisymmetric a.k.a. skew-symmetric, and 0
+otherwise.
+
+    $bool = $x -> is_antisymmetric();
+
+An antisymmetric matrix satisfies x(i,j) = -x(j,i) for all i and j, for
+example
+
+    [  0  2 -3 ]
+    [ -2  0  4 ]
+    [  3 -4  0 ]
+
+=cut
+
+sub is_antisymmetric {
+    croak "Not enough arguments for ", (caller(0))[3] if @_ < 1;
+    croak "Too many arguments for ", (caller(0))[3] if @_ > 1;
+    my $x = shift;
+
+    my ($nrow, $ncol) = $x -> size();
+    return 0 unless $nrow == $ncol;
+
+    # Check the diagonal.
+
+    for (my $i = 0 ; $i < $nrow ; ++$i) {
+        return 0 unless $x -> [$i][$i] == 0;
+    }
+
+    # Check the off-diagonal.
+
+    for (my $i = 1 ; $i < $nrow ; ++$i) {
+        for (my $j = 0 ; $j < $i ; ++$j) {
+            return 0 unless $x -> [$i][$j] == -$x -> [$j][$i];
+        }
+    }
+
+    return 1;
+}
+
+=pod
+
+=item is_zero()
+
+Returns 1 is the invocand is a zero matrix, and 0 otherwise. A zero matrix
+contains no element whose value is different from zero.
+
+    $bool = $x -> is_zero();
+
+=cut
+
+sub is_zero {
+    croak "Not enough arguments for ", (caller(0))[3] if @_ < 1;
+    croak "Too many arguments for ", (caller(0))[3] if @_ > 1;
+    my $x = shift;
+    return $x -> is_constant(0);
+}
+
+=pod
+
+=item is_one()
+
+Returns 1 is the invocand is a matrix of ones, and 0 otherwise. A matrix of
+ones contains no element whose value is different from one.
+
+    $bool = $x -> is_one();
+
+=cut
+
+sub is_one {
+    croak "Not enough arguments for ", (caller(0))[3] if @_ < 1;
+    croak "Too many arguments for ", (caller(0))[3] if @_ > 1;
+    my $x = shift;
+    return $x -> is_constant(1);
+}
+
+=pod
+
+=item is_constant()
+
+Returns 1 is the invocand is a constant matrix, and 0 otherwise. A constant
+matrix is a matrix where no two elements have different values.
+
+    $bool = $x -> is_constant();
+
+=cut
+
+sub is_constant {
+    croak "Not enough arguments for ", (caller(0))[3] if @_ < 1;
+    croak "Too many arguments for ", (caller(0))[3] if @_ > 2;
+    my $x = shift;
+    my $class = ref $x;
+
+    my ($nrow, $ncol) = $x -> size();
+
+    # An empty matrix contains no elements that are different from $c.
+
+    return 1 if $nrow * $ncol == 0;
+
+    my $c = @_ ? shift() : $x -> [0][0];
+    for (my $i = 0 ; $i < $nrow ; ++$i) {
+        for (my $j = 0 ; $j < $ncol ; ++$j) {
+            return 0 if $x -> [$i][$j] != $c;
+        }
+    }
+
+    return 1;
+}
+
+=pod
+
+=item is_identity()
+
+Returns 1 is the invocand is an identity matrix, and 0 otherwise. An
+identity matrix contains ones on the main diagonal and zeros elsewhere.
+
+    $bool = $x -> is_identity();
+
+=cut
+
+sub is_identity {
+    croak "Not enough arguments for ", (caller(0))[3] if @_ < 1;
+    croak "Too many arguments for ", (caller(0))[3] if @_ > 1;
+    my $x = shift;
+    my $class = ref $x;
+
+    my ($nrow, $ncol) = $x -> size();
+    return 0 unless $nrow == $ncol;
+
+    for (my $i = 0 ; $i < $nrow ; ++$i) {
+        for (my $j = 0 ; $j < $ncol ; ++$j) {
+            return 0 if $x -> [$i][$j] != ($i == $j ? 1 : 0);
+        }
+    }
+
+    return 1;
+}
+
+=pod
+
+=item is_exchg()
+
+Returns 1 is the invocand is an exchange matrix, and 0 otherwise.
+
+    $bool = $x -> is_exchg();
+
+An exchange matrix contains ones on the main anti-diagonal and zeros elsewhere,
+for example
+
+    [ 0 0 1 ]
+    [ 0 1 0 ]
+    [ 1 0 0 ]
+
+=cut
+
+sub is_exchg {
+    croak "Not enough arguments for ", (caller(0))[3] if @_ < 1;
+    croak "Too many arguments for ", (caller(0))[3] if @_ > 1;
+    my $x = shift;
+    my $class = ref $x;
+
+    my ($nrow, $ncol) = $x -> size();
+    return 0 unless $nrow == $ncol;
+
+    my $imax = $nrow - 1;
+    for (my $i = 0 ; $i < $nrow ; ++$i) {
+        for (my $j = 0 ; $j < $ncol ; ++$j) {
+            return 0 if $x -> [$i][$j] != ($i + $j == $imax ? 1 : 0);
+        }
+    }
+
+    return 1;
+}
+
+=pod
+
+=item is_bool()
+
+Returns 1 is the invocand is a boolean matrix, and 0 otherwise.
+
+    $bool = $x -> is_bool();
+
+A boolean matrix is a matrix is a matrix whose entries are either 0 or 1, for
+example
+
+    [ 0 1 1 ]
+    [ 1 0 0 ]
+    [ 0 1 0 ]
+
+=cut
+
+sub is_bool {
+    croak "Not enough arguments for ", (caller(0))[3] if @_ < 1;
+    croak "Too many arguments for ", (caller(0))[3] if @_ > 1;
+    my $x = shift;
+    my $class = ref $x;
+
+    my ($nrow, $ncol) = $x -> size();
+
+    for (my $i = 0 ; $i < $nrow ; ++$i) {
+        for (my $j = 0 ; $j < $ncol ; ++$j) {
+            my $val = $x -> [$i][$j];
+            return 0 if $val != 0 && $val != 1;
+        }
+    }
+
+    return 1;
+}
+
+=pod
+
+=item is_perm()
+
+Returns 1 is the invocand is an permutation matrix, and 0 otherwise.
+
+    $bool = $x -> is_perm();
+
+A permutation matrix is a square matrix with exactly one 1 in each row and
+column, and all other elements 0, for example
+
+    [ 0 1 0 ]
+    [ 1 0 0 ]
+    [ 0 0 1 ]
+
+=cut
+
+sub is_perm {
+    croak "Not enough arguments for ", (caller(0))[3] if @_ < 1;
+    croak "Too many arguments for ", (caller(0))[3] if @_ > 1;
+    my $x = shift;
+    my $class = ref $x;
+
+    my ($nrow, $ncol) = $x -> size();
+    return 0 unless $nrow == $ncol;
+
+    my $rowsum = [ (0) x $nrow ];
+    my $colsum = [ (0) x $ncol ];
+
+    for (my $i = 0 ; $i < $nrow ; ++$i) {
+        for (my $j = 0 ; $j < $ncol ; ++$j) {
+            my $val = $x -> [$i][$j];
+            return 0 if $val != 0 && $val != 1;
+            if ($val == 1) {
+                return 0 if ++$rowsum -> [$i] > 1;
+                return 0 if ++$colsum -> [$j] > 1;
+            }
+        }
+    }
+
+    for (my $i = 0 ; $i < $nrow ; ++$i) {
+        return 0 if $rowsum -> [$i] != 1;
+        return 0 if $colsum -> [$i] != 1;
+    }
+
+    return 1;
+}
+
+=pod
+
+=item is_diag()
+
+Returns 1 is the invocand is diagonal, and 0 otherwise.
+
+    $bool = $x -> is_diag();
+
+A diagonal matrix is a square matrix where all non-zero elements, if any, are
+on the main diagonal. It has the following pattern, where only the elements
+marked as C<x> can be non-zero,
+
+    [ x 0 0 0 0 ]
+    [ 0 x 0 0 0 ]
+    [ 0 0 x 0 0 ]
+    [ 0 0 0 x 0 ]
+    [ 0 0 0 0 x ]
+
+=cut
+
+sub is_diag {
+    croak "Not enough arguments for ", (caller(0))[3] if @_ < 1;
+    croak "Too many arguments for ", (caller(0))[3] if @_ > 1;
+    my $x = shift;
+
+    my $nrow = $x -> nrow();
+    my $ncol = $x -> ncol();
+
+    return 0 unless $nrow == $ncol;
+
+    for (my $i = 0 ; $i < $nrow ; ++$i) {
+        for (my $j = 0 ; $j < $ncol ; ++$j) {
+            next if $i == $j;
+            return 0 unless $x -> [$i][$j] == 0;
+        }
+    }
+
+    return 1;
+}
+
+=pod
+
+=item is_adiag()
+
+Returns 1 is the invocand is anti-diagonal, and 0 otherwise.
+
+    $bool = $x -> is_adiag();
+
+A diagonal matrix is a square matrix where all non-zero elements, if any, are
+on the main antidiagonal. It has the following pattern, where only the elements
+marked as C<x> can be non-zero,
+
+    [ 0 0 0 0 x ]
+    [ 0 0 0 x 0 ]
+    [ 0 0 x 0 0 ]
+    [ 0 x 0 0 0 ]
+    [ x 0 0 0 0 ]
+
+=cut
+
+sub is_adiag {
+    croak "Not enough arguments for ", (caller(0))[3] if @_ < 1;
+    croak "Too many arguments for ", (caller(0))[3] if @_ > 1;
+    my $x = shift;
+
+    my $nrow = $x -> nrow();
+    my $ncol = $x -> ncol();
+
+    return 0 unless $nrow == $ncol;
+
+    for (my $i = 0 ; $i < $nrow ; ++$i) {
+        for (my $j = 0 ; $j < $ncol ; ++$j) {
+            next if $i + $j + 1 == $nrow;
+            return 0 unless $x -> [$i][$j] == 0;
+        }
+    }
+
+    return 1;
+}
+
+=pod
+
+=item is_tridiag()
+
+Returns 1 is the invocand is tridiagonal, and 0 otherwise.
+
+    $bool = $x -> is_tridiag();
+
+A tridiagonal matrix is a square matrix with nonzero elements only on the
+diagonal and slots horizontally or vertically adjacent the diagonal (i.e.,
+along the subdiagonal and superdiagonal). It has the following pattern, where
+only the elements marked as C<x> can be non-zero,
+
+    [ x x 0 0 0 ]
+    [ x x x 0 0 ]
+    [ 0 x x x 0 ]
+    [ 0 0 x x x ]
+    [ 0 0 0 x x ]
+
+=cut
+
+sub is_tridiag {
+    croak "Not enough arguments for ", (caller(0))[3] if @_ < 1;
+    croak "Too many arguments for ", (caller(0))[3] if @_ > 1;
+    my $x = shift;
+
+    my $nrow = $x -> nrow();
+    my $ncol = $x -> ncol();
+
+    return 0 unless $nrow == $ncol;
+
+    for (my $i = 0 ; $i < $nrow ; ++$i) {
+        for (my $j = 0 ; $j < $ncol ; ++$j) {
+            next if $i == $j || $i == $j - 1 || $i == $j + 1;
+            return 0 unless $x -> [$i][$j] == 0;
+        }
+    }
+
+    return 1;
+}
+
+=pod
+
+=item is_atridiag()
+
+Returns 1 is the invocand is anti-tridiagonal, and 0 otherwise.
+
+    $bool = $x -> is_tridiag();
+
+A anti-tridiagonal matrix is a square matrix with nonzero elements only on the
+anti-diagonal and slots horizontally or vertically adjacent the diagonal (i.e.,
+along the anti-subdiagonal and anti-superdiagonal). It has the following
+pattern, where only the elements marked as C<x> can be non-zero,
+
+    [ 0 0 0 x x ]
+    [ 0 0 x x x ]
+    [ 0 x x x 0 ]
+    [ x x x 0 0 ]
+    [ x x 0 0 0 ]
+
+=cut
+
+sub is_atridiag {
+    croak "Not enough arguments for ", (caller(0))[3] if @_ < 1;
+    croak "Too many arguments for ", (caller(0))[3] if @_ > 1;
+    my $x = shift;
+
+    my $nrow = $x -> nrow();
+    my $ncol = $x -> ncol();
+
+    return 0 unless $nrow == $ncol;
+
+    # Check upper part.
+
+    for (my $i = $nrow - 3 ; $i >= 0 ; --$i) {
+        for (my $j = $nrow - 3 - $i ; $j >= 0 ; --$j) {
+            return 0 if $x -> [$i][$j] != 0;
+        }
+    }
+
+    # Check lower part.
+
+    for (my $i = 2 ; $i < $nrow ; ++$i) {
+        for (my $j = $nrow - $i + 1 ; $j < $nrow ; ++$j) {
+            return 0 if $x -> [$i][$j] != 0;
+        }
+    }
+
+    return 1;
+}
+
+=pod
+
+=item is_triu()
+
+Returns 1 is the invocand is upper triangular, and 0 otherwise.
+
+    $bool = $x -> is_triu();
+
+An upper triangular matrix is a square matrix where all non-zero elements are
+on or above the main diagonal. It has the following pattern, where only the
+elements marked as C<x> can be non-zero. It has the following pattern, where
+only the elements marked as C<x> can be non-zero,
+
+    [ x x x x ]
+    [ 0 x x x ]
+    [ 0 0 x x ]
+    [ 0 0 0 x ]
+
+=cut
+
+sub is_triu {
+    croak "Not enough arguments for ", (caller(0))[3] if @_ < 1;
+    croak "Too many arguments for ", (caller(0))[3] if @_ > 1;
+    my $x = shift;
+
+    my $nrow = $x -> nrow();
+    my $ncol = $x -> ncol();
+
+    return 0 unless $nrow == $ncol;
+
+    for (my $i = 1 ; $i < $nrow ; ++$i) {
+        for (my $j = 0 ; $j < $i ; ++$j) {
+            return 0 unless $x -> [$i][$j] == 0;
+        }
+    }
+
+    return 1;
+}
+
+=pod
+
+=item is_striu()
+
+Returns 1 is the invocand is strictly upper triangular, and 0 otherwise.
+
+    $bool = $x -> is_striu();
+
+A strictly upper triangular matrix is a square matrix where all non-zero
+elements are strictly above the main diagonal. It has the following pattern,
+where only the elements marked as C<x> can be non-zero,
+
+    [ 0 x x x ]
+    [ 0 0 x x ]
+    [ 0 0 0 x ]
+    [ 0 0 0 0 ]
+
+=cut
+
+sub is_striu {
+    croak "Not enough arguments for ", (caller(0))[3] if @_ < 1;
+    croak "Too many arguments for ", (caller(0))[3] if @_ > 1;
+    my $x = shift;
+
+    my $nrow = $x -> nrow();
+    my $ncol = $x -> ncol();
+
+    return 0 unless $nrow == $ncol;
+
+    for (my $i = 0 ; $i < $nrow ; ++$i) {
+        for (my $j = 0 ; $j <= $i ; ++$j) {
+            return 0 unless $x -> [$i][$j] == 0;
+        }
+    }
+
+    return 1;
+}
+
+=pod
+
+=item is_tril()
+
+Returns 1 is the invocand is lower triangular, and 0 otherwise.
+
+    $bool = $x -> is_tril();
+
+A lower triangular matrix is a square matrix where all non-zero elements are on
+or below the main diagonal. It has the following pattern, where only the
+elements marked as C<x> can be non-zero,
+
+    [ x 0 0 0 ]
+    [ x x 0 0 ]
+    [ x x x 0 ]
+    [ x x x x ]
+
+=cut
+
+sub is_tril {
+    croak "Not enough arguments for ", (caller(0))[3] if @_ < 1;
+    croak "Too many arguments for ", (caller(0))[3] if @_ > 1;
+    my $x = shift;
+
+    my $nrow = $x -> nrow();
+    my $ncol = $x -> ncol();
+
+    return 0 unless $nrow == $ncol;
+
+    for (my $i = 0 ; $i < $nrow ; ++$i) {
+        for (my $j = $i + 1 ; $j < $ncol ; ++$j) {
+            return 0 unless $x -> [$i][$j] == 0;
+        }
+    }
+
+    return 1;
+}
+
+=pod
+
+=item is_stril()
+
+Returns 1 is the invocand is strictly lower triangular, and 0 otherwise.
+
+    $bool = $x -> is_stril();
+
+A strictly lower triangular matrix is a square matrix where all non-zero
+elements are strictly below the main diagonal. It has the following pattern,
+where only the elements marked as C<x> can be non-zero,
+
+    [ 0 0 0 0 ]
+    [ x 0 0 0 ]
+    [ x x 0 0 ]
+    [ x x x 0 ]
+
+=cut
+
+sub is_stril {
+    croak "Not enough arguments for ", (caller(0))[3] if @_ < 1;
+    croak "Too many arguments for ", (caller(0))[3] if @_ > 1;
+    my $x = shift;
+
+    my $nrow = $x -> nrow();
+    my $ncol = $x -> ncol();
+
+    return 0 unless $nrow == $ncol;
+
+    for (my $i = 0 ; $i < $nrow ; ++$i) {
+        for (my $j = $i ; $j < $ncol ; ++$j) {
+            return 0 unless $x -> [$i][$j] == 0;
+        }
+    }
+
+    return 1;
+}
+
+=pod
+
+=item is_atriu()
+
+Returns 1 is the invocand is upper anti-triangular, and 0 otherwise.
+
+    $bool = $x -> is_atriu();
+
+An upper anti-triangular matrix is a square matrix where all non-zero elements
+are on or above the main anti-diagonal. It has the following pattern, where
+only the elements marked as C<x> can be non-zero,
+
+    [ x x x x ]
+    [ x x x 0 ]
+    [ x x 0 0 ]
+    [ x 0 0 0 ]
+
+=cut
+
+sub is_atriu {
+    croak "Not enough arguments for ", (caller(0))[3] if @_ < 1;
+    croak "Too many arguments for ", (caller(0))[3] if @_ > 1;
+    my $x = shift;
+
+    my $nrow = $x -> nrow();
+    my $ncol = $x -> ncol();
+
+    return 0 unless $nrow == $ncol;
+
+    for (my $i = 1 ; $i < $nrow ; ++$i) {
+        for (my $j = $ncol - $i ; $j < $ncol ; ++$j) {
+            return 0 unless $x -> [$i][$j] == 0;
+        }
+    }
+
+    return 1;
+}
+
+=pod
+
+=item is_satriu()
+
+Returns 1 is the invocand is strictly upper anti-triangular, and 0 otherwise.
+
+    $bool = $x -> is_satriu();
+
+A strictly anti-triangular matrix is a square matrix where all non-zero
+elements are strictly above the main diagonal. It has the following pattern,
+where only the elements marked as C<x> can be non-zero,
+
+    [ x x x 0 ]
+    [ x x 0 0 ]
+    [ x 0 0 0 ]
+    [ 0 0 0 0 ]
+
+=cut
+
+sub is_satriu {
+    croak "Not enough arguments for ", (caller(0))[3] if @_ < 1;
+    croak "Too many arguments for ", (caller(0))[3] if @_ > 1;
+    my $x = shift;
+
+    my $nrow = $x -> nrow();
+    my $ncol = $x -> ncol();
+
+    return 0 unless $nrow == $ncol;
+
+    for (my $i = 0 ; $i < $nrow ; ++$i) {
+        for (my $j = $ncol - $i - 1 ; $j < $ncol ; ++$j) {
+            return 0 unless $x -> [$i][$j] == 0;
+        }
+    }
+
+    return 1;
+}
+
+=pod
+
+=item is_atril()
+
+Returns 1 is the invocand is lower anti-triangular, and 0 otherwise.
+
+    $bool = $x -> is_atril();
+
+A lower anti-triangular matrix is a square matrix where all non-zero elements
+are on or below the main anti-diagonal. It has the following pattern, where
+only the elements marked as C<x> can be non-zero,
+
+    [ 0 0 0 x ]
+    [ 0 0 x x ]
+    [ 0 x x x ]
+    [ x x x x ]
+
+=cut
+
+sub is_atril {
+    croak "Not enough arguments for ", (caller(0))[3] if @_ < 1;
+    croak "Too many arguments for ", (caller(0))[3] if @_ > 1;
+    my $x = shift;
+
+    my $nrow = $x -> nrow();
+    my $ncol = $x -> ncol();
+
+    return 0 unless $nrow == $ncol;
+
+    for (my $i = 0 ; $i < $nrow ; ++$i) {
+        for (my $j = 0 ; $j < $ncol - $i - 1; ++$j) {
+            return 0 unless $x -> [$i][$j] == 0;
+        }
+    }
+
+    return 1;
+}
+
+=pod
+
+=item is_satril()
+
+Returns 1 is the invocand is strictly lower anti-triangular, and 0 otherwise.
+
+    $bool = $x -> is_satril();
+
+A strictly lower anti-triangular matrix is a square matrix where all non-zero
+elements are strictly below the main anti-diagonal. It has the following
+pattern, where only the elements marked as C<x> can be non-zero,
+
+    [ 0 0 0 0 ]
+    [ 0 0 0 x ]
+    [ 0 0 x x ]
+    [ 0 x x x ]
+
+=cut
+
+sub is_satril {
+    croak "Not enough arguments for ", (caller(0))[3] if @_ < 1;
+    croak "Too many arguments for ", (caller(0))[3] if @_ > 1;
+    my $x = shift;
+
+    my $nrow = $x -> nrow();
+    my $ncol = $x -> ncol();
+
+    return 0 unless $nrow == $ncol;
+
+    for (my $i = 0 ; $i < $nrow ; ++$i) {
+        for (my $j = 0 ; $j < $ncol - $i ; ++$j) {
+            return 0 unless $x -> [$i][$j] == 0;
+        }
+    }
+
+    return 1;
+}
+
+=pod
+
+=back
+
 =head2 Other methods
 
 =over
@@ -512,6 +1390,8 @@ sub nelm {
     my $x = shift;
     return @$x ? @$x * @{$x->[0]} : 0;
 }
+
+=pod
 
 =item nrow()
 
