@@ -22,16 +22,17 @@ sub new {
 
     # Loop over all elements and make each one a Math::Complex object.
 
-    my $imax = $#$x;
-    my $jmax = $#{$x -> [0]};
-    for (my $i = 0 ; $i <= $imax ; ++$i) {
-        for (my $j = 0 ; $j <= $jmax ; ++$j) {
-            $x -> [$i][$j] = Math::Complex -> new($x -> [$i][$j])
-              unless blessed($x -> [$i][$j])
-                       && $x -> [$i][$j] -> isa('Math::Complex');
+    unless ($x -> is_empty()) {
+        my $imax = $#$x;
+        my $jmax = $#{$x -> [0]};
+        for (my $i = 0 ; $i <= $imax ; ++$i) {
+            for (my $j = 0 ; $j <= $jmax ; ++$j) {
+                $x -> [$i][$j] = Math::Complex -> new($x -> [$i][$j])
+                  unless blessed($x -> [$i][$j])
+                  && $x -> [$i][$j] -> isa('Math::Complex');
+            }
         }
     }
-
     return $x;
 }
 
@@ -53,14 +54,15 @@ sub transpose {
 
     # Loop over all elements and take the complex conjugate of each one.
 
-    my $imax = $#$y;
-    my $jmax = $#{$y -> [0]};
-    for (my $i = 0 ; $i <= $imax ; ++$i) {
-        for (my $j = 0 ; $j <= $jmax ; ++$j) {
-            $y -> [$i][$j] = ~$y -> [$i][$j];
+    unless ($x -> is_empty()) {
+        my $imax = $#$y;
+        my $jmax = $#{$y -> [0]};
+        for (my $i = 0 ; $i <= $imax ; ++$i) {
+            for (my $j = 0 ; $j <= $jmax ; ++$j) {
+                $y -> [$i][$j] = ~$y -> [$i][$j];
+            }
         }
     }
-
     return $y;
 }
 

@@ -22,13 +22,15 @@ sub new {
 
     # Loop over all elements and make each one a Math::Real object.
 
-    my $imax = $#$x;
-    my $jmax = $#{$x -> [0]};
-    for (my $i = 0 ; $i <= $imax ; ++$i) {
-        for (my $j = 0 ; $j <= $jmax ; ++$j) {
-            $x -> [$i][$j] = Math::Real -> new($x -> [$i][$j])
-              unless blessed($x -> [$i][$j])
-                       && $x -> [$i][$j] -> isa('Math::Real');
+    unless ($x -> is_empty()) {
+        my $imax = $#$x;
+        my $jmax = $#{$x -> [0]};
+        for (my $i = 0 ; $i <= $imax ; ++$i) {
+            for (my $j = 0 ; $j <= $jmax ; ++$j) {
+                $x -> [$i][$j] = Math::Real -> new($x -> [$i][$j])
+                  unless blessed($x -> [$i][$j])
+                  && $x -> [$i][$j] -> isa('Math::Real');
+            }
         }
     }
 
@@ -51,11 +53,13 @@ sub clone {
     my $x = shift;
     my $y = $x -> SUPER::clone(@_);
 
-    my $imax = $#$x;
-    my $jmax = $#{$x -> [0]};
-    for (my $i = 0 ; $i <= $imax ; ++$i) {
-        for (my $j = 0 ; $j <= $jmax ; ++$j) {
-            $y -> [$i][$j] = $y -> [$i][$j] -> clone();
+    unless ($x -> is_empty()) {
+        my $imax = $#$x;
+        my $jmax = $#{$x -> [0]};
+        for (my $i = 0 ; $i <= $imax ; ++$i) {
+            for (my $j = 0 ; $j <= $jmax ; ++$j) {
+                $y -> [$i][$j] = $y -> [$i][$j] -> clone();
+            }
         }
     }
 
