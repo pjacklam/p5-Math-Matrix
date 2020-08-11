@@ -1483,6 +1483,7 @@ sub concat {
     my $result =  $self->clone();
 
     return undef if scalar(@{$self}) != scalar(@{$other});
+    $other = $other -> clone();
     for my $i (0 .. $#{$self}) {
         push @{$result->[$i]}, @{$other->[$i]};
     }
