@@ -3,17 +3,19 @@
 use strict;
 use warnings;
 
-use Math::Matrix;
+use lib 't/lib';
+use Math::Matrix::Real;
+
 use Test::More tests => 26;
 
 {
-    my $x = Math::Matrix -> new([1, 2],
-                                [4, 5]);
-    my $y = Math::Matrix -> new([3],
-                                [6]);
+    my $x = Math::Matrix::Real -> new([1, 2],
+                                      [4, 5]);
+    my $y = Math::Matrix::Real -> new([3],
+                                      [6]);
     my $z = $x -> hcat($y);
 
-    is(ref($z), 'Math::Matrix', '$z is a Math::Matrix');
+    is(ref($z), 'Math::Matrix::Real', '$z is a Math::Matrix::Real');
     is_deeply([ @$z ], [[ 1, 2, 3 ],
                         [ 4, 5, 6 ]], '$z has the right values');
 
@@ -24,12 +26,12 @@ use Test::More tests => 26;
 }
 
 {
-    my $x = Math::Matrix -> new([0, 1, 2],
-                                [5, 6, 7]);
-    my $y = Math::Matrix -> new([3, 4],
-                                [8, 9]);
+    my $x = Math::Matrix::Real -> new([0, 1, 2],
+                                      [5, 6, 7]);
+    my $y = Math::Matrix::Real -> new([3, 4],
+                                      [8, 9]);
     my $z = $x -> hcat($y);
-    is(ref($z), 'Math::Matrix', '$z is a Math::Matrix');
+    is(ref($z), 'Math::Matrix::Real', '$z is a Math::Matrix::Real');
     is_deeply([ @$z ], [[ 0, 1, 2, 3, 4 ],
                         [ 5, 6, 7, 8, 9 ]], '$z has the right values');
 
@@ -49,11 +51,11 @@ use Test::More tests => 26;
 }
 
 {
-    my $x = Math::Matrix -> new([0, 1, 2],
-                                [5, 6, 7]);
-    my $y = Math::Matrix -> new([]);
+    my $x = Math::Matrix::Real -> new([0, 1, 2],
+                                      [5, 6, 7]);
+    my $y = Math::Matrix::Real -> new([]);
     my $z = $x -> hcat($y);
-    is(ref($z), 'Math::Matrix', '$z is a Math::Matrix');
+    is(ref($z), 'Math::Matrix::Real', '$z is a Math::Matrix::Real');
     is_deeply([ @$z ], [[ 0, 1, 2 ],
                         [ 5, 6, 7 ]], '$z has the right values');
 
@@ -72,11 +74,11 @@ use Test::More tests => 26;
 }
 
 {
-    my $x = Math::Matrix -> new([]);
-    my $y = Math::Matrix -> new([3, 4],
-                                [8, 9]);
+    my $x = Math::Matrix::Real -> new([]);
+    my $y = Math::Matrix::Real -> new([3, 4],
+                                      [8, 9]);
     my $z = $x -> hcat($y);
-    is(ref($z), 'Math::Matrix', '$z is a Math::Matrix');
+    is(ref($z), 'Math::Matrix::Real', '$z is a Math::Matrix::Real');
     is_deeply([ @$z ], [[ 3, 4 ],
                         [ 8, 9 ]], '$z has the right values');
 
@@ -95,10 +97,10 @@ use Test::More tests => 26;
 }
 
 {
-    my $x = Math::Matrix -> new([]);
-    my $y = Math::Matrix -> new([]);
+    my $x = Math::Matrix::Real -> new([]);
+    my $y = Math::Matrix::Real -> new([]);
     my $z = $x -> hcat($y);
-    is(ref($z), 'Math::Matrix', '$z is a Math::Matrix');
+    is(ref($z), 'Math::Matrix::Real', '$z is a Math::Matrix::Real');
     is_deeply([ @$z ], [], '$z has the right values');
 
     is_deeply([ @$x ], [], '$x is unmodified');
@@ -106,17 +108,17 @@ use Test::More tests => 26;
 }
 
 {
-    my $x = Math::Matrix -> new([3]);
+    my $x = Math::Matrix::Real -> new([3]);
     my $z = $x -> hcat($x, $x, $x);
-    is(ref($z), 'Math::Matrix', '$z is a Math::Matrix');
+    is(ref($z), 'Math::Matrix::Real', '$z is a Math::Matrix::Real');
     is_deeply([ @$z ], [[3, 3, 3, 3]], '$z has the right values');
     is_deeply([ @$x ], [[3]], '$x is unmodified');
 }
 
 {
-    my $x = Math::Matrix -> new([3]);
+    my $x = Math::Matrix::Real -> new([3]);
     my $z = $x -> hcat();
-    is(ref($z), 'Math::Matrix', '$z is a Math::Matrix');
+    is(ref($z), 'Math::Matrix::Real', '$z is a Math::Matrix::Real');
     is_deeply([ @$z ], [[3]], '$z has the right values');
     is_deeply([ @$x ], [[3]], '$x is unmodified');
 }

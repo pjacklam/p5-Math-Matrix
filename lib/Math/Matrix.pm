@@ -1494,8 +1494,9 @@ sub concat {
 
 =item hcat()
 
-Concatenate matrices horizontally. Non-empty matrices must have the same number
-or rows. The result is a new matrix.
+Concatenate matrices horizontally. Any number of arguments is allowed.
+Non-empty matrices must have the same number or rows. The result is a new
+matrix.
 
     $x = Math::Matrix -> new([1, 2], [4, 5]);   # 2-by-2 matrix
     $y = Math::Matrix -> new([3], [6]);         # 2-by-1 matrix
@@ -1504,8 +1505,6 @@ or rows. The result is a new matrix.
 =cut
 
 sub hcat {
-    croak "Not enough arguments for ", (caller(0))[3] if @_ < 2;
-    croak "Too many arguments for ", (caller(0))[3] if @_ > 2;
     my $x = shift;
     my $class = ref $x;
 
@@ -1537,8 +1536,8 @@ sub hcat {
 
 =item vcat()
 
-Concatenate matrices vertically. Non-empty matrices must have the same number
-or columns. The result is a new matrix.
+Concatenate matrices vertically. Any number of arguments is allowed. Non-empty
+matrices must have the same number or columns. The result is a new matrix.
 
     $x = Math::Matrix -> new([1, 2], [4, 5]);   # 2-by-2 matrix
     $y = Math::Matrix -> new([3, 6]);           # 1-by-2 matrix
@@ -1547,8 +1546,6 @@ or columns. The result is a new matrix.
 =cut
 
 sub vcat {
-    croak "Not enough arguments for ", (caller(0))[3] if @_ < 2;
-    croak "Too many arguments for ", (caller(0))[3] if @_ > 2;
     my $x = shift;
     my $class = ref $x;
 
