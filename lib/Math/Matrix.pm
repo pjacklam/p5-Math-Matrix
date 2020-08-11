@@ -1491,6 +1491,90 @@ sub concat {
 
 =pod
 
+=item hcat()
+
+Concatenate matrices horizontally. Non-empty matrices must have the same number
+or rows. The result is a new matrix.
+
+    $x = Math::Matrix -> new([1, 2], [4, 5]);   # 2-by-2 matrix
+    $y = Math::Matrix -> new([3], [6]);         # 2-by-1 matrix
+    $z = $x -> hcat($y);                        # 2-by-3 matrix
+
+=cut
+
+sub hcat {
+    croak "Not enough arguments for ", (caller(0))[3] if @_ < 2;
+    croak "Too many arguments for ", (caller(0))[3] if @_ > 2;
+    my $x = shift;
+    my $class = ref $x;
+
+    my $nrowx = $x -> nrow();           # number of rows in $x
+    my $z = $x -> clone();              # initialize output
+
+    for (my $i = 0 ; $i <= $#_ ; ++$i) {
+        my $y = $_[$i];
+        next if $y -> is_empty();       # ignore empty $y
+        $y = $y -> clone();
+
+        if ($z -> is_empty()) {
+            $z = $y;                    # $y is non-empty
+            next;
+        }
+
+        croak "All operands must have the same number of rows in ",
+          (caller(0))[3] unless $y -> nrow() == $nrowx;
+
+        for (my $i = 0 ; $i < $nrowx ; ++$i) {
+            push @{ $z -> [$i] }, @{ $y -> [$i] };
+        }
+    }
+
+    return $z;
+}
+
+=pod
+
+=item vcat()
+
+Concatenate matrices vertically. Non-empty matrices must have the same number
+or columns. The result is a new matrix.
+
+    $x = Math::Matrix -> new([1, 2], [4, 5]);   # 2-by-2 matrix
+    $y = Math::Matrix -> new([3, 6]);           # 1-by-2 matrix
+    $z = $x -> vcat($y);                        # 3-by-2 matrix
+
+=cut
+
+sub vcat {
+    croak "Not enough arguments for ", (caller(0))[3] if @_ < 2;
+    croak "Too many arguments for ", (caller(0))[3] if @_ > 2;
+    my $x = shift;
+    my $class = ref $x;
+
+    my $ncolx = $x -> ncol();           # number of columns in $x
+    my $z = $x -> clone();              # initialize output
+
+    for (my $i = 0 ; $i <= $#_ ; ++$i) {
+        my $y = $_[$i];
+        next if $y -> is_empty();       # ignore empty $y
+        $y = $y -> clone();
+
+        if ($z -> is_empty()) {
+            $z = $y;                    # $y is non-empty
+            next;
+        }
+
+        croak "All operands must have the same number of columns in ",
+          (caller(0))[3] unless $y -> ncol() == $ncolx;
+
+        push @$z, @$y;
+    }
+
+    return $z;
+}
+
+=pod
+
 =item transpose()
 
 Returns the transposed matrix. This is the matrix where colums and rows of the
