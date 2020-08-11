@@ -1581,13 +1581,18 @@ argument matrix are swapped.
 =cut
 
 sub transpose {
-    my ($matrix) = shift ;
-    my @result = () ;
-    my $lc = $#{$matrix->[0]};
-    for my $col (0..$lc) {
-        push @result, [map $_->[$col], @$matrix];
+    my $x = shift;
+    my $class = ref $x;
+
+    my $y = bless [], $class;
+    my $ncolx = $x -> ncol();
+    return $y if $ncolx == 0;
+
+    $x = $x -> clone();
+    for (my $j = 0 ; $j < $ncolx ; ++$j) {
+        push @$y, [ map $_->[$j], @$x ];
     }
-    return( bless \@result, ref $matrix );
+    return $y;
 }
 
 =pod
