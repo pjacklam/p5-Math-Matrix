@@ -1355,7 +1355,7 @@ sub is_satril {
 
 =back
 
-=head2 Other methods
+=head2 Shape and size
 
 =over
 
@@ -1465,6 +1465,72 @@ sub ndim {
 }
 
 =pod
+
+=item reshape()
+
+Returns a reshaped copy of a matrix. The reshaping is done by creating a new
+matrix and looping over the elements in column major order. The new matrix must
+have the same number of elements as the invocand matrix. The following returns
+an C<$m>-by-C<$n> matrix,
+
+
+    $y = $x -> reshape($m, $n);
+
+The code
+
+    $x = Math::Matrix -> new([[1, 3, 5, 7], [2, 4, 6, 8]]);
+    $y = $x -> reshape(4, 2);
+
+creates the matrix $x
+
+    [ 1  3  5  7 ]
+    [ 2  4  6  8 ]
+
+and returns a reshaped copy $y
+
+    [ 1  5 ]
+    [ 2  6 ]
+    [ 3  7 ]
+    [ 4  8 ]
+
+=cut
+
+sub reshape {
+    croak "Not enough arguments for ", (caller(0))[3] if @_ < 3;
+    croak "Too many arguments for ", (caller(0))[3] if @_ > 3;
+    my $x = shift;
+    my $class = ref $x;
+
+    my ($nrowx, $ncolx) = $x -> size();
+    my $nelmx = $nrowx * $ncolx;
+
+    my ($nrowy, $ncoly) = @_;
+    my $nelmy = $nrowy * $ncoly;
+
+    croak "when reshaping, the number of elements can not change in ",
+      (caller(0))[3] unless $nrowx * $ncolx == $nrowy * $ncoly;
+
+    my $y = bless [], $class;
+
+    $x = $x -> clone();
+    for (my $k = 0 ; $k < $nelmx ; ++ $k) {
+        my $ix = $k % $nrowx;
+        my $jx = ($k - $ix) / $nrowx;
+        my $iy = $k % $nrowy;
+        my $jy = ($k - $iy) / $nrowy;
+        $y -> [$iy][$jy] = $x -> [$ix][$jx];
+    }
+
+    return $y;
+}
+
+=pod
+
+=back
+
+=head2 Other methods
+
+=over
 
 =item concat()
 
