@@ -1732,12 +1732,7 @@ sub fliplr {
     my $x = shift;
     my $class = ref $x;
 
-    my $y = [];
-    my $nrow = $x -> nrow();
-    for my $row (@$x) {
-        push @$y, [ reverse @$row ];
-    }
-
+    my $y = [ map [ reverse @$_ ], @$x ];
     bless $y, $class;
 }
 
