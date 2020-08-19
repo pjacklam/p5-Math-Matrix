@@ -2114,6 +2114,214 @@ sub cross_product {
 
 =pod
 
+=item sapply()
+
+Scalar apply. Applies a subroutine to each element, or each set of corresponding
+elements if multiple operands are given, and returns the result. The first argument
+is the subroutine to apply. The following arguments, if any, are additional
+matrices on which to apply the subroutine.
+
+=over
+
+=item One operand
+
+With one operand, i.e., the invocand matrix, the subroutine is applied to each
+element of the invocand matrix. The returned matrix has the same size as the
+invocand. For example, multiplying the matrix C<$x> with the scalar C<$c>
+
+    $sub = sub { $c * $_[0] };      # subroutine to multiply by $c
+    $z = $x -> sapply($sub);        # multiply each element by $c
+
+=item Two operands
+
+When two operands are specfied, the subroutine is applied to each pair of
+corresponding elements in the two operands. For example, adding two matrices can
+be implemented as
+
+    $sub = sub { $_[0] * $_[1] };
+    $z = $x -> sapply($sub, $y);
+
+Note that if the matrices have different sizes, the rows and/or columns of the
+smaller are recycled to match the size of the larger. If C<$x> is a
+C<$p>-by-C<$q> matrix and C<$y> is a C<$r>-by-C<$s> matrix, then C<$z> is a
+max(C<$p>,C<$r>)-by-max(C<$q>,C<$s>) matrix, and
+
+    $z -> [$i][$j] = $sub -> ($x -> [$i % $p][$j % $q],
+                              $y -> [$i % $r][$j % $s]);
+
+Because of this recycling, multiplying the matrix C<$x> with the scalar C<$c>
+(see above) can also be implemented as
+
+    $sub = sub { $_[0] * $_[1] };
+    $z = $x -> sapply($sub, $c);
+
+Generating a matrix with all combinations of C<$x**$y> for C<$x> being 4, 5, and
+6 and C<$y> being 1, 2, 3, and 4 can be done with
+
+    $c = Math::Matrix -> new([[4], [5], [6]]);      # 3-by-1 column
+    $r = Math::Matrix -> new([[1, 2, 3, 4]]);       # 1-by-4 row
+    $x = $c -> sapply(sub { $_[0] ** $_[1] }, $r);  # 3-by-4 matrix
+
+=item Multiple operands
+
+In general, the sapply() method can have any number of arguments. For example,
+to compute the sum of the four matrices C<$x>, C<$y>, C<$z>, and C<$w>,
+
+    $sub = sub {
+               $sum = 0;
+               for $val (@_) {
+                   $sum += $val;
+               };
+               return $sum;
+           };
+    $x -> sapply($sub, $y, $z, $w);
+
+=back
+
+Note
+
+=over
+
+=item *
+
+The number of rows in the output matrix equals the number of rows in the operand
+with the largest number of rows. Ditto for columns.
+
+=item *
+
+For each operand that has a number of rows smaller than the maximum value, the
+rows are recyled. Ditto for columns.
+
+=item *
+
+The subroutine is run in scalar context.
+
+=item *
+
+No checks are done on the return value of the subroutine.
+
+=item *
+
+Don't modify the variables $_[0], $_[1] etc. inside the subroutine. Otherwise,
+there is a risk of modifying the operand matrices.
+
+=item *
+
+If the matrix elements are objects that are not cloned when the "=" (assignment)
+operator is used, you might have to explicitly clone any objects used inside the
+subroutine. Otherwise, the elements in the output matrix might be references to
+objects in the operand matrices, rather than references to new objects.
+
+=back
+
+=cut
+
+sub sapply {
+    croak "Not enough arguments for ", (caller(0))[3] if @_ < 2;
+    my $x = shift;
+    my $class = ref $x;
+
+    # Get the subroutine to apply on all the elements.
+
+    my $sub = shift;
+    croak "input argument must be a reference to a subroutine"
+      unless ref($sub) eq 'CODE';
+
+    my $y = bless [], $class;
+
+    # For speed, treat a single matrix operand as a special case.
+
+    if (@_ == 0) {
+        my ($nrowx, $ncolx) = $x -> size();
+        return $y if $nrowx * $ncolx == 0;      # quick exit if $x is empty
+
+        for (my $i = 0 ; $i < $nrowx ; ++ $i) {
+            for (my $j = 0 ; $j < $ncolx ; ++ $j) {
+                $y -> [$i][$j] = $sub -> ($x -> [$i][$j]);
+            }
+        }
+
+        return $y;
+    }
+
+    # Create some auxiliary arrays.
+
+    my @args = ($x, @_);    # all matrices
+    my @size = ();          # size of each matrix
+    my @nelm = ();          # number of elements in each matrix
+
+    # Get the size (number of rows and columns) in the output matrix.
+
+    my $nrowy = 0;
+    my $ncoly = 0;
+
+    for (my $k = 0 ; $k <= $#args ; ++ $k) {
+
+        # Get the number of rows, columns, and elements in the k'th argument,
+        # and save this information for later.
+
+        my ($nrowk, $ncolk) = $args[$k] -> size();
+        $size[$k] = [ $nrowk, $ncolk ];
+        $nelm[$k] = $nrowk * $ncolk;
+
+        # Update the size of the output matrix.
+
+        $nrowy = $nrowk if $nrowk > $nrowy;
+        $ncoly = $ncolk if $ncolk > $ncoly;
+    }
+
+    # We only accept empty matrices if all matrices are empty.
+
+    my $n_empty = grep { $_ == 0 } @nelm;
+    return $y if $n_empty == @args;     # quick exit if all are empty
+
+    # At ths point, we know that not all matrices are empty, but some might be
+    # empty. We only continue if none are empty.
+
+    croak "Either all or none of the matrices must be empty in ", (caller(0))[3]
+      unless $n_empty == 0;
+
+    # Loop over the subscripts into the output matrix.
+
+    for (my $i = 0 ; $i < $nrowy ; ++ $i) {
+        for (my $j = 0 ; $j < $ncoly ; ++ $j) {
+
+            # Initialize the argument list for the subroutine call that will
+            # give the value for element ($i,$j) in the output matrix.
+
+            my @elms = ();
+
+            # Loop over the matrices.
+
+            for (my $k = 0 ; $k <= $#args ; ++ $k) {
+
+                # Get the number of rows and columns in the k'th matrix.
+
+                my $nrowk = $size[$k][0];
+                my $ncolk = $size[$k][1];
+
+                # Compute the subscripts of the element to use in the k'th
+                # matrix.
+
+                my $ik = $i % $nrowk;
+                my $jk = $j % $ncolk;
+
+                # Get the element from the k'th matrix to use in this call.
+
+                $elms[$k] = $args[$k][$ik][$jk];
+            }
+
+            # Now we have the argument list for the subroutine call.
+
+            $y -> [$i][$j] = $sub -> (@elms);
+        }
+    }
+
+    return $y;
+}
+
+=pod
+
 =item as_string()
 
 Creates a string representation of the matrix and returns it.
