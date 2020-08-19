@@ -1675,6 +1675,33 @@ sub vcat {
 
 =pod
 
+=item swaprc()
+
+Swap rows and columns. This method does nothing but shuffle elements around. For
+real numbers, swaprc() is identical to the transpose() method.
+
+A subclass implementing a matrix of complex numbers should provide a transpose()
+method that also takes the complex conjugate of each elements. The swaprc()
+method, on the other hand, should only shuffle elements around.
+
+=cut
+
+sub swaprc {
+    my $x = shift;
+    my $class = ref $x;
+
+    my $y = bless [], $class;
+    my $ncolx = $x -> ncol();
+    return $y if $ncolx == 0;
+
+    for (my $j = 0 ; $j < $ncolx ; ++$j) {
+        push @$y, [ map $_->[$j], @$x ];
+    }
+    return $y;
+}
+
+=pod
+
 =item transpose()
 
 Returns the transposed matrix. This is the matrix where colums and rows of the
