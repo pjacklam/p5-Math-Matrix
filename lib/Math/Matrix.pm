@@ -1525,6 +1525,44 @@ sub reshape {
 
 =pod
 
+=item to_row()
+
+Convert to a row.
+
+    $x -> to_row();
+
+This method reshapes the matrix into a single row.
+
+=cut
+
+sub to_row {
+    croak "Not enough arguments for ", (caller(0))[3] if @_ < 1;
+    croak "Too many arguments for ", (caller(0))[3] if @_ > 1;
+    my $x = shift;
+    return $x -> reshape(1, $x -> nelm());
+}
+
+=pod
+
+=item to_col()
+
+Convert to a column.
+
+    $y = $x -> to_col();
+
+This method reshapes the matrix into a single column.
+
+=cut
+
+sub to_col {
+    croak "Not enough arguments for ", (caller(0))[3] if @_ < 1;
+    croak "Too many arguments for ", (caller(0))[3] if @_ > 1;
+    my $x = shift;
+    return $x -> reshape($x -> nelm(), 1);
+}
+
+=pod
+
 =back
 
 =head2 Other methods
