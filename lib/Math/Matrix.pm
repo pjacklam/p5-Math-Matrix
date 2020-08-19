@@ -209,7 +209,7 @@ sub new {
 
 Returns a new identity matrix.
 
-    $a = Math::Matrix -> new(3);        # $a is a 3-by-3 identity matrix
+    $x = Math::Matrix -> new_identity($n);  # $n-by-$n identity matrix
 
 =cut
 
