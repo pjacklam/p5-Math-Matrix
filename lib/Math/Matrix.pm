@@ -1702,6 +1702,47 @@ sub swaprc {
 
 =pod
 
+=item flipud()
+
+Flip upside-down, i.e., flip along dimension 1.
+
+=cut
+
+sub flipud {
+    croak "Not enough arguments for ", (caller(0))[3] if @_ < 1;
+    croak "Too many arguments for ", (caller(0))[3] if @_ > 1;
+    my $x = shift;
+    my $class = ref $x;
+
+    my $y = [ reverse map { [ @$_ ] } @$x ];
+    bless $y, $class;;
+}
+
+=pod
+
+=item fliplr()
+
+Flip left-to-right, i.e., flip along dimension 2.
+
+=cut
+
+sub fliplr {
+    croak "Not enough arguments for ", (caller(0))[3] if @_ < 1;
+    croak "Too many arguments for ", (caller(0))[3] if @_ > 1;
+    my $x = shift;
+    my $class = ref $x;
+
+    my $y = [];
+    my $nrow = $x -> nrow();
+    for my $row (@$x) {
+        push @$y, [ reverse @$row ];
+    }
+
+    bless $y, $class;
+}
+
+=pod
+
 =item transpose()
 
 Returns the transposed matrix. This is the matrix where colums and rows of the
