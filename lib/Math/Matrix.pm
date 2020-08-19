@@ -243,6 +243,32 @@ sub eye {
 
 =pod
 
+=item exchg()
+
+Exchange matrix.
+
+    $x = Math::Matrix -> exchg($n);     # $n-by-$n exchange matrix
+
+=cut
+
+sub exchg {
+    croak "Not enough arguments for ", (caller(0))[3] if @_ < 2;
+    croak "Too many arguments for ", (caller(0))[3] if @_ > 2;
+    my $class = shift;
+    my $size = shift;
+
+    my $x = [];
+    for my $i (1 .. $size) {
+        my $row = [ (0) x $size ];
+        $row -> [$size - $i] = 1;
+        push @$x, $row;
+    }
+
+    bless $x, $class;
+}
+
+=pod
+
 =item zeros()
 
 Create a zero matrix.
