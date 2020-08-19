@@ -3,10 +3,12 @@
 use strict;
 use warnings;
 
+use Test::More;
+
 use lib 't/lib';
 use Math::Matrix::Real;
 
-use Test::More tests => 22;
+plan tests => 22;
 
 my $xdata = [[1, 2, 3], [4, 5, 6]];
 

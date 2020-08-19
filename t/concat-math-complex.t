@@ -5,17 +5,24 @@ use warnings;
 
 use Test::More;
 
+# Ensure a recent version of Math::Complex. Math Complex didn't support any way
+# of cloning/copying Math::Complex objects before version 1.57.
+
+my $min_math_complex_ver = 1.57;
+eval "use Math::Complex $min_math_complex_ver";
+plan skip_all => "Math::Complex $min_math_complex_ver required" if $@;
+
 use lib 't/lib';
-use Math::Matrix::Real;
+use Math::Matrix::Complex;
 
 plan tests => 8;
 
 {
-    my $x = Math::Matrix::Real -> new([1, 2], [4, 5]);
-    my $y = Math::Matrix::Real -> new([3], [6]);
+    my $x = Math::Matrix::Complex -> new([1, 2], [4, 5]);
+    my $y = Math::Matrix::Complex -> new([3], [6]);
     my $z = $x -> concat($y);
 
-    is(ref($z), 'Math::Matrix::Real', '$z is a Math::Matrix::Real');
+    is(ref($z), 'Math::Matrix::Complex', '$z is a Math::Matrix::Complex');
     is_deeply([ @$z ], [[ 1, 2, 3 ],
                         [ 4, 5, 6 ]], '$z has the right values');
 
@@ -33,10 +40,10 @@ plan tests => 8;
 }
 
 {
-    my $x = Math::Matrix::Real -> new([0, 1, 2], [5, 6, 7]);
-    my $y = Math::Matrix::Real -> new([3, 4], [8, 9]);
+    my $x = Math::Matrix::Complex -> new([0, 1, 2], [5, 6, 7]);
+    my $y = Math::Matrix::Complex -> new([3, 4], [8, 9]);
     my $z = $x -> concat($y);
-    is(ref($z), 'Math::Matrix::Real', '$z is a Math::Matrix::Real');
+    is(ref($z), 'Math::Matrix::Complex', '$z is a Math::Matrix::Complex');
     is_deeply([ @$z ], [[ 0, 1, 2, 3, 4 ],
                         [ 5, 6, 7, 8, 9 ]], '$z has the right values');
 

@@ -3,10 +3,12 @@
 use strict;
 use warnings;
 
+use Test::More;
+
 use lib 't/lib';
 use Math::Matrix::Real;
 
-use Test::More tests => 3;
+plan tests => 3;
 
 # 1-by-1 matrix
 

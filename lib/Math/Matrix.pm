@@ -1512,7 +1512,6 @@ sub reshape {
 
     my $y = bless [], $class;
 
-    $x = $x -> clone();
     for (my $k = 0 ; $k < $nelmx ; ++ $k) {
         my $ix = $k % $nrowx;
         my $jx = ($k - $ix) / $nrowx;
@@ -1549,7 +1548,6 @@ sub concat {
     my $result =  $self->clone();
 
     return undef if scalar(@{$self}) != scalar(@{$other});
-    $other = $other -> clone();
     for my $i (0 .. $#{$self}) {
         push @{$result->[$i]}, @{$other->[$i]};
     }
@@ -1654,7 +1652,6 @@ sub transpose {
     my $ncolx = $x -> ncol();
     return $y if $ncolx == 0;
 
-    $x = $x -> clone();
     for (my $j = 0 ; $j < $ncolx ; ++$j) {
         push @$y, [ map $_->[$j], @$x ];
     }
@@ -1903,7 +1900,6 @@ sub slice {
     }
 
     bless $result, $class;
-    $result -> clone();
 }
 
 =pod
@@ -2422,6 +2418,82 @@ Transpose.
     $B = ~$A;           # $B is the transpose of $A
 
 =back
+
+=head1 SUBCLASSING
+
+The majority of methods work fine with numerical objects, provided that the
+assignment operator C<=> returns a clone of the object and not just a reference
+to the same object.
+
+You can check the behaviour of the assignment operator by assigning a value to a
+new variable, modify the new variable, and check whether this also modifies the
+original value.
+
+    $x = Some::Class -> new(0);           # create object $x
+    $y = $x;                              # create new variable $y
+    $y++;                                 # modify $y
+    print "it's a clone\n" if $x != $y;   # is $x modified?
+
+The subclass might need to implement some methods of its own. For instance, if
+each element is a complex number, a transpose() method needs to be implemented
+to take the complex conjugate of each value. An as_string() method might also be
+useful for displaying the matrix in a format more suitable for the subclass.
+
+Here is an example showing Math::Matrix::Complex, a fully-working subclass of
+Math::Matrix, where each element is a Math::Complex object.
+
+    use strict;
+    use warnings;
+
+    package Math::Matrix::Complex;
+
+    use Math::Matrix;
+    use Scalar::Util 'blessed';
+    use Math::Complex 1.57;
+
+    our @ISA = ('Math::Matrix');
+
+    # We need a new() method to make sure every element is an object.
+
+    sub new {
+        my $self = shift;
+        my $x = $self -> SUPER::new(@_);
+
+        my $sub = sub {
+            defined(blessed($_[0])) && $_[0] -> isa('Math::Complex')
+              ? $_[0]
+              : Math::Complex -> new($_[0]);
+        };
+
+        return $x -> sapply($sub);
+    }
+
+    # We need a transpose() method, since the transpose of a matrix
+    # with complex numbers also takes the conjugate of all elements.
+
+    sub transpose {
+        my $x = shift;
+        my $y = $x -> SUPER::transpose(@_);
+
+        return $y -> sapply(sub { ~$_[0] });
+    }
+
+    # We need an as_string() method, since our parent's methods
+    # doesn't format complex numbers correctly.
+
+    sub as_string {
+        my $self = shift;
+        my $out = "";
+        for my $row (@$self) {
+            for my $elm (@$row) {
+                $out = $out . sprintf "%10s ", $elm;
+            }
+            $out = $out . sprintf "\n";
+        }
+        $out;
+    }
+
+    1;
 
 =head1 BUGS
 

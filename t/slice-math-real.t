@@ -1,16 +1,14 @@
 #!perl
 
-# Test when each element is a numerical object. This is to verify that each
-# element in the returned matrix is a different object than the corresponding
-# object in the invocand matrix.
-
 use strict;
 use warnings;
+
+use Test::More;
 
 use lib 't/lib';
 use Math::Matrix::Real;
 
-use Test::More tests => 19;
+plan tests => 19;
 
 my $orig = [[ 11 .. 19 ],
             [ 21 .. 29 ]];

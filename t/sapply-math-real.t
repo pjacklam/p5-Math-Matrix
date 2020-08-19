@@ -3,10 +3,12 @@
 use strict;
 use warnings;
 
+use Test::More;
+
 use lib 't/lib';
 use Math::Matrix::Real;
 
-use Test::More tests => 21;
+plan tests => 21;
 
 note("one non-empty operand");
 
