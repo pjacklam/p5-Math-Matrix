@@ -1738,6 +1738,82 @@ sub fliplr {
 
 =pod
 
+=item rot90()
+
+Rotate 90 degrees counterclockwise.
+
+    $y = $x -> rot90();
+
+=cut
+
+sub rot90 {
+    croak "Not enough arguments for ", (caller(0))[3] if @_ < 1;
+    croak "Too many arguments for ", (caller(0))[3] if @_ > 1;
+    my $x = shift;
+    my $class = ref $x;
+
+    my $y = [];
+    my ($nrowx, $ncolx) = $x -> size();
+    my $jmax = $ncolx - 1;
+    for (my $i = 0 ; $i < $nrowx ; $i++) {
+        for (my $j = 0 ; $j < $ncolx ; $j++) {
+            $y -> [$jmax - $j][$i] = $x -> [$i][$j];
+        }
+    }
+
+    bless $y, $class;
+}
+
+=pod
+
+=item rot180()
+
+Rotate 180 degrees.
+
+    $y = $x -> rot180();
+
+=cut
+
+sub rot180 {
+    croak "Not enough arguments for ", (caller(0))[3] if @_ < 1;
+    croak "Too many arguments for ", (caller(0))[3] if @_ > 1;
+    my $x = shift;
+    my $class = ref $x;
+
+    my $y = [ map [ reverse @$_ ], reverse @$x ];
+    bless $y, $class;
+}
+
+=pod
+
+=item rot270()
+
+Rotate 270 degrees counterclockwise, i.e., 90 degrees clockwise.
+
+    $y = $x -> rot270();
+
+=cut
+
+sub rot270 {
+    croak "Not enough arguments for ", (caller(0))[3] if @_ < 1;
+    croak "Too many arguments for ", (caller(0))[3] if @_ > 1;
+    my $x = shift;
+    my $class = ref $x;
+
+    my $y = [];
+    my ($nrowx, $ncolx) = $x -> size();
+    my $imax = $nrowx - 1;
+    for (my $i = 0 ; $i < $nrowx ; $i++) {
+        for (my $j = 0 ; $j < $ncolx ; $j++) {
+            $y -> [$j][$imax - $i] = $x -> [$i][$j];
+        }
+    }
+
+    bless $y, $class;
+}
+
+=pod
+
 =item transpose()
 
 Returns the transposed matrix. This is the matrix where colums and rows of the
