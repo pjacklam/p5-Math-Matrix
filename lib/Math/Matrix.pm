@@ -514,7 +514,7 @@ sub tridiagonal {
 
 =back
 
-=head2 Methods for identifying matrices
+=head2 Identify matrices
 
 =over
 
@@ -1505,7 +1505,7 @@ sub ndim {
 
 =back
 
-=head2 Manipulating matrices
+=head2 Manipulate matrices
 
 These methods are for combining matrices, splitting matrices, extracing parts of
 a matrix, inserting new parts into a matrix, deleting parts of a matrix etc.
@@ -1826,7 +1826,10 @@ Convert to a row.
 
     $x -> to_row();
 
-This method reshapes the matrix into a single row.
+This method reshapes the matrix into a single row. It is essentially the same
+as, but faster than,
+
+    $x -> reshape(1, $x -> nelm());
 
 =cut
 
@@ -1834,7 +1837,17 @@ sub to_row {
     croak "Not enough arguments for ", (caller(0))[3] if @_ < 1;
     croak "Too many arguments for ", (caller(0))[3] if @_ > 1;
     my $x = shift;
-    return $x -> reshape(1, $x -> nelm());
+    my $class = ref $x;
+
+    my $y = bless [], $class;
+
+    my $ncolx = $x -> ncol();
+    return $y if $ncolx == 0;
+
+    for (my $j = 0 ; $j < $ncolx ; ++$j) {
+        push @{ $y -> [0] }, map $_->[$j], @$x;
+    }
+    return $y;
 }
 
 =pod
@@ -1845,7 +1858,10 @@ Convert to a column.
 
     $y = $x -> to_col();
 
-This method reshapes the matrix into a single column.
+This method reshapes the matrix into a single column. It is essentially the same
+as, but faster than,
+
+    $x -> reshape($x -> nelm(), 1);
 
 =cut
 
@@ -1853,7 +1869,18 @@ sub to_col {
     croak "Not enough arguments for ", (caller(0))[3] if @_ < 1;
     croak "Too many arguments for ", (caller(0))[3] if @_ > 1;
     my $x = shift;
-    return $x -> reshape($x -> nelm(), 1);
+
+    my $class = ref $x;
+
+    my $y = bless [], $class;
+
+    my $ncolx = $x -> ncol();
+    return $y if $ncolx == 0;
+
+    for (my $j = 0 ; $j < $ncolx ; ++$j) {
+        push @$y, map [ $_->[$j] ], @$x;
+    }
+    return $y;
 }
 
 =pod
