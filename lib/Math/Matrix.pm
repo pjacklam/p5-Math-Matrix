@@ -205,40 +205,51 @@ sub new {
 
 =pod
 
-=item new_identity()
+=item id()
 
 Returns a new identity matrix.
 
-    $x = Math::Matrix -> new_identity($n);  # $n-by-$n identity matrix
+    $x = Math::Matrix -> id($n);        # $n-by-$n identity matrix
+
+=cut
+
+sub id {
+    my $self = shift;
+    my $class = ref($self) || $self;
+
+    my $x = [];
+    my $n = shift;
+    for my $i (0 .. $n - 1) {
+        my $row = [ (0) x $n ];
+        $row -> [$i] = 1;
+        push @$x, $row;
+    }
+
+    bless $x, $class;
+}
+
+=pod
+
+=item new_identity()
+
+This is an alias for C<id()>.
 
 =cut
 
 sub new_identity {
-    my $type = shift;
-    my $class = ref($type) || $type;
-    my $self = [];
-    my $size = shift;
-
-    for my $i (1..$size) {
-        my $row = [];
-        for my $j (1..$size) {
-            push @$row, $i==$j ? 1 : 0;
-        }
-        push @$self, $row;
-    }
-    bless $self, $class;
+    id(@_);
 }
 
 =pod
 
 =item eye()
 
-This is an alias for C<new_identity>.
+This is an alias for C<id()>.
 
 =cut
 
 sub eye {
-    &new_identity(@_);
+    new_identity(@_);
 }
 
 =pod
