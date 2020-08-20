@@ -1503,147 +1503,72 @@ sub ndim {
 
 =pod
 
-=item reshape()
-
-Returns a reshaped copy of a matrix. The reshaping is done by creating a new
-matrix and looping over the elements in column major order. The new matrix must
-have the same number of elements as the invocand matrix. The following returns
-an C<$m>-by-C<$n> matrix,
-
-
-    $y = $x -> reshape($m, $n);
-
-The code
-
-    $x = Math::Matrix -> new([[1, 3, 5, 7], [2, 4, 6, 8]]);
-    $y = $x -> reshape(4, 2);
-
-creates the matrix $x
-
-    [ 1  3  5  7 ]
-    [ 2  4  6  8 ]
-
-and returns a reshaped copy $y
-
-    [ 1  5 ]
-    [ 2  6 ]
-    [ 3  7 ]
-    [ 4  8 ]
-
-=cut
-
-sub reshape {
-    croak "Not enough arguments for ", (caller(0))[3] if @_ < 3;
-    croak "Too many arguments for ", (caller(0))[3] if @_ > 3;
-    my $x = shift;
-    my $class = ref $x;
-
-    my ($nrowx, $ncolx) = $x -> size();
-    my $nelmx = $nrowx * $ncolx;
-
-    my ($nrowy, $ncoly) = @_;
-    my $nelmy = $nrowy * $ncoly;
-
-    croak "when reshaping, the number of elements can not change in ",
-      (caller(0))[3] unless $nrowx * $ncolx == $nrowy * $ncoly;
-
-    my $y = bless [], $class;
-
-    for (my $k = 0 ; $k < $nelmx ; ++ $k) {
-        my $ix = $k % $nrowx;
-        my $jx = ($k - $ix) / $nrowx;
-        my $iy = $k % $nrowy;
-        my $jy = ($k - $iy) / $nrowy;
-        $y -> [$iy][$jy] = $x -> [$ix][$jx];
-    }
-
-    return $y;
-}
-
-=pod
-
-=item to_row()
-
-Convert to a row.
-
-    $x -> to_row();
-
-This method reshapes the matrix into a single row.
-
-=cut
-
-sub to_row {
-    croak "Not enough arguments for ", (caller(0))[3] if @_ < 1;
-    croak "Too many arguments for ", (caller(0))[3] if @_ > 1;
-    my $x = shift;
-    return $x -> reshape(1, $x -> nelm());
-}
-
-=pod
-
-=item to_col()
-
-Convert to a column.
-
-    $y = $x -> to_col();
-
-This method reshapes the matrix into a single column.
-
-=cut
-
-sub to_col {
-    croak "Not enough arguments for ", (caller(0))[3] if @_ < 1;
-    croak "Too many arguments for ", (caller(0))[3] if @_ > 1;
-    my $x = shift;
-    return $x -> reshape($x -> nelm(), 1);
-}
-
-=pod
-
 =back
 
-=head2 Other methods
+=head2 Manipulating matrices
+
+These methods are for combining matrices, splitting matrices, extracing parts of
+a matrix, inserting new parts into a matrix, deleting parts of a matrix etc.
+There are also methods for shuffling elements around (relocating elements)
+inside a matrix.
+
+These methods are not concerned with the values of the elements.
 
 =over
 
-=item concat()
+=item catrow()
 
-Concatenate matrices horizontally. The matrices must have the same number or
-rows. The result is a new matrix or B<undef> in case of error.
+Concatenate rows, i.e., concatenate matrices vertically. Any number of arguments
+is allowed. All non-empty matrices must have the same number or columns. The
+result is a new matrix.
 
     $x = Math::Matrix -> new([1, 2], [4, 5]);   # 2-by-2 matrix
-    $y = Math::Matrix -> new([3], [6]);         # 2-by-1 matrix
-    $z = $x -> concat($y);                      # 2-by-3 matrix
+    $y = Math::Matrix -> new([3, 6]);           # 1-by-2 matrix
+    $z = $x -> catrow($y);                      # 3-by-2 matrix
 
 =cut
 
-sub concat {
-    my $self   = shift;
-    my $other  = shift;
-    my $result =  $self->clone();
+sub catrow {
+    my $x = shift;
+    my $class = ref $x;
 
-    return undef if scalar(@{$self}) != scalar(@{$other});
-    for my $i (0 .. $#{$self}) {
-        push @{$result->[$i]}, @{$other->[$i]};
+    my $ncolx = $x -> ncol();           # number of columns in $x
+    my $z = $x -> clone();              # initialize output
+
+    for (my $i = 0 ; $i <= $#_ ; ++$i) {
+        my $y = $_[$i];
+        next if $y -> is_empty();       # ignore empty $y
+        $y = $y -> clone();
+
+        if ($z -> is_empty()) {
+            $z = $y;                    # $y is non-empty
+            next;
+        }
+
+        croak "All operands must have the same number of columns in ",
+          (caller(0))[3] unless $y -> ncol() == $ncolx;
+
+        push @$z, @$y;
     }
-    $result;
+
+    return $z;
 }
 
 =pod
 
-=item hcat()
+=item catcol()
 
-Concatenate matrices horizontally. Any number of arguments is allowed.
-Non-empty matrices must have the same number or rows. The result is a new
-matrix.
+Concatenate columns, i.e., matrices horizontally. Any number of arguments is
+allowed. All non-empty matrices must have the same number or rows. The result is
+a new matrix.
 
     $x = Math::Matrix -> new([1, 2], [4, 5]);   # 2-by-2 matrix
     $y = Math::Matrix -> new([3], [6]);         # 2-by-1 matrix
-    $z = $x -> hcat($y);                        # 2-by-3 matrix
+    $z = $x -> catcol($y);                      # 2-by-3 matrix
 
 =cut
 
-sub hcat {
+sub catcol {
     my $x = shift;
     my $class = ref $x;
 
@@ -1673,41 +1598,27 @@ sub hcat {
 
 =pod
 
-=item vcat()
+=item concat()
 
-Concatenate matrices vertically. Any number of arguments is allowed. Non-empty
-matrices must have the same number or columns. The result is a new matrix.
+Concatenate two matrices horizontally. The matrices must have the same number of
+rows. The result is a new matrix or B<undef> in case of error.
 
     $x = Math::Matrix -> new([1, 2], [4, 5]);   # 2-by-2 matrix
-    $y = Math::Matrix -> new([3, 6]);           # 1-by-2 matrix
-    $z = $x -> vcat($y);                        # 3-by-2 matrix
+    $y = Math::Matrix -> new([3], [6]);         # 2-by-1 matrix
+    $z = $x -> concat($y);                      # 2-by-3 matrix
 
 =cut
 
-sub vcat {
-    my $x = shift;
-    my $class = ref $x;
+sub concat {
+    my $self   = shift;
+    my $other  = shift;
+    my $result =  $self->clone();
 
-    my $ncolx = $x -> ncol();           # number of columns in $x
-    my $z = $x -> clone();              # initialize output
-
-    for (my $i = 0 ; $i <= $#_ ; ++$i) {
-        my $y = $_[$i];
-        next if $y -> is_empty();       # ignore empty $y
-        $y = $y -> clone();
-
-        if ($z -> is_empty()) {
-            $z = $y;                    # $y is non-empty
-            next;
-        }
-
-        croak "All operands must have the same number of columns in ",
-          (caller(0))[3] unless $y -> ncol() == $ncolx;
-
-        push @$z, @$y;
+    return undef if scalar(@{$self}) != scalar(@{$other});
+    for my $i (0 .. $#{$self}) {
+        push @{$result->[$i]}, @{$other->[$i]};
     }
-
-    return $z;
+    $result;
 }
 
 =pod
@@ -1851,10 +1762,187 @@ sub rot270 {
 
 =pod
 
+=item reshape()
+
+Returns a reshaped copy of a matrix. The reshaping is done by creating a new
+matrix and looping over the elements in column major order. The new matrix must
+have the same number of elements as the invocand matrix. The following returns
+an C<$m>-by-C<$n> matrix,
+
+    $y = $x -> reshape($m, $n);
+
+The code
+
+    $x = Math::Matrix -> new([[1, 3, 5, 7], [2, 4, 6, 8]]);
+    $y = $x -> reshape(4, 2);
+
+creates the matrix $x
+
+    [ 1  3  5  7 ]
+    [ 2  4  6  8 ]
+
+and returns a reshaped copy $y
+
+    [ 1  5 ]
+    [ 2  6 ]
+    [ 3  7 ]
+    [ 4  8 ]
+
+=cut
+
+sub reshape {
+    croak "Not enough arguments for ", (caller(0))[3] if @_ < 3;
+    croak "Too many arguments for ", (caller(0))[3] if @_ > 3;
+    my $x = shift;
+    my $class = ref $x;
+
+    my ($nrowx, $ncolx) = $x -> size();
+    my $nelmx = $nrowx * $ncolx;
+
+    my ($nrowy, $ncoly) = @_;
+    my $nelmy = $nrowy * $ncoly;
+
+    croak "when reshaping, the number of elements can not change in ",
+      (caller(0))[3] unless $nrowx * $ncolx == $nrowy * $ncoly;
+
+    my $y = bless [], $class;
+
+    for (my $k = 0 ; $k < $nelmx ; ++ $k) {
+        my $ix = $k % $nrowx;
+        my $jx = ($k - $ix) / $nrowx;
+        my $iy = $k % $nrowy;
+        my $jy = ($k - $iy) / $nrowy;
+        $y -> [$iy][$jy] = $x -> [$ix][$jx];
+    }
+
+    return $y;
+}
+
+=pod
+
+=item to_row()
+
+Convert to a row.
+
+    $x -> to_row();
+
+This method reshapes the matrix into a single row.
+
+=cut
+
+sub to_row {
+    croak "Not enough arguments for ", (caller(0))[3] if @_ < 1;
+    croak "Too many arguments for ", (caller(0))[3] if @_ > 1;
+    my $x = shift;
+    return $x -> reshape(1, $x -> nelm());
+}
+
+=pod
+
+=item to_col()
+
+Convert to a column.
+
+    $y = $x -> to_col();
+
+This method reshapes the matrix into a single column.
+
+=cut
+
+sub to_col {
+    croak "Not enough arguments for ", (caller(0))[3] if @_ < 1;
+    croak "Too many arguments for ", (caller(0))[3] if @_ > 1;
+    my $x = shift;
+    return $x -> reshape($x -> nelm(), 1);
+}
+
+=pod
+
+=item slice()
+
+Extract columns:
+
+    a->slice(1,3,5);
+
+=cut
+
+sub slice {
+    my $self = shift;
+    my $class = ref($self);
+    my $result = [];
+
+    for my $i (0 .. $#$self) {
+        push @$result, [ @{$self->[$i]}[@_] ];
+    }
+
+    bless $result, $class;
+}
+
+=pod
+
+=item diagonal_vector()
+
+Extract the diagonal as an array:
+
+    $diag = $a->diagonal_vector;
+
+=cut
+
+sub diagonal_vector {
+    my $self = shift;
+    my @diag;
+    my $idx = 0;
+    my($m, $n) = $self->size();
+
+    die "Not a square matrix" if ($m != $n);
+
+    foreach my $r (@{$self}) {
+        push @diag, $r->[$idx++];
+    }
+    return \@diag;
+}
+
+=pod
+
+=item tridiagonal_vector()
+
+Extract the diagonals that make up a tridiagonal matrix:
+
+    ($main_d, $upper_d, $lower_d) = $a->tridiagonal_vector;
+
+=cut
+
+sub tridiagonal_vector {
+    my $self = shift;
+    my(@main_d, @up_d, @low_d);
+    my($m, $n) = $self->size();
+    my $idx = 0;
+
+    die "Not a square matrix" if ($m != $n);
+
+    foreach my $r (@{$self}) {
+        push @low_d, $r->[$idx - 1] if ($idx > 0);
+        push @main_d, $r->[$idx++];
+        push @up_d, $r->[$idx] if ($idx < $m);
+    }
+    return ([@main_d],[@up_d],[@low_d]);
+}
+
+=pod
+
+=back
+
+=head2 Mathematical operators
+
+=over
+
 =item transpose()
 
 Returns the transposed matrix. This is the matrix where colums and rows of the
 argument matrix are swapped.
+
+A subclass implementing matrices of complex numbers should provide a transpose()
+method that takes the complex conjugate of each element.
 
 =cut
 
@@ -1870,6 +1958,56 @@ sub transpose {
         push @$y, [ map $_->[$j], @$x ];
     }
     return $y;
+}
+
+=pod
+
+=item add()
+
+Add two matrices of the same dimensions.
+
+=cut
+
+sub add {
+    my $self = shift;
+    my $other = shift;
+    my $result = $self->new();
+
+    return undef
+      if $#{$self} != $#{$other};
+
+    my $last= $#{$self->[0]};
+    return undef
+      if $last != $#{$other->[0]};
+    for my $i (0 .. $#{$self}) {
+        for my $j (0 .. $last) {
+            $result->[$i][$j] = $self->[$i][$j] + $other->[$i][$j];
+        }
+    }
+    $result;
+}
+
+=pod
+
+=item subtract()
+
+Shorthand for C<add($other-E<gt>negative)>
+
+=cut
+
+sub subtract {
+    my $self = shift;
+    my $other = shift;
+
+    # if $swap is present, $other operand isn't a Math::Matrix.  in
+    # general that's undefined, but, if called as
+    #   subtract($self,0,1)
+    # we've been called as unary minus, which is defined.
+    if ( @_  && $_[0] && ! ref $other && $other == 0 ) {
+        $self->negative;
+    } else {
+        $self->add($other->negative);
+    }
 }
 
 =pod
@@ -2023,56 +2161,6 @@ sub multiply_scalar {
 
 =pod
 
-=item add()
-
-Add two matrices of the same dimensions.
-
-=cut
-
-sub add {
-    my $self = shift;
-    my $other = shift;
-    my $result = $self->new();
-
-    return undef
-      if $#{$self} != $#{$other};
-
-    my $last= $#{$self->[0]};
-    return undef
-      if $last != $#{$other->[0]};
-    for my $i (0 .. $#{$self}) {
-        for my $j (0 .. $last) {
-            $result->[$i][$j] = $self->[$i][$j] + $other->[$i][$j];
-        }
-    }
-    $result;
-}
-
-=pod
-
-=item subtract()
-
-Shorthand for C<add($other-E<gt>negative)>
-
-=cut
-
-sub subtract {
-    my $self = shift;
-    my $other = shift;
-
-    # if $swap is present, $other operand isn't a Math::Matrix.  in
-    # general that's undefined, but, if called as
-    #   subtract($self,0,1)
-    # we've been called as unary minus, which is defined.
-    if ( @_  && $_[0] && ! ref $other && $other == 0 ) {
-        $self->negative;
-    } else {
-        $self->add($other->negative);
-    }
-}
-
-=pod
-
 =item equal()
 
 Decide if two matrices are equal. The criterion is, that each pair of elements
@@ -2092,78 +2180,6 @@ sub equal {
         }
     }
     $ok;
-}
-
-=pod
-
-=item slice()
-
-Extract columns:
-
-    a->slice(1,3,5);
-
-=cut
-
-sub slice {
-    my $self = shift;
-    my $class = ref($self);
-    my $result = [];
-
-    for my $i (0 .. $#$self) {
-        push @$result, [ @{$self->[$i]}[@_] ];
-    }
-
-    bless $result, $class;
-}
-
-=pod
-
-=item diagonal_vector()
-
-Extract the diagonal as an array:
-
-    $diag = $a->diagonal_vector;
-
-=cut
-
-sub diagonal_vector {
-    my $self = shift;
-    my @diag;
-    my $idx = 0;
-    my($m, $n) = $self->size();
-
-    die "Not a square matrix" if ($m != $n);
-
-    foreach my $r (@{$self}) {
-        push @diag, $r->[$idx++];
-    }
-    return \@diag;
-}
-
-=pod
-
-=item tridiagonal_vector()
-
-Extract the diagonals that make up a tridiagonal matrix:
-
-    ($main_d, $upper_d, $lower_d) = $a->tridiagonal_vector;
-
-=cut
-
-sub tridiagonal_vector {
-    my $self = shift;
-    my(@main_d, @up_d, @low_d);
-    my($m, $n) = $self->size();
-    my $idx = 0;
-
-    die "Not a square matrix" if ($m != $n);
-
-    foreach my $r (@{$self}) {
-        push @low_d, $r->[$idx - 1] if ($idx > 0);
-        push @main_d, $r->[$idx++];
-        push @up_d, $r->[$idx] if ($idx < $m);
-    }
-    return ([@main_d],[@up_d],[@low_d]);
 }
 
 =pod

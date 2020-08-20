@@ -5,18 +5,25 @@ use warnings;
 
 use Test::More;
 
+# Ensure a recent version of Math::Complex. Math Complex didn't support any way
+# of cloning/copying Math::Complex objects before version 1.57.
+
+my $min_math_complex_ver = 1.57;
+eval "use Math::Complex $min_math_complex_ver";
+plan skip_all => "Math::Complex $min_math_complex_ver required" if $@;
+
 use lib 't/lib';
-use Math::Matrix::Real;
+use Math::Matrix::Complex;
 
 plan tests => 26;
 
 {
-    my $x = Math::Matrix::Real -> new([1, 2],
-                                      [3, 4]);
-    my $y = Math::Matrix::Real -> new([5, 6]);
-    my $z = $x -> vcat($y);
+    my $x = Math::Matrix::Complex -> new([1, 2],
+                                         [3, 4]);
+    my $y = Math::Matrix::Complex -> new([5, 6]);
+    my $z = $x -> catrow($y);
 
-    is(ref($z), 'Math::Matrix::Real', '$z is a Math::Matrix::Real');
+    is(ref($z), 'Math::Matrix::Complex', '$z is a Math::Matrix::Complex');
     is_deeply([ @$z ], [[ 1, 2 ],
                         [ 3, 4 ],
                         [ 5, 6 ]], '$z has the right values');
@@ -36,13 +43,13 @@ plan tests => 26;
 }
 
 {
-    my $x = Math::Matrix::Real -> new([0, 1],
-                                      [2, 3],
-                                      [4, 5]);
-    my $y = Math::Matrix::Real -> new([6, 7],
-                                      [8, 9]);
-    my $z = $x -> vcat($y);
-    is(ref($z), 'Math::Matrix::Real', '$z is a Math::Matrix::Real');
+    my $x = Math::Matrix::Complex -> new([0, 1],
+                                         [2, 3],
+                                         [4, 5]);
+    my $y = Math::Matrix::Complex -> new([6, 7],
+                                         [8, 9]);
+    my $z = $x -> catrow($y);
+    is(ref($z), 'Math::Matrix::Complex', '$z is a Math::Matrix::Complex');
     is_deeply([ @$z ], [[ 0, 1 ],
                         [ 2, 3 ],
                         [ 4, 5 ],
@@ -66,12 +73,12 @@ plan tests => 26;
 }
 
 {
-    my $x = Math::Matrix::Real -> new([0, 1],
-                                      [2, 3],
-                                      [4, 5]);
-    my $y = Math::Matrix::Real -> new([]);
-    my $z = $x -> vcat($y);
-    is(ref($z), 'Math::Matrix::Real', '$z is a Math::Matrix::Real');
+    my $x = Math::Matrix::Complex -> new([0, 1],
+                                         [2, 3],
+                                         [4, 5]);
+    my $y = Math::Matrix::Complex -> new([]);
+    my $z = $x -> catrow($y);
+    is(ref($z), 'Math::Matrix::Complex', '$z is a Math::Matrix::Complex');
     is_deeply([ @$z ], [[ 0, 1 ],
                         [ 2, 3 ],
                         [ 4, 5 ]], '$z has the right values');
@@ -92,11 +99,11 @@ plan tests => 26;
 }
 
 {
-    my $x = Math::Matrix::Real -> new([]);
-    my $y = Math::Matrix::Real -> new([6, 7],
-                                      [8, 9]);
-    my $z = $x -> vcat($y);
-    is(ref($z), 'Math::Matrix::Real', '$z is a Math::Matrix::Real');
+    my $x = Math::Matrix::Complex -> new([]);
+    my $y = Math::Matrix::Complex -> new([6, 7],
+                                         [8, 9]);
+    my $z = $x -> catrow($y);
+    is(ref($z), 'Math::Matrix::Complex', '$z is a Math::Matrix::Complex');
     is_deeply([ @$z ], [[ 6, 7 ],
                         [ 8, 9 ]], '$z has the right values');
 
@@ -115,10 +122,10 @@ plan tests => 26;
 }
 
 {
-    my $x = Math::Matrix::Real -> new([]);
-    my $y = Math::Matrix::Real -> new([]);
-    my $z = $x -> vcat($y);
-    is(ref($z), 'Math::Matrix::Real', '$z is a Math::Matrix::Real');
+    my $x = Math::Matrix::Complex -> new([]);
+    my $y = Math::Matrix::Complex -> new([]);
+    my $z = $x -> catrow($y);
+    is(ref($z), 'Math::Matrix::Complex', '$z is a Math::Matrix::Complex');
     is_deeply([ @$z ], [], '$z has the right values');
 
     is_deeply([ @$x ], [], '$x is unmodified');
@@ -126,17 +133,17 @@ plan tests => 26;
 }
 
 {
-    my $x = Math::Matrix::Real -> new([3]);
-    my $z = $x -> vcat($x, $x, $x);
-    is(ref($z), 'Math::Matrix::Real', '$z is a Math::Matrix::Real');
+    my $x = Math::Matrix::Complex -> new([3]);
+    my $z = $x -> catrow($x, $x, $x);
+    is(ref($z), 'Math::Matrix::Complex', '$z is a Math::Matrix::Complex');
     is_deeply([ @$z ], [[3], [3], [3], [3]], '$z has the right values');
     is_deeply([ @$x ], [[3]], '$x is unmodified');
 }
 
 {
-    my $x = Math::Matrix::Real -> new([3]);
-    my $z = $x -> vcat();
-    is(ref($z), 'Math::Matrix::Real', '$z is a Math::Matrix::Real');
+    my $x = Math::Matrix::Complex -> new([3]);
+    my $z = $x -> catrow();
+    is(ref($z), 'Math::Matrix::Complex', '$z is a Math::Matrix::Complex');
     is_deeply([ @$z ], [[3]], '$z has the right values');
     is_deeply([ @$x ], [[3]], '$x is unmodified');
 }
