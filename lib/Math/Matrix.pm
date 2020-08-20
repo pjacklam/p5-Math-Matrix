@@ -6,13 +6,29 @@ use strict;
 use warnings;
 
 use Carp;
+use Scalar::Util 'blessed';
 
 our $VERSION = '0.91';
 our $eps = 0.00001;
 
 use overload
-  '+'  => 'add',
-  '-'  => 'subtract',
+
+  '+'  => sub {
+              my ($x, $y, $swap) = @_;
+              $x -> add($y);
+          },
+
+  '-'  => sub {
+              my ($x, $y, $swap) = @_;
+              if ($swap) {
+                  return $x -> neg() if !ref($y) && $y == 0;
+
+                  my $class = ref $x;
+                  return $class -> new($y) -> sub($x);
+              }
+              $x -> sub($y);
+          },
+
   '*'  => 'multiply',
   '~'  => 'transpose',
   '""' => 'as_string',
@@ -1993,63 +2009,122 @@ sub transpose {
 
 Add two matrices of the same dimensions.
 
+    $z = $x -> add($y);
+
 =cut
 
 sub add {
-    my $self = shift;
-    my $other = shift;
-    my $result = $self->new();
+    croak "Not enough arguments for ", (caller(0))[3] if @_ < 2;
+    croak "Too many arguments for ", (caller(0))[3] if @_ > 2;
+    my $x = shift;
+    my $class = ref $x;
 
-    return undef
-      if $#{$self} != $#{$other};
+    my $y = shift;
+    $y = $class -> new($y) unless defined(blessed($y)) && $y -> isa($class);
 
-    my $last= $#{$self->[0]};
-    return undef
-      if $last != $#{$other->[0]};
-    for my $i (0 .. $#{$self}) {
-        for my $j (0 .. $last) {
-            $result->[$i][$j] = $self->[$i][$j] + $other->[$i][$j];
+    my ($nrowx, $ncolx) = $x -> size();
+    my ($nrowy, $ncoly) = $y -> size();
+
+    croak "Matrix sizes don't match in ", (caller(0))[3]
+      unless $nrowx == $nrowy && $ncolx == $ncoly;
+
+    my $z = [];
+    for (my $i = 0 ; $i < $nrowx ; ++$i) {
+        for (my $j = 0 ; $j < $ncolx ; ++$j) {
+            $z->[$i][$j] = $x->[$i][$j] + $y->[$i][$j];
         }
     }
-    $result;
+
+    bless $z, $class;
+}
+
+=pod
+
+=item sub()
+
+Subtract two matrices of the same dimensions.
+
+    $z = $x -> sub($y);
+
+=cut
+
+sub sub {
+    croak "Not enough arguments for ", (caller(0))[3] if @_ < 2;
+    croak "Too many arguments for ", (caller(0))[3] if @_ > 2;
+    my $x = shift;
+    my $class = ref $x;
+
+    my $y = shift;
+    $y = $class -> new($y) unless defined(blessed($y)) && $y -> isa($class);
+
+    my ($nrowx, $ncolx) = $x -> size();
+    my ($nrowy, $ncoly) = $y -> size();
+
+    croak "Matrix sizes don't match in ", (caller(0))[3]
+      unless $nrowx == $nrowy && $ncolx == $ncoly;
+
+    my $z = [];
+    for (my $i = 0 ; $i < $nrowx ; ++$i) {
+        for (my $j = 0 ; $j < $ncolx ; ++$j) {
+            $z->[$i][$j] = $x->[$i][$j] - $y->[$i][$j];
+        }
+    }
+
+    bless $z, $class;
+}
+
+=pod
+
+=item neg()
+
+Negate a matrix.
+
+    $y = $x -> neg();
+
+=cut
+
+sub neg {
+    croak "Not enough arguments for ", (caller(0))[3] if @_ < 1;
+    croak "Too many arguments for ", (caller(0))[3] if @_ > 1;
+    my $x = shift;
+    my $class = ref $x;
+
+    my $y = [];
+
+    my ($nrowx, $ncolx) = $x -> size();
+    for (my $i = 0 ; $i < $nrowx ; ++$i) {
+        for (my $j = 0 ; $j < $ncolx ; ++$j) {
+            $y->[$i][$j] = -$x->[$i][$j];
+        }
+    }
+
+    bless $y, $class;
 }
 
 =pod
 
 =item subtract()
 
-Shorthand for C<add($other-E<gt>negative)>
+This is an alias for C<sub()>.
 
 =cut
 
 sub subtract {
-    my $self = shift;
-    my $other = shift;
-
-    # if $swap is present, $other operand isn't a Math::Matrix.  in
-    # general that's undefined, but, if called as
-    #   subtract($self,0,1)
-    # we've been called as unary minus, which is defined.
-    if ( @_  && $_[0] && ! ref $other && $other == 0 ) {
-        $self->negative;
-    } else {
-        $self->add($other->negative);
-    }
+    my $x = shift;
+    $x -> sub(@_);
 }
 
 =pod
 
 =item negative()
 
-Negate a matrix and return it.
-
-    $a = Math::Matrix -> new([-2, 3]);
-    $b = $a -> negative();                  # $b = [[2, -3]]
+This is an alias for C<neg()>.
 
 =cut
 
 sub negative {
-    shift->multiply_scalar(-1);
+    my $x = shift;
+    $x -> neg(@_);
 }
 
 =pod
@@ -2652,6 +2727,8 @@ Matrix addition. The two operands must have the same size.
 
     $C  = $A + $B;      # assign $A + $B to $C
     $A += $B;           # assign $A + $B to $A
+
+Note that
 
 =item C<-> and C<-=>
 
