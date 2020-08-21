@@ -1618,6 +1618,190 @@ sub catcol {
 
 =pod
 
+=item getrow()
+
+Get the specified row(s). Returns a new matrix with the specified rows.
+
+    $y = $x -> getrow($i);                  # get one
+    $y = $x -> getrow([$i0, $i1, $i2]);     # get multiple
+
+=cut
+
+sub getrow {
+    croak "Not enough arguments for ", (caller(0))[3] if @_ < 2;
+    croak "Too many arguments for ", (caller(0))[3] if @_ > 2;
+    my $x = shift;
+    my $class = ref $x;
+
+    my $idx = shift;
+    if (ref $idx) {
+        $idx = __PACKAGE__ -> new($idx)
+          unless defined(blessed($idx)) && $idx -> isa($class);
+        $idx = $idx -> to_row();
+        $idx = $idx -> [0];
+    } else {
+        $idx = [ $idx ];
+    }
+
+    my ($nrowx, $ncolx) = $x -> size();
+
+    my $y = [];
+    for (my $iy = 0 ; $iy <= $#$idx ; ++$iy) {
+        my $ix = $idx -> [$iy];
+        croak "Row index value $ix too large for $nrowx-by-$ncolx matrix in ",
+          (caller(0))[3] if $ix >= $nrowx;
+        $y -> [$iy] = [ @{ $x -> [$ix] } ];
+    }
+
+    bless $y, $class;
+}
+
+=pod
+
+=item getcol()
+
+Get the specified column(s). Returns a new matrix with the specified columns.
+
+    $y = $x -> getcol($j);                  # get one
+    $y = $x -> getcol([$j0, $j1, $j2]);     # get multiple
+
+=cut
+
+sub getcol {
+    croak "Not enough arguments for ", (caller(0))[3] if @_ < 2;
+    croak "Too many arguments for ", (caller(0))[3] if @_ > 2;
+    my $x = shift;
+    my $class = ref $x;
+
+    my $idx = shift;
+    if (ref $idx) {
+        $idx = __PACKAGE__ -> new($idx)
+          unless defined(blessed($idx)) && $idx -> isa($class);
+        $idx = $idx -> to_row();
+        $idx = $idx -> [0];
+    } else {
+        $idx = [ $idx ];
+    }
+
+    my ($nrowx, $ncolx) = $x -> size();
+
+    my $y = [];
+    for (my $jy = 0 ; $jy <= $#$idx ; ++$jy) {
+        my $jx = $idx -> [$jy];
+        croak "Column index value $jx too large for $nrowx-by-$ncolx matrix in ",
+          (caller(0))[3] if $jx >= $ncolx;
+        for (my $i = 0 ; $i < $nrowx ; ++$i) {
+            $y -> [$i][$jy] = $x -> [$i][$jx];
+        }
+    }
+
+    bless $y, $class;
+}
+
+=pod
+
+=item delrow()
+
+Delete row(s). Returns a new matrix identical to the invocand but with the
+specified row(s) deleted.
+
+    $y = $x -> delrow($i);                  # delete one
+    $y = $x -> delrow([$i0, $i1, $i2]);     # delete multiple
+
+=cut
+
+sub delrow {
+    croak "Not enough arguments for ", (caller(0))[3] if @_ < 2;
+    croak "Too many arguments for ", (caller(0))[3] if @_ > 2;
+    my $x = shift;
+    my $class = ref $x;
+
+    my $idxdel = shift;
+    if (ref $idxdel) {
+        $idxdel = __PACKAGE__ -> new($idxdel)
+          unless defined(blessed($idxdel)) && $idxdel -> isa($class);
+        $idxdel = $idxdel -> to_row();
+        $idxdel = $idxdel -> [0];
+    } else {
+        $idxdel = [ $idxdel ];
+    }
+
+    my ($nrowx, $ncolx) = $x -> size();
+
+    # This should be made faster.
+
+    my $idxget = [];
+    for (my $i = 0 ; $i < $nrowx ; ++$i) {
+        my $seen = 0;
+        for my $idx (@$idxdel) {
+            if ($i == int $idx) {
+                $seen = 1;
+                last;
+            }
+        }
+        push @$idxget, $i unless $seen;
+    }
+
+    my $y = [];
+    @$y = map [ @$_ ], @$x[ @$idxget ];
+    bless $y, $class;
+}
+
+=pod
+
+=item delcol()
+
+Delete column(s). Returns a new matrix identical to the invocand but with the
+specified column(s) deleted.
+
+    $y = $x -> delcol($j);                  # delete one
+    $y = $x -> delcol([$j0, $j1, $j2]);     # delete multiple
+
+=cut
+
+sub delcol {
+    croak "Not enough arguments for ", (caller(0))[3] if @_ < 2;
+    croak "Too many arguments for ", (caller(0))[3] if @_ > 2;
+    my $x = shift;
+    my $class = ref $x;
+
+    my $idxdel = shift;
+    if (ref $idxdel) {
+        $idxdel = __PACKAGE__ -> new($idxdel)
+          unless defined(blessed($idxdel)) && $idxdel -> isa($class);
+        $idxdel = $idxdel -> to_row();
+        $idxdel = $idxdel -> [0];
+    } else {
+        $idxdel = [ $idxdel ];
+    }
+
+    my ($nrowx, $ncolx) = $x -> size();
+
+    # This should be made faster.
+
+    my $idxget = [];
+    for (my $j = 0 ; $j < $ncolx ; ++$j) {
+        my $seen = 0;
+        for my $idx (@$idxdel) {
+            if ($j == int $idx) {
+                $seen = 1;
+                last;
+            }
+        }
+        push @$idxget, $j unless $seen;
+    }
+
+    my $y = [];
+    if (@$idxget) {
+        for my $row (@$x) {
+            push @$y, [ @{$row}[ @$idxget ] ];
+        }
+    }
+    bless $y, $class;
+}
+
+=pod
+
 =item concat()
 
 Concatenate two matrices horizontally. The matrices must have the same number of
