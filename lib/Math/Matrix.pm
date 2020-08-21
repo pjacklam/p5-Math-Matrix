@@ -29,7 +29,11 @@ use overload
               $x -> sub($y);
           },
 
-  '*'  => 'multiply',
+  '*'  => sub {
+              my ($x, $y, $swap) = @_;
+              $x -> mul($y);
+          },
+
   '~'  => 'transpose',
   '""' => 'as_string',
   '='  => 'clone';
@@ -2129,29 +2133,99 @@ sub negative {
 
 =pod
 
+=item mul()
+
+Multiplication. If one or both of the operands is a scalar, then scalar
+multiplication is performed. Otherwise, matrix multiplication is performed.
+
+    $z = $x -> mul($y);
+
+=cut
+
+sub mul {
+    croak "Not enough arguments for ", (caller(0))[3] if @_ < 2;
+    croak "Too many arguments for ", (caller(0))[3] if @_ > 2;
+    my $x = shift;
+    my $class = ref $x;
+
+    my $y = shift;
+    $y = $class -> new($y) unless defined(blessed($y)) && $y -> isa($class);
+
+    $x -> is_scalar() || $y -> is_scalar() ? $x -> smul($y) : $x -> mmul($y);
+}
+
+=pod
+
+=item mmul()
+
+Matrix multiplication. The number of columns in the first operand must be equal
+to the number of rows in the second operand.
+
+    $z = $x -> mmul($y);
+
+=cut
+
+sub mmul {
+    croak "Not enough arguments for ", (caller(0))[3] if @_ < 2;
+    croak "Too many arguments for ", (caller(0))[3] if @_ > 2;
+    my $x = shift;
+    my $class = ref $x;
+
+    my $y = shift;
+    $y = $class -> new($y) unless defined(blessed($y)) && $y -> isa($class);
+
+    my $nrowx = $x -> nrow();
+    my $ncolx = $x -> ncol();
+
+    my $nrowy = $y -> nrow();
+    my $ncoly = $y -> ncol();
+
+    croak "Matrix dimensions don't match in ", (caller(0))[3]
+      unless $ncolx == $nrowy;
+
+    my $z = [];
+    for (my $i = 0 ; $i < $nrowx ; ++ $i) {
+        for (my $j = 0 ; $j < $ncoly ; ++ $j) {
+            $z -> [$i][$j] = 0;
+            for (my $k = 0 ; $k < $ncolx ; ++ $k) {
+                $z -> [$i][$j] += $x -> [$i][$k] * $y -> [$k][$j];
+            }
+        }
+    }
+
+    bless $z, $class;
+}
+
+=pod
+
+=item smul()
+
+Scalar (element by element) multiplication.
+
+    $z = $x -> smul($y);
+
+=cut
+
+sub smul {
+    croak "Not enough arguments for ", (caller(0))[3] if @_ < 2;
+    croak "Too many arguments for ", (caller(0))[3] if @_ > 2;
+    my $x = shift;
+
+    my $sub = sub { $_[0] * $_[1] };
+    $x -> sapply($sub, @_);
+}
+
+=pod
+
 =item multiply()
 
-Multiplies two matrices where the length of the rows in the first matrix is the
-same as the length of the columns in the second matrix. Returns the product or
-B<undef> in case of error.
+This is an alias for C<mmul()>.
 
 =cut
 
 sub multiply {
-    my $self  = shift;
-    my $class = ref($self);
-    my $other = shift->transpose;
-    my @result;
-
-    return undef if $#{$self->[0]} != $#{$other->[0]};
-    for my $row (@{$self}) {
-        my $rescol = [];
-        for my $col (@{$other}) {
-            push(@{$rescol}, _vekpro($row,$col));
-        }
-        push(@result, $rescol);
-    }
-    $class->new(@result);
+    my $x = shift;
+    $x -> mmul(@_);
 }
 
 =pod
@@ -2697,18 +2771,6 @@ Returns a string contining the package name and version number.
 
 sub version {
     return "Math::Matrix $VERSION";
-}
-
-# Utility methods.
-
-sub _vekpro {
-    my($a, $b) = @_;
-    my $result=0;
-
-    for my $i (0 .. $#{$a}) {
-        $result += $a->[$i] * $b->[$i];
-    }
-    $result;
 }
 
 =pod
