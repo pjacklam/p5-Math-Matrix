@@ -121,14 +121,12 @@ Note that all the folling cases result in an empty matrix:
     $x = Math::Matrix->new([[]]);
     $x = Math::Matrix->new([]);
 
-If C<new> is called as an instance method with no input arguments, a zero
+If C<L</new()>> is called as an instance method with no input arguments, a zero
 filled matrix with identical dimensions is returned:
 
     $b = $a->new();     # $b is a zero matrix with the size of $a
 
 Each row must contain the same number of elements.
-
-In case of an erry, B<undef> is returned.
 
 =cut
 
@@ -252,7 +250,7 @@ sub id {
 
 =item new_identity()
 
-This is an alias for C<id()>.
+This is an alias for C<L</id()>>.
 
 =cut
 
@@ -264,7 +262,7 @@ sub new_identity {
 
 =item eye()
 
-This is an alias for C<id()>.
+This is an alias for C<L</id()>>.
 
 =cut
 
@@ -940,9 +938,9 @@ Returns 1 is the invocand is diagonal, and 0 otherwise.
 
     $bool = $x -> is_diag();
 
-A diagonal matrix is a square matrix where all non-zero elements, if any, are
-on the main diagonal. It has the following pattern, where only the elements
-marked as C<x> can be non-zero,
+A diagonal matrix is a square matrix where all non-zero elements, if any, are on
+the main diagonal. It has the following pattern, where only the elements marked
+as C<x> can be non-zero,
 
     [ x 0 0 0 0 ]
     [ 0 x 0 0 0 ]
@@ -980,8 +978,8 @@ Returns 1 is the invocand is anti-diagonal, and 0 otherwise.
 
     $bool = $x -> is_adiag();
 
-A diagonal matrix is a square matrix where all non-zero elements, if any, are
-on the main antidiagonal. It has the following pattern, where only the elements
+A diagonal matrix is a square matrix where all non-zero elements, if any, are on
+the main antidiagonal. It has the following pattern, where only the elements
 marked as C<x> can be non-zero,
 
     [ 0 0 0 0 x ]
@@ -1021,9 +1019,9 @@ Returns 1 is the invocand is tridiagonal, and 0 otherwise.
     $bool = $x -> is_tridiag();
 
 A tridiagonal matrix is a square matrix with nonzero elements only on the
-diagonal and slots horizontally or vertically adjacent the diagonal (i.e.,
-along the subdiagonal and superdiagonal). It has the following pattern, where
-only the elements marked as C<x> can be non-zero,
+diagonal and slots horizontally or vertically adjacent the diagonal (i.e., along
+the subdiagonal and superdiagonal). It has the following pattern, where only the
+elements marked as C<x> can be non-zero,
 
     [ x x 0 0 0 ]
     [ x x x 0 0 ]
@@ -1111,8 +1109,8 @@ Returns 1 is the invocand is upper triangular, and 0 otherwise.
 
     $bool = $x -> is_triu();
 
-An upper triangular matrix is a square matrix where all non-zero elements are
-on or above the main diagonal. It has the following pattern, where only the
+An upper triangular matrix is a square matrix where all non-zero elements are on
+or above the main diagonal. It has the following pattern, where only the
 elements marked as C<x> can be non-zero. It has the following pattern, where
 only the elements marked as C<x> can be non-zero,
 
@@ -1265,8 +1263,8 @@ Returns 1 is the invocand is upper anti-triangular, and 0 otherwise.
     $bool = $x -> is_atriu();
 
 An upper anti-triangular matrix is a square matrix where all non-zero elements
-are on or above the main anti-diagonal. It has the following pattern, where
-only the elements marked as C<x> can be non-zero,
+are on or above the main anti-diagonal. It has the following pattern, where only
+the elements marked as C<x> can be non-zero,
 
     [ x x x x ]
     [ x x x 0 ]
@@ -1302,9 +1300,9 @@ Returns 1 is the invocand is strictly upper anti-triangular, and 0 otherwise.
 
     $bool = $x -> is_satriu();
 
-A strictly anti-triangular matrix is a square matrix where all non-zero
-elements are strictly above the main diagonal. It has the following pattern,
-where only the elements marked as C<x> can be non-zero,
+A strictly anti-triangular matrix is a square matrix where all non-zero elements
+are strictly above the main diagonal. It has the following pattern, where only
+the elements marked as C<x> can be non-zero,
 
     [ x x x 0 ]
     [ x x 0 0 ]
@@ -1341,8 +1339,8 @@ Returns 1 is the invocand is lower anti-triangular, and 0 otherwise.
     $bool = $x -> is_atril();
 
 A lower anti-triangular matrix is a square matrix where all non-zero elements
-are on or below the main anti-diagonal. It has the following pattern, where
-only the elements marked as C<x> can be non-zero,
+are on or below the main anti-diagonal. It has the following pattern, where only
+the elements marked as C<x> can be non-zero,
 
     [ 0 0 0 x ]
     [ 0 0 x x ]
@@ -1420,7 +1418,7 @@ sub is_satril {
 
 You can determine the dimensions of a matrix by calling:
 
-    ($m, $n) = $a->size;
+    ($m, $n) = $a -> size;
 
 =cut
 
@@ -1437,7 +1435,7 @@ sub size {
 
 Returns the number of elements in the matrix.
 
-    $n = $x->nelm();
+    $n = $x -> nelm();
 
 =cut
 
@@ -1454,7 +1452,7 @@ sub nelm {
 
 Returns the number of rows.
 
-    $m = $x->nrow();
+    $m = $x -> nrow();
 
 =cut
 
@@ -1471,7 +1469,7 @@ sub nrow {
 
 Returns the number of columns.
 
-    $n = $x->ncol();
+    $n = $x -> ncol();
 
 =cut
 
@@ -1486,9 +1484,9 @@ sub ncol {
 
 =item npag()
 
-Returns the number of pages.
+Returns the number of pages. A non-matrix has one page.
 
-    $n = $x->pag();
+    $n = $x -> pag();
 
 =cut
 
@@ -1506,7 +1504,7 @@ sub npag {
 Returns the number of dimensions. This is the number of dimensions along which
 the length is different from one.
 
-    $n = $x->ndim();
+    $n = $x -> ndim();
 
 =cut
 
@@ -1620,7 +1618,9 @@ sub catcol {
 
 =item getrow()
 
-Get the specified row(s). Returns a new matrix with the specified rows.
+Get the specified row(s). Returns a new matrix with the specified rows. The
+number of rows in the output is identical to the number of elements in the
+input.
 
     $y = $x -> getrow($i);                  # get one
     $y = $x -> getrow([$i0, $i1, $i2]);     # get multiple
@@ -1661,6 +1661,8 @@ sub getrow {
 =item getcol()
 
 Get the specified column(s). Returns a new matrix with the specified columns.
+The number of columns in the output is identical to the number of elements in
+the input.
 
     $y = $x -> getcol($j);                  # get one
     $y = $x -> getcol([$j0, $j1, $j2]);     # get multiple
@@ -1858,6 +1860,8 @@ sub swaprc {
 
 Flip upside-down, i.e., flip along dimension 1.
 
+    $y = $x -> flipud();
+
 =cut
 
 sub flipud {
@@ -1875,6 +1879,8 @@ sub flipud {
 =item fliplr()
 
 Flip left-to-right, i.e., flip along dimension 2.
+
+    $y = $x -> fliplr();
 
 =cut
 
@@ -2026,7 +2032,7 @@ sub reshape {
 
 =item to_row()
 
-Convert to a row.
+Reshape to a row.
 
     $x -> to_row();
 
@@ -2058,7 +2064,7 @@ sub to_row {
 
 =item to_col()
 
-Convert to a column.
+Reshape to a column.
 
     $y = $x -> to_col();
 
@@ -2172,8 +2178,8 @@ sub tridiagonal_vector {
 Returns the transposed matrix. This is the matrix where colums and rows of the
 argument matrix are swapped.
 
-A subclass implementing matrices of complex numbers should provide a transpose()
-method that takes the complex conjugate of each element.
+A subclass implementing matrices of complex numbers should provide a
+C<L</transpose()>> method that takes the complex conjugate of each element.
 
 =cut
 
@@ -2195,13 +2201,41 @@ sub transpose {
 
 =item add()
 
-Add two matrices of the same dimensions.
+Addition. If one operands is a scalar, it is treated like a constant matrix with
+the same size as the other operand. Otherwise ordinary matrix addition is
+performed.
 
     $z = $x -> add($y);
+
+See also C<L</madd()>> and C<L</sadd()>>.
 
 =cut
 
 sub add {
+    croak "Not enough arguments for ", (caller(0))[3] if @_ < 2;
+    croak "Too many arguments for ", (caller(0))[3] if @_ > 2;
+    my $x = shift;
+    my $class = ref $x;
+
+    my $y = shift;
+    $y = $class -> new($y) unless defined(blessed($y)) && $y -> isa($class);
+
+    $x -> is_scalar() || $y -> is_scalar() ? $x -> sadd($y) : $x -> madd($y);
+}
+
+=pod
+
+=item madd()
+
+Matrix addition. Add two matrices of the same dimensions.
+
+    $z = $x -> madd($y);
+
+See also C<L</add()>> and C<L</sadd()>>.
+
+=cut
+
+sub madd {
     croak "Not enough arguments for ", (caller(0))[3] if @_ < 2;
     croak "Too many arguments for ", (caller(0))[3] if @_ > 2;
     my $x = shift;
@@ -2228,15 +2262,65 @@ sub add {
 
 =pod
 
+=item sadd()
+
+Scalar (element by element) addition. This method doesn't require the matrices
+to have the same size.
+
+    $z = $x -> sadd($y);
+
+See also C<L</add()>> and C<L</madd()>>.
+
+=cut
+
+sub sadd {
+    croak "Not enough arguments for ", (caller(0))[3] if @_ < 2;
+    croak "Too many arguments for ", (caller(0))[3] if @_ > 2;
+    my $x = shift;
+
+    my $sub = sub { $_[0] + $_[1] };
+    $x -> sapply($sub, @_);
+}
+
+=pod
+
 =item sub()
 
-Subtract two matrices of the same dimensions.
+Subtraction. If one operands is a scalar, it is treated as a constant matrix
+with the same size as the other operand. Otherwise, ordinarly matrix subtraction
+is performed.
 
     $z = $x -> sub($y);
+
+See also C<L</msub()>> and C<L</ssub()>>.
 
 =cut
 
 sub sub {
+    croak "Not enough arguments for ", (caller(0))[3] if @_ < 2;
+    croak "Too many arguments for ", (caller(0))[3] if @_ > 2;
+    my $x = shift;
+    my $class = ref $x;
+
+    my $y = shift;
+    $y = $class -> new($y) unless defined(blessed($y)) && $y -> isa($class);
+
+    $x -> is_scalar() || $y -> is_scalar() ? $x -> ssub($y) : $x -> msub($y);
+}
+
+=pod
+
+=item msub()
+
+Matrix subtraction. Subtract two matrices of the same size.
+
+    $z = $x -> msub($y);
+
+See also C<L</sub()>> and C<L</ssub()>>.
+
+=cut
+
+sub msub {
     croak "Not enough arguments for ", (caller(0))[3] if @_ < 2;
     croak "Too many arguments for ", (caller(0))[3] if @_ > 2;
     my $x = shift;
@@ -2263,9 +2347,44 @@ sub sub {
 
 =pod
 
+=item ssub()
+
+Scalar (element by element) subtraction. This method doesn't require the
+matrices to have the same size.
+
+    $z = $x -> ssub($y);
+
+See also C<L</sub()>> and C<L</msub()>>.
+
+=cut
+
+sub ssub {
+    croak "Not enough arguments for ", (caller(0))[3] if @_ < 2;
+    croak "Too many arguments for ", (caller(0))[3] if @_ > 2;
+    my $x = shift;
+
+    my $sub = sub { $_[0] - $_[1] };
+    $x -> sapply($sub, @_);
+}
+
+=pod
+
+=item subtract()
+
+This is an alias for C<L</msub()>>.
+
+=cut
+
+sub subtract {
+    my $x = shift;
+    $x -> sub(@_);
+}
+
+=pod
+
 =item neg()
 
-Negate a matrix.
+Negation. Negate a matrix.
 
     $y = $x -> neg();
 
@@ -2291,22 +2410,9 @@ sub neg {
 
 =pod
 
-=item subtract()
-
-This is an alias for C<sub()>.
-
-=cut
-
-sub subtract {
-    my $x = shift;
-    $x -> sub(@_);
-}
-
-=pod
-
 =item negative()
 
-This is an alias for C<neg()>.
+This is an alias for C<L</neg()>>.
 
 =cut
 
@@ -2319,8 +2425,9 @@ sub negative {
 
 =item mul()
 
-Multiplication. If one or both of the operands is a scalar, then scalar
-multiplication is performed. Otherwise, matrix multiplication is performed.
+Multiplication. If one operands is a scalar, it is treated as a constant matrix
+with the same size as the other operand. Otherwise, ordinary matrix
+multiplication is performed.
 
     $z = $x -> mul($y);
 
@@ -2384,7 +2491,8 @@ sub mmul {
 
 =item smul()
 
-Scalar (element by element) multiplication.
+Scalar (element by element) multiplication. This method doesn't require the
+matrices to have the same size.
 
     $z = $x -> smul($y);
 
@@ -2403,7 +2511,7 @@ sub smul {
 
 =item multiply()
 
-This is an alias for C<mmul()>.
+This is an alias for C<L</mmul()>>.
 
 =cut
 
@@ -2969,7 +3077,8 @@ The following operators are overloaded.
 
 =item C<+> and C<+=>
 
-Matrix addition. The two operands must have the same size.
+Matrix or scalar addition. Unless one or both of the operands is a scalar, both
+operands must have the same size.
 
     $C  = $A + $B;      # assign $A + $B to $C
     $A += $B;           # assign $A + $B to $A
@@ -2978,18 +3087,26 @@ Note that
 
 =item C<-> and C<-=>
 
-Matrix subtraction. The two operands must have the same size.
+Matrix or scalar subtraction. Unless one or both of the operands is a scalar,
+both operands must have the same size.
 
     $C  = $A + $B;      # assign $A - $B to $C
     $A += $B;           # assign $A - $B to $A
 
 =item C<*> and C<*=>
 
-Matrix multiplication. The number of columns in the first operand must be equal
-to the number of rows in the second operand.
+Matrix or scalar multiplication. Unless one or both of the operands is a scalar,
+the number of columns in the first operand must be equal to the number of rows
+in the second operand.
 
     $C  = $A * $B;      # assign $A * $B to $C
     $A *= $B;           # assign $A * $B to $A
+
+=item C<->
+
+Negation.
+
+    $B = -$A;           # $B is the negative of $A
 
 =item C<~>
 

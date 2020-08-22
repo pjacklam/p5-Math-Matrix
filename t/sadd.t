@@ -4,16 +4,16 @@ use strict;
 use warnings;
 
 use Math::Matrix;
-use Test::More tests => 20;
+use Test::More tests => 14;
 
-note("add() with non-empty matrices");
+note("sadd() with non-empty matrices");
 
 {
     my $x = Math::Matrix -> new([[  1,  2,  3 ],
                                  [  4,  5,  6 ]]);
     my $y = Math::Matrix -> new([[  7,  8,  9 ],
                                  [ 10, 11, 12 ]]);
-    my $z = $x -> add($y);
+    my $z = $x -> sadd($y);
 
     is(ref($z), 'Math::Matrix', '$z is a Math::Matrix');
     is_deeply([ @$z ], [[  8, 10, 12 ],
@@ -35,13 +35,13 @@ note("add() with non-empty matrices");
                         [ 10, 11, 12 ]], '$y is unmodified');
 }
 
-note("add() with matrix and scalar");
+note("sadd() with matrix and scalar");
 
 {
     my $x = Math::Matrix -> new([[ 1, 2, 3 ],
                                  [ 4, 5, 6 ]]);
     my $y = Math::Matrix -> new([[ 7 ]]);
-    my $z = $x -> add($y);
+    my $z = $x -> sadd($y);
 
     is(ref($z), 'Math::Matrix', '$z is a Math::Matrix');
     is_deeply([ @$z ], [[  8,  9, 10 ],
@@ -62,13 +62,13 @@ note("add() with matrix and scalar");
     is_deeply([ @$y ], [[ 7 ]], '$y is unmodified');
 }
 
-note("add() with scalar and matrix");
+note("sadd() with scalar and matrix");
 
 {
     my $x = Math::Matrix -> new([[ 7 ]]);
     my $y = Math::Matrix -> new([[ 1, 2, 3 ],
                                  [ 4, 5, 6 ]]);
-    my $z = $x -> add($y);
+    my $z = $x -> sadd($y);
 
     is(ref($z), 'Math::Matrix', '$z is a Math::Matrix');
     is_deeply([ @$z ], [[  8,  9, 10 ],
@@ -89,40 +89,14 @@ note("add() with scalar and matrix");
                         [ 4, 5, 6 ]], '$y is unmodified');
 }
 
-note("add() with empty matrices");
+note("sadd() with empty matrices");
 
 {
     my $x = Math::Matrix -> new([]);
     my $y = Math::Matrix -> new([]);
-    my $z = $x -> add($y);
+    my $z = $x -> sadd($y);
 
     is(ref($z), 'Math::Matrix', '$z is a Math::Matrix');
     is_deeply([ @$z ], [],
               '$z has the right values');
-}
-
-note("overloading");
-
-{
-    my $x = Math::Matrix -> new([[3]]);
-    my $y = $x + 4;
-    is(ref($y), 'Math::Matrix', '$y is a Math::Matrix');
-    is_deeply([ @$y ], [[7]],
-              '$y has the right values');
-}
-
-{
-    my $x = Math::Matrix -> new([[3]]);
-    my $y = 4 + $x;
-    is(ref($y), 'Math::Matrix', '$y is a Math::Matrix');
-    is_deeply([ @$y ], [[7]],
-              '$y has the right values');
-}
-
-{
-    my $x = Math::Matrix -> new([[3]]);
-    $x += 4;
-    is(ref($x), 'Math::Matrix', '$x is a Math::Matrix');
-    is_deeply([ @$x ], [[7]],
-              '$x has the right values');
 }
