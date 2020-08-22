@@ -34,6 +34,11 @@ use overload
               $x -> mul($y);
           },
 
+  'int' => sub {
+               my ($x, $y, $swap) = @_;
+               $x -> int();
+           },
+
   '~'  => 'transpose',
   '""' => 'as_string',
   '='  => 'clone';
@@ -2629,6 +2634,24 @@ sub multiply_scalar {
 
 =pod
 
+=item int()
+
+Truncate to integer. Truncates each element to an integer.
+
+    $y = $x -> int();
+
+=cut
+
+sub int {
+    croak "Not enough arguments for ", (caller(0))[3] if @_ < 1;
+    croak "Too many arguments for ", (caller(0))[3] if @_ > 1;
+    my $x = shift;
+
+    $x -> sapply(sub { int $_[0] });
+}
+
+=pod
+
 =item equal()
 
 Decide if two matrices are equal. The criterion is, that each pair of elements
@@ -3113,6 +3136,12 @@ Negation.
 Transpose.
 
     $B = ~$A;           # $B is the transpose of $A
+
+=item C<int>
+
+Truncate to integer.
+
+    $B = int $A;        # $B contains only integers
 
 =back
 
