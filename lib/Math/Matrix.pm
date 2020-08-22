@@ -383,6 +383,49 @@ sub constant {
 
 =pod
 
+=item rand()
+
+Returns a matrix of uniformly distributed random numbers in the range [0,1).
+
+    $x = Math::Matrix -> rand($m);          # $m-by-1 matrix
+    $x = Math::Matrix -> rand($m, $n);      # $m-by-$n matrix
+
+To generate an C<$m>-by-C<$n> matrix of uniformly distributed random numbers in
+the range [0,C<$a>), use
+
+    $x = $a * Math::Matrix -> rand($m, $n);
+
+To generate an C<$m>-by-C<$n> matrix of uniformly distributed random numbers in
+the range [C<$a>,C<$b>), use
+
+    $x = $a + ($b - $a) * Math::Matrix -> rand($m, $n);
+
+=cut
+
+sub rand {
+    croak "Not enough arguments for ", (caller(0))[3] if @_ < 1;
+    croak "Too many arguments for ", (caller(0))[3] if @_ > 3;
+    my $class = shift;
+
+    croak +(caller(0))[3], " is a class method, not an instance method"
+      if ref $class;
+
+    my ($nrow, $ncol) = @_ == 0 ? (0, 0)
+                      : @_ == 1 ? (@_, 1)
+                      :           (@_);
+
+    my $x = bless [], $class;
+    for (my $i = 0 ; $i < $nrow ; ++ $i) {
+        for (my $j = 0 ; $j < $ncol ; ++ $j) {
+            $x -> [$i][$j] = rand;
+        }
+    }
+
+    return $x;
+}
+
+=pod
+
 =item clone()
 
 Clones a matrix and returns the clone.
