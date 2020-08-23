@@ -34,6 +34,15 @@ use overload
               $x -> mul($y);
           },
 
+  '**' => sub {
+              my ($x, $y, $swap) = @_;
+              if ($swap) {
+                  my $class = ref $x;
+                  return $class -> new($y) -> pow($x);
+              }
+              $x -> pow($y);
+          },
+
   'int' => sub {
                my ($x, $y, $swap) = @_;
                $x -> int();
@@ -2566,6 +2575,106 @@ This is an alias for C<L</mmul()>>.
 sub multiply {
     my $x = shift;
     $x -> mmul(@_);
+}
+
+=pod
+
+=item pow()
+
+Power function.
+
+This is an alias for C<L</mpow()>>.
+
+See also C<L</spow()>>.
+
+=cut
+
+sub pow {
+    my $x = shift;
+    $x -> mpow(@_);
+}
+
+=pod
+
+=item mpow()
+
+Matrix power. The second operand must be a non-negative integer.
+
+    $y = $x -> mpow($n);
+
+The following matrix power
+
+    $x = Math::Matrix -> new([[0, -2],[1, 4]]);
+    $y = 4;
+    $z = $x -> pow($y);
+
+returns the matrix
+
+    [ -28  -96 ]
+    [  48  164 ]
+
+See also C<L</spow()>>.
+
+=cut
+
+sub mpow {
+    croak "Not enough arguments for ", (caller(0))[3] if @_ < 2;
+    croak "Too many arguments for ", (caller(0))[3] if @_ > 2;
+    my $x = shift;
+    my $class = ref $x;
+
+    croak "Invocand matrix must be square in ", (caller(0))[3]
+      unless $x -> is_square();
+
+    my $n = shift;
+    if (ref $n) {
+        $n = $class -> new($n) unless defined(blessed($n)) && $n -> isa($class);
+        croak "Argument must be a scalar in ", (caller(0))[3]
+          unless $n -> is_scalar();
+        $n = $n -> [0][0];
+    }
+    croak "Argument must be a non-negative integer ", (caller(0))[3]
+      unless $n == int $n;
+
+    return $class -> new([]) if $x -> is_empty();
+
+    my ($nrowx, $ncolx) = $x -> size();
+    return $class -> id($nrowx, $ncolx) if $n == 0;
+    return $x -> clone()                if $n == 1;
+
+    my $y = $class -> id($nrowx, $ncolx);
+    my $tmp = $x;
+    while (1) {
+        my $rem = $n % 2;
+        $y *= $tmp if $rem;
+        $n = ($n - $rem) / 2;
+        last if $n == 0;
+        $tmp = $tmp * $tmp;
+    }
+
+    return $y;
+}
+
+=pod
+
+=item spow()
+
+Scalar (element by element) power function. This method doesn't require the
+matrices to have the same size.
+
+    $z = $x -> spow($y);
+
+See also C<L</mpow()>>.
+
+=cut
+
+sub spow {
+    croak "Not enough arguments for ", (caller(0))[3] if @_ < 2;
+    croak "Too many arguments for ", (caller(0))[3] if @_ > 2;
+    my $x = shift;
+
+    my $sub = sub { $_[0] ** $_[1] };
+    $x -> sapply($sub, @_);
 }
 
 =pod
