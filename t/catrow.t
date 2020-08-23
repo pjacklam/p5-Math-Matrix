@@ -4,12 +4,12 @@ use strict;
 use warnings;
 
 use Math::Matrix;
-use Test::More tests => 26;
+use Test::More tests => 28;
 
 {
-    my $x = Math::Matrix -> new([1, 2],
-                                [3, 4]);
-    my $y = Math::Matrix -> new([5, 6]);
+    my $x = Math::Matrix -> new([[1, 2],
+                                 [3, 4]]);
+    my $y = Math::Matrix -> new([[5, 6]]);
     my $z = $x -> catrow($y);
 
     is(ref($z), 'Math::Matrix', '$z is a Math::Matrix');
@@ -22,7 +22,7 @@ use Test::More tests => 26;
     my ($nrowz, $ncolz) = $z -> size();
     for (my $i = 0 ; $i < $nrowz ; ++$i) {
         for (my $j = 0 ; $j < $ncolz ; ++$j) {
-            $z -> [$i][$j] += 10;
+            $z -> [$i][$j] += 100;
         }
     }
 
@@ -50,7 +50,7 @@ use Test::More tests => 26;
     my ($nrowz, $ncolz) = $z -> size();
     for (my $i = 0 ; $i < $nrowz ; ++$i) {
         for (my $j = 0 ; $j < $ncolz ; ++$j) {
-            $z -> [$i][$j] += 10;
+            $z -> [$i][$j] += 100;
         }
     }
 
@@ -77,7 +77,7 @@ use Test::More tests => 26;
     my ($nrowz, $ncolz) = $z -> size();
     for (my $i = 0 ; $i < $nrowz ; ++$i) {
         for (my $j = 0 ; $j < $ncolz ; ++$j) {
-            $z -> [$i][$j] += 10;
+            $z -> [$i][$j] += 100;
         }
     }
 
@@ -89,25 +89,30 @@ use Test::More tests => 26;
 
 {
     my $x = Math::Matrix -> new([]);
-    my $y = Math::Matrix -> new([6, 7],
-                                [8, 9]);
-    my $z = $x -> catrow($y);
+    my $a = Math::Matrix -> new([[2, 3],
+                                 [4, 5]]);
+    my $b = Math::Matrix -> new([]);
+    my $c = Math::Matrix -> new([[6, 7]]);
+    my $z = $x -> catrow($a, $b, $c);
     is(ref($z), 'Math::Matrix', '$z is a Math::Matrix');
-    is_deeply([ @$z ], [[ 6, 7 ],
-                        [ 8, 9 ]], '$z has the right values');
+    is_deeply([ @$z ], [[ 2, 3 ],
+                        [ 4, 5 ],
+                        [ 6, 7 ]], '$z has the right values');
 
-    # Verify that modifying $z does not modify $x or $y.
+    # Verify that modifying $z does not modify $x, $a, $b, or $c.
 
     my ($nrowz, $ncolz) = $z -> size();
     for (my $i = 0 ; $i < $nrowz ; ++$i) {
         for (my $j = 0 ; $j < $ncolz ; ++$j) {
-            $z -> [$i][$j] += 10;
+            $z -> [$i][$j] += 100;
         }
     }
 
-    is_deeply([ @$x ], [], '$x is unmodified');
-    is_deeply([ @$y ], [[6, 7],
-                        [8, 9]], '$y is unmodified');
+    is_deeply([ @$x ], [],       '$x is unmodified');
+    is_deeply([ @$a ], [[2, 3],
+                        [4, 5]], '$a is unmodified');
+    is_deeply([ @$b ], [],       '$b is unmodified');
+    is_deeply([ @$c ], [[6, 7]], '$c is unmodified');
 }
 
 {

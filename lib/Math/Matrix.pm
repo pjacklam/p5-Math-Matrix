@@ -1607,23 +1607,21 @@ sub catrow {
     my $x = shift;
     my $class = ref $x;
 
-    my $ncolx = $x -> ncol();           # number of columns in $x
-    my $z = $x -> clone();              # initialize output
+    my $ncol;
+    my $z = bless [], $class;           # initialize output
 
-    for (my $i = 0 ; $i <= $#_ ; ++$i) {
-        my $y = $_[$i];
-        next if $y -> is_empty();       # ignore empty $y
-        $y = $y -> clone();
+    for my $y ($x, @_) {
+        my $ncoly = $y -> ncol();
+        next if $ncoly == 0;            # ignore empty $y
 
-        if ($z -> is_empty()) {
-            $z = $y;                    # $y is non-empty
-            next;
+        if (defined $ncol) {
+            croak "All operands must have the same number of columns in ",
+              (caller(0))[3] unless $ncoly == $ncol;
+        } else {
+            $ncol = $ncoly;
         }
 
-        croak "All operands must have the same number of columns in ",
-          (caller(0))[3] unless $y -> ncol() == $ncolx;
-
-        push @$z, @$y;
+        push @$z, map { [ @$_] } @$y;
     }
 
     return $z;
@@ -1647,23 +1645,21 @@ sub catcol {
     my $x = shift;
     my $class = ref $x;
 
-    my $nrowx = $x -> nrow();           # number of rows in $x
-    my $z = $x -> clone();              # initialize output
+    my $nrow;
+    my $z = bless [], $class;           # initialize output
 
-    for (my $i = 0 ; $i <= $#_ ; ++$i) {
-        my $y = $_[$i];
-        next if $y -> is_empty();       # ignore empty $y
-        $y = $y -> clone();
+    for my $y ($x, @_) {
+        my $nrowy = $y -> nrow();
+        next if $nrowy == 0;            # ignore empty $y
 
-        if ($z -> is_empty()) {
-            $z = $y;                    # $y is non-empty
-            next;
+        if (defined $nrow) {
+            croak "All operands must have the same number of rows in ",
+              (caller(0))[3] unless $nrowy == $nrow;
+        } else {
+            $nrow = $nrowy;
         }
 
-        croak "All operands must have the same number of rows in ",
-          (caller(0))[3] unless $y -> nrow() == $nrowx;
-
-        for (my $i = 0 ; $i < $nrowx ; ++$i) {
+        for (my $i = 0 ; $i < $nrow ; ++$i) {
             push @{ $z -> [$i] }, @{ $y -> [$i] };
         }
     }
