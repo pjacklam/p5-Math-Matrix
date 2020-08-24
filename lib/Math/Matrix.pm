@@ -1882,6 +1882,204 @@ sub concat {
 
 =pod
 
+=item splicerow()
+
+Row splicing. This is like Perl's built-in splice() function, except that it
+works on the rows of a matrix.
+
+    $y = $x -> splicerow($offset);
+    $y = $x -> splicerow($offset, $length);
+    $y = $x -> splicerow($offset, $length, $a, $b, ...);
+
+The built-in splice() function modifies the first argument and returns the
+removed elements, if any. However, since splicerow() does not modify the
+invocand, it returns the modified version as the first output argument and the
+removed part as a (possibly empty) second output argument.
+
+    $x = Math::Matrix -> new([[ 1,  2],
+                              [ 3,  4],
+                              [ 5,  6],
+                              [ 7,  8]]);
+    $a = Math::Matrix -> new([[11, 12],
+                              [13, 14]]);
+    ($y, $z) = $x -> splicerow(1, 2, $a);
+
+Gives C<$y>
+
+    [  1  2 ]
+    [ 11 12 ]
+    [ 13 14 ]
+    [  7  8 ]
+
+and C<$z>
+
+    [  3  4 ]
+    [  5  6 ]
+
+=cut
+
+sub splicerow {
+    croak "Not enough input arguments" if @_ < 1;
+    my $x = shift;
+    my $class = ref $x;
+
+    my $offs = 0;
+    my $len  = $x -> nrow();
+    my $repl = $class -> new([]);
+
+    if (@_) {
+        $offs = shift;
+        croak "Offset can not be undefined" unless defined $offs;
+        if (ref $offs) {
+            $offs = $class -> new($offs)
+              unless defined(blessed($offs)) && $offs -> isa($class);
+            croak "Offset must be a scalar" unless $offs -> is_scalar();
+            $offs = $offs -> [0][0];
+        }
+
+        if (@_) {
+            $len = shift;
+            if (ref $len) {
+                croak "Length can not be undefined" unless defined $len;
+                $len = $class -> new($len)
+                  unless defined(blessed($len)) && $len -> isa($class);
+                croak "length must be a scalar" unless $len -> is_scalar();
+                $len = $len -> [0][0];
+            }
+
+            if (@_) {
+                $repl = $repl -> catrow(@_);
+            }
+        }
+    }
+
+    my $y = $x -> clone();
+    my $z = $class -> new([]);
+
+    @$z = splice @$y, $offs, $len, @$repl;
+    return wantarray ? ($y, $z) : $y;
+}
+
+=pod
+
+=item splicecol()
+
+Column splicing. This is like Perl's built-in splice() function, except that it
+works on the columns of a matrix.
+
+    $y = $x -> splicecol($offset);
+    $y = $x -> splicecol($offset, $length);
+    $y = $x -> splicecol($offset, $length, $a, $b, ...);
+
+The built-in splice() function modifies the first argument and returns the
+removed elements, if any. However, since splicecol() does not modify the
+invocand, it returns the modified version as the first output argument and the
+removed part as a (possibly empty) second output argument.
+
+    $x = Math::Matrix -> new([[ 1, 3, 5, 7 ],
+                              [ 2, 4, 6, 8 ]]);
+    $a = Math::Matrix -> new([[11, 13],
+                              [12, 14]]);
+    ($y, $z) = $x -> splicerow(1, 2, $a);
+
+Gives C<$y>
+
+    [ 1  11  13  7 ]
+    [ 2  12  14  8 ]
+
+and C<$z>
+
+    [ 3  5 ]
+    [ 4  6 ]
+
+=cut
+
+sub splicecol {
+    croak "Not enough input arguments" if @_ < 1;
+    my $x = shift;
+    my $class = ref $x;
+
+    my ($nrowx, $ncolx) = $x -> size();
+
+    my $offs = 0;
+    my $len  = $ncolx;
+    my $repl = $class -> new([]);
+
+    if (@_) {
+        $offs = shift;
+        croak "Offset can not be undefined" unless defined $offs;
+        if (ref $offs) {
+            $offs = $class -> new($offs)
+              unless defined(blessed($offs)) && $offs -> isa($class);
+            croak "Offset must be a scalar" unless $offs -> is_scalar();
+            $offs = $offs -> [0][0];
+        }
+
+        if (@_) {
+            $len = shift;
+            if (ref $len) {
+                croak "Length can not be undefined" unless defined $len;
+                $len = $class -> new($len)
+                  unless defined(blessed($len)) && $len -> isa($class);
+                croak "length must be a scalar" unless $len -> is_scalar();
+                $len = $len -> [0][0];
+            }
+
+            if (@_) {
+                $repl = $repl -> catcol(@_);
+            }
+        }
+    }
+
+    my $y = $x -> clone();
+    my $z = $class -> new([]);
+
+    if ($offs > $len) {
+        carp "splicecol() offset past end of array";
+        $offs = $len;
+    }
+
+    # The case when we are not removing anything from the invocand matrix: If
+    # the offset is identical to the number of columns in the invocand matrix,
+    # just appending the replacement matrix to the invocand matrix.
+
+    if ($offs == $len) {
+        unless ($repl -> is_empty()) {
+            for (my $i = 0 ; $i < $nrowx ; ++$i) {
+                push @{ $y -> [$i] }, @{ $repl -> [$i] };
+            }
+        }
+    }
+
+    # The case when we are removing everything from the invocand matrix: If the
+    # offset is zero, and the length is identical to the number of columns in
+    # the invocand matrix, replace the whole invocand matrix with the
+    # replacement matrix.
+
+    elsif ($offs == 0 && $len == $ncolx) {
+        @$z = @$y;
+        @$y = @$repl;
+    }
+
+    # The case when we are removing parts of the invocand matrix.
+
+    else {
+        if ($repl -> is_empty()) {
+            for (my $i = 0 ; $i < $nrowx ; ++$i) {
+                @{ $z -> [$i] } = splice @{ $y -> [$i] }, $offs, $len;
+            }
+        } else {
+            for (my $i = 0 ; $i < $nrowx ; ++$i) {
+                @{ $z -> [$i] } = splice @{ $y -> [$i] }, $offs, $len, @{ $repl -> [$i] };
+            }
+        }
+    }
+
+    return wantarray ? ($y, $z) : $y;
+}
+
+=pod
+
 =item swaprc()
 
 Swap rows and columns. This method does nothing but shuffle elements around. For
