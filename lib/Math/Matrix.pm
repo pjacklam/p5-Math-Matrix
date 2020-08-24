@@ -1534,7 +1534,7 @@ sub ncol {
     croak "Not enough arguments for ", (caller(0))[3] if @_ < 1;
     croak "Too many arguments for ", (caller(0))[3] if @_ > 1;
     my $x = shift;
-    return @$x ? @{$x->[0]} : 0;
+    return @$x ? scalar(@{$x->[0]}) : 0;
 }
 
 =pod
