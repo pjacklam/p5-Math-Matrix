@@ -3433,12 +3433,118 @@ sub cross_product {
 
 =pod
 
+=item to_permmat()
+
+Permutation vector to permutation matrix. Converts a vector of zero-based
+permutation indices to a permutation matrix.
+
+    $P = $v -> to_permmat();
+
+For example
+
+    $v = Math::Matrix -> new([[0, 3, 1, 4, 2]]);
+    $m = $v -> to_permmat();
+
+gives the permutation matrix C<$m>
+
+    [ 1 0 0 0 0 ]
+    [ 0 0 0 1 0 ]
+    [ 0 1 0 0 0 ]
+    [ 0 0 0 0 1 ]
+    [ 0 0 1 0 0 ]
+
+=cut
+
+sub to_permmat {
+    croak "Not enough arguments for ", (caller(0))[3] if @_ < 1;
+    croak "Too many arguments for ", (caller(0))[3] if @_ > 1;
+    my $v = shift;
+    my $class = ref $v;
+
+    my $n = $v -> nelm();
+    my $P = $class -> zeros($n, $n);    # initialize output
+    return $P if $n == 0;               # if emtpy $v
+
+    croak "Invocand must be a vector" unless $v -> is_vector();
+    $v = $v -> to_col();
+
+    for (my $i = 0 ; $i < $n ; ++$i) {
+        my $j = $v -> [$i][0];
+        croak "index out of range" unless 0 <= $j && $j < $n;
+        $P -> [$i][$j] = 1;
+    }
+
+    return $P;
+}
+
+=pod
+
+=item to_permvec()
+
+Permutation matrix to permutation vector. Converts a permutation matrix to a
+vector of zero-based permutation indices.
+
+    $v = $P -> to_permvec();
+
+    $v = Math::Matrix -> new([[0, 3, 1, 4, 2]]);
+    $m = $v -> to_permmat();
+
+Gives the permutation matrix C<$m>
+
+    [ 1 0 0 0 0 ]
+    [ 0 0 0 1 0 ]
+    [ 0 1 0 0 0 ]
+    [ 0 0 0 0 1 ]
+    [ 0 0 1 0 0 ]
+
+See also C<L</to_permmat()>>.
+
+=cut
+
+sub to_permvec {
+    croak "Not enough arguments for ", (caller(0))[3] if @_ < 1;
+    croak "Too many arguments for ", (caller(0))[3] if @_ > 1;
+    my $P = shift;
+    my $class = ref $P;
+
+    croak "Invocand matrix must be square" unless $P -> is_square();
+    my $n = $P -> nrow();
+
+    my $v = $class -> zeros($n, 1);     # initialize output
+
+    my $seen = [ (0) x $n ];            # keep track of the ones
+
+    for (my $i = 0 ; $i < $n ; ++$i) {
+        my $k;
+        for (my $j = 0 ; $j < $n ; ++$j) {
+            next if $P -> [$i][$j] == 0;
+            if ($P -> [$i][$j] == 1) {
+                croak "invalid permutation matrix; more than one row has",
+                  " an element with value 1 in column $j" if $seen->[$j]++;
+                $k = $j;
+                next;
+            }
+            croak "invalid permutation matrix; element ($i,$j)",
+              " is neither 0 nor 1";
+        }
+        croak "invalid permutation matrix; row $i has no element with value 1"
+          unless defined $k;
+        $v->[$i][0] = $k;
+    }
+
+    return $v;
+}
+
+=pod
+
 =item sapply()
 
 Scalar apply. Applies a subroutine to each element, or each set of corresponding
 elements if multiple operands are given, and returns the result. The first argument
 is the subroutine to apply. The following arguments, if any, are additional
 matrices on which to apply the subroutine.
+
+See also C<L</to_permvec()>>.
 
 =over
 
