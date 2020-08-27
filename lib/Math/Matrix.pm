@@ -772,6 +772,81 @@ sub is_antisymmetric {
 
 =pod
 
+=item is_persymmetric()
+
+Returns 1 is the invocand is persymmetric, and 0 otherwise.
+
+    $bool = $x -> is_persymmetric();
+
+A persymmetric matrix is a square matrix which is symmetric with respect to the
+anti-diagonal, e.g.:
+
+    [ f  h  j  k ]
+    [ c  g  i  j ]
+    [ b  d  g  h ]
+    [ a  b  c  f ]
+
+=cut
+
+sub is_persymmetric {
+    croak "Not enough arguments for ", (caller(0))[3] if @_ < 1;
+    croak "Too many arguments for ", (caller(0))[3] if @_ > 1;
+    my $x = shift;
+
+    $x -> fliplr() -> is_symmetric();
+}
+
+=pod
+
+=item is_hankel()
+
+Returns 1 is the invocand is a Hankel matric a.k.a. a catalecticant matrix, and
+0 otherwise.
+
+    $bool = $x -> is_hankel();
+
+A Hankel matrix is a square matrix in which each ascending skew-diagonal from
+left to right is constant, e.g.:
+
+    [ e f g h i ]
+    [ d e f g h ]
+    [ c d e f g ]
+    [ b c d e f ]
+    [ a b c d e ]
+
+=cut
+
+sub is_hankel {
+    croak "Not enough arguments for ", (caller(0))[3] if @_ < 1;
+    croak "Too many arguments for ", (caller(0))[3] if @_ > 1;
+    my $x = shift;
+
+    my ($nrow, $ncol) = $x -> size();
+    return 0 unless $nrow == $ncol;
+
+    # Check the lower triangular part.
+
+    for (my $i = 0 ; $i < $nrow - 1 ; ++$i) {
+        my $first = $x -> [$i][0];
+        for (my $k = 1 ; $k < $nrow - $i ; ++$k) {
+            return 0 unless $x -> [$i + $k][$k] == $first;
+        }
+    }
+
+    # Check the strictly upper triangular part.
+
+    for (my $j = 1 ; $j < $ncol - 1 ; ++$j) {
+        my $first = $x -> [0][$j];
+        for (my $k = 1 ; $k < $nrow - $j ; ++$k) {
+            return 0 unless $x -> [$k][$j + $k] == $first;
+        }
+    }
+
+    return 1;
+}
+
+=pod
+
 =item is_zero()
 
 Returns 1 is the invocand is a zero matrix, and 0 otherwise. A zero matrix
@@ -1012,19 +1087,7 @@ sub is_diag {
     croak "Too many arguments for ", (caller(0))[3] if @_ > 1;
     my $x = shift;
 
-    my $nrow = $x -> nrow();
-    my $ncol = $x -> ncol();
-
-    return 0 unless $nrow == $ncol;
-
-    for (my $i = 0 ; $i < $nrow ; ++$i) {
-        for (my $j = 0 ; $j < $ncol ; ++$j) {
-            next if $i == $j;
-            return 0 unless $x -> [$i][$j] == 0;
-        }
-    }
-
-    return 1;
+    $x -> is_band(0);
 }
 
 =pod
@@ -1052,19 +1115,7 @@ sub is_adiag {
     croak "Too many arguments for ", (caller(0))[3] if @_ > 1;
     my $x = shift;
 
-    my $nrow = $x -> nrow();
-    my $ncol = $x -> ncol();
-
-    return 0 unless $nrow == $ncol;
-
-    for (my $i = 0 ; $i < $nrow ; ++$i) {
-        for (my $j = 0 ; $j < $ncol ; ++$j) {
-            next if $i + $j + 1 == $nrow;
-            return 0 unless $x -> [$i][$j] == 0;
-        }
-    }
-
-    return 1;
+    $x -> is_aband(0);
 }
 
 =pod
@@ -1093,19 +1144,7 @@ sub is_tridiag {
     croak "Too many arguments for ", (caller(0))[3] if @_ > 1;
     my $x = shift;
 
-    my $nrow = $x -> nrow();
-    my $ncol = $x -> ncol();
-
-    return 0 unless $nrow == $ncol;
-
-    for (my $i = 0 ; $i < $nrow ; ++$i) {
-        for (my $j = 0 ; $j < $ncol ; ++$j) {
-            next if $i == $j || $i == $j - 1 || $i == $j + 1;
-            return 0 unless $x -> [$i][$j] == 0;
-        }
-    }
-
-    return 1;
+    $x -> is_band(1);
 }
 
 =pod
@@ -1134,23 +1173,236 @@ sub is_atridiag {
     croak "Too many arguments for ", (caller(0))[3] if @_ > 1;
     my $x = shift;
 
-    my $nrow = $x -> nrow();
-    my $ncol = $x -> ncol();
+    $x -> is_aband(1);
+}
 
-    return 0 unless $nrow == $ncol;
+=pod
+
+=item is_pentadiag()
+
+Returns 1 is the invocand is pentadiagonal, and 0 otherwise.
+
+    $bool = $x -> is_pentadiag();
+
+A pentadiagonal matrix is a square matrix with nonzero elements only on the
+diagonal and the two diagonals above and below the main diagonal. It has the
+following pattern, where only the elements marked as C<x> can be non-zero,
+
+    [ x x x 0 0 0 ]
+    [ x x x x 0 0 ]
+    [ x x x x x 0 ]
+    [ 0 x x x x x ]
+    [ 0 0 x x x x ]
+    [ 0 0 0 x x x ]
+
+=cut
+
+sub is_pentadiag {
+    croak "Not enough arguments for ", (caller(0))[3] if @_ < 1;
+    croak "Too many arguments for ", (caller(0))[3] if @_ > 1;
+    my $x = shift;
+
+    $x -> is_band(2);
+}
+
+=pod
+
+=item is_apentadiag()
+
+Returns 1 is the invocand is anti-pentadiagonal, and 0 otherwise.
+
+    $bool = $x -> is_pentadiag();
+
+A anti-pentadiagonal matrix is a square matrix with nonzero elements only on the
+anti-diagonal and two anti-diagonals above and below the main anti-diagonal. It
+has the following pattern, where only the elements marked as C<x> can be
+non-zero,
+
+    [ 0 0 0 x x x ]
+    [ 0 0 x x x x ]
+    [ 0 x x x x x ]
+    [ x x x x x 0 ]
+    [ x x x x 0 0 ]
+    [ x x x 0 0 0 ]
+
+=cut
+
+sub is_apentadiag {
+    croak "Not enough arguments for ", (caller(0))[3] if @_ < 1;
+    croak "Too many arguments for ", (caller(0))[3] if @_ > 1;
+    my $x = shift;
+
+    $x -> is_aband(2);
+}
+
+=pod
+
+=item is_heptadiag()
+
+Returns 1 is the invocand is heptadiagonal, and 0 otherwise.
+
+    $bool = $x -> is_heptadiag();
+
+A heptadiagonal matrix is a square matrix with nonzero elements only on the
+diagonal and the two diagonals above and below the main diagonal. It has the
+following pattern, where only the elements marked as C<x> can be non-zero,
+
+    [ x x x x 0 0 ]
+    [ x x x x x 0 ]
+    [ x x x x x x ]
+    [ x x x x x x ]
+    [ 0 x x x x x ]
+    [ 0 0 x x x x ]
+
+=cut
+
+sub is_heptadiag {
+    croak "Not enough arguments for ", (caller(0))[3] if @_ < 1;
+    croak "Too many arguments for ", (caller(0))[3] if @_ > 1;
+    my $x = shift;
+
+    $x -> is_band(3);
+}
+
+=pod
+
+=item is_aheptadiag()
+
+Returns 1 is the invocand is anti-heptadiagonal, and 0 otherwise.
+
+    $bool = $x -> is_heptadiag();
+
+A anti-heptadiagonal matrix is a square matrix with nonzero elements only on the
+anti-diagonal and two anti-diagonals above and below the main anti-diagonal. It
+has the following pattern, where only the elements marked as C<x> can be
+non-zero,
+
+    [ 0 0 x x x x ]
+    [ 0 x x x x x ]
+    [ x x x x x x ]
+    [ x x x x x x ]
+    [ x x x x x 0 ]
+    [ x x x x 0 0 ]
+
+=cut
+
+sub is_aheptadiag {
+    croak "Not enough arguments for ", (caller(0))[3] if @_ < 1;
+    croak "Too many arguments for ", (caller(0))[3] if @_ > 1;
+    my $x = shift;
+
+    $x -> is_aband(3);
+}
+
+=pod
+
+=item is_band()
+
+Returns 1 is the invocand is a band matrix with a specified bandwidth, and 0
+otherwise.
+
+    $bool = $x -> is_band($k);
+
+A band matrix is a square matrix with nonzero elements only on the diagonal and
+on the C<$k> diagonals above and below the main diagonal. The bandwidth C<$k>
+must be non-negative.
+
+    $bool = $x -> is_band(0);   # is $x diagonal?
+    $bool = $x -> is_band(1);   # is $x tridiagonal?
+    $bool = $x -> is_band(2);   # is $x pentadiagonal?
+    $bool = $x -> is_band(3);   # is $x heptadiagonal?
+
+=cut
+
+sub is_band {
+    croak "Not enough arguments for ", (caller(0))[3] if @_ < 2;
+    croak "Too many arguments for ", (caller(0))[3] if @_ > 2;
+    my $x = shift;
+    my $class = ref $x;
+
+    my ($nrow, $ncol) = $x -> size();
+    return 0 unless $nrow == $ncol;     # must be square
+
+    my $k = shift;                      # bandwidth
+    croak "Bandwidth can not be undefined" unless defined $k;
+    if (ref $k) {
+        $k = $class -> new($k)
+          unless defined(blessed($k)) && $k -> isa($class);
+        croak "Bandwidth must be a scalar" unless $k -> is_scalar();
+        $k = $k -> [0][0];
+    }
+
+    return 0 if $nrow <= $k;            # if the band doesn't fit inside
+    return 1 if $nrow == $k + 1;        # if the whole band fits exactly
+
+    for (my $i = $nrow - $k - 2 ; $i >= 0 ; --$i) {
+        for (my $j = $k + 1 + $i ; $j < $ncol ; ++$j) {
+            return 0 if ($x -> [$i][$j] != 0 ||
+                         $x -> [$j][$i] != 0);
+        }
+    }
+
+    return 1;
+}
+
+=pod
+
+=item is_aband()
+
+Returns 1 is the invocand is "anti-banded" with a specified bandwidth, and 0
+otherwise.
+
+    $bool = $x -> is_aband($k);
+
+Some examples
+
+    $bool = $x -> is_aband(0);  # is $x anti-diagonal?
+    $bool = $x -> is_aband(1);  # is $x anti-tridiagonal?
+    $bool = $x -> is_aband(2);  # is $x anti-pentadiagonal?
+    $bool = $x -> is_aband(3);  # is $x anti-heptadiagonal?
+
+A band matrix is a square matrix with nonzero elements only on the diagonal and
+on the C<$k> diagonals above and below the main diagonal. The bandwidth C<$k>
+must be non-negative.
+
+A "anti-banded" matrix is a square matrix with nonzero elements only on the
+anti-diagonal and C<$k> anti-diagonals above and below the main anti-diagonal.
+
+=cut
+
+sub is_aband {
+    croak "Not enough arguments for ", (caller(0))[3] if @_ < 2;
+    croak "Too many arguments for ", (caller(0))[3] if @_ > 2;
+    my $x = shift;
+    my $class = ref $x;
+
+    my ($nrow, $ncol) = $x -> size();
+    return 0 unless $nrow == $ncol;     # must be square
+
+    my $k = shift;                      # bandwidth
+    croak "Bandwidth can not be undefined" unless defined $k;
+    if (ref $k) {
+        $k = $class -> new($k)
+          unless defined(blessed($k)) && $k -> isa($class);
+        croak "Bandwidth must be a scalar" unless $k -> is_scalar();
+        $k = $k -> [0][0];
+    }
+
+    return 0 if $nrow <= $k;            # if the band doesn't fit inside
+    return 1 if $nrow == $k + 1;        # if the whole band fits exactly
 
     # Check upper part.
 
-    for (my $i = $nrow - 3 ; $i >= 0 ; --$i) {
-        for (my $j = $nrow - 3 - $i ; $j >= 0 ; --$j) {
+    for (my $i = $nrow - $k - 2 ; $i >= 0 ; --$i) {
+        for (my $j = $nrow - $k - 2 - $i ; $j >= 0 ; --$j) {
             return 0 if $x -> [$i][$j] != 0;
         }
     }
 
     # Check lower part.
 
-    for (my $i = 2 ; $i < $nrow ; ++$i) {
-        for (my $j = $nrow - $i + 1 ; $j < $nrow ; ++$j) {
+    for (my $i = $k + 1 ; $i < $nrow ; ++$i) {
+        for (my $j = $nrow - $i + $k ; $j < $nrow ; ++$j) {
             return 0 if $x -> [$i][$j] != 0;
         }
     }
