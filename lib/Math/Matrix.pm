@@ -3833,7 +3833,14 @@ in the second operand.
     $C  = $A * $B;      # assign $A * $B to $C
     $A *= $B;           # assign $A * $B to $A
 
-=item C<->
+=item C<**> and C<**=>
+
+Matrix power. The second operand must be a scalar.
+
+    $C  = $A * $B;      # assign $A ** $B to $C
+    $A *= $B;           # assign $A ** $B to $A
+
+=item C<neg>
 
 Negation.
 
