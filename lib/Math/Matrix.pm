@@ -409,6 +409,16 @@ the range [C<$a>,C<$b>), use
 
     $x = $a + ($b - $a) * Math::Matrix -> rand($m, $n);
 
+To generate an C<$m>-by-C<$n> matrix of uniformly distributed random integers in
+the range [,C<$a>], use
+
+    $x = int(($a + 1) * Math::Matrix -> rand($m, $n));
+
+To generate an C<$m>-by-C<$n> matrix of uniformly distributed random integers in
+the range [C<$a>,C<$b>], use
+
+    $x = $a + int(($b - $a + 1) * Math::Matrix -> rand($m, $n));
+
 =cut
 
 sub rand {
