@@ -1939,6 +1939,7 @@ sub getrow {
     my $class = ref $x;
 
     my $idx = shift;
+    croak "Row index can not be undefined" unless defined $idx;
     if (ref $idx) {
         $idx = __PACKAGE__ -> new($idx)
           unless defined(blessed($idx)) && $idx -> isa($class);
@@ -1981,6 +1982,7 @@ sub getcol {
     my $class = ref $x;
 
     my $idx = shift;
+    croak "Column index can not be undefined" unless defined $idx;
     if (ref $idx) {
         $idx = __PACKAGE__ -> new($idx)
           unless defined(blessed($idx)) && $idx -> isa($class);
@@ -2024,6 +2026,7 @@ sub delrow {
     my $class = ref $x;
 
     my $idxdel = shift;
+    croak "Row index can not be undefined" unless defined $idxdel;
     if (ref $idxdel) {
         $idxdel = __PACKAGE__ -> new($idxdel)
           unless defined(blessed($idxdel)) && $idxdel -> isa($class);
@@ -2073,6 +2076,7 @@ sub delcol {
     my $class = ref $x;
 
     my $idxdel = shift;
+    croak "Column index can not be undefined" unless defined $idxdel;
     if (ref $idxdel) {
         $idxdel = __PACKAGE__ -> new($idxdel)
           unless defined(blessed($idxdel)) && $idxdel -> isa($class);
@@ -2191,8 +2195,8 @@ sub splicerow {
 
         if (@_) {
             $len = shift;
+            croak "Length can not be undefined" unless defined $len;
             if (ref $len) {
-                croak "Length can not be undefined" unless defined $len;
                 $len = $class -> new($len)
                   unless defined(blessed($len)) && $len -> isa($class);
                 croak "length must be a scalar" unless $len -> is_scalar();
@@ -2269,8 +2273,8 @@ sub splicecol {
 
         if (@_) {
             $len = shift;
+            croak "Length can not be undefined" unless defined $len;
             if (ref $len) {
-                croak "Length can not be undefined" unless defined $len;
                 $len = $class -> new($len)
                   unless defined(blessed($len)) && $len -> isa($class);
                 croak "length must be a scalar" unless $len -> is_scalar();
@@ -3073,14 +3077,14 @@ sub mpow {
       unless $x -> is_square();
 
     my $n = shift;
+    croak "Exponent can not be undefined" unless defined $n;
     if (ref $n) {
         $n = $class -> new($n) unless defined(blessed($n)) && $n -> isa($class);
-        croak "Argument must be a scalar in ", (caller(0))[3]
+        croak "Exponent must be a scalar in ", (caller(0))[3]
           unless $n -> is_scalar();
         $n = $n -> [0][0];
     }
-    croak "Argument must be a non-negative integer ", (caller(0))[3]
-      unless $n == int $n;
+    croak "Exponent must be a non-negative integer" unless $n == int $n;
 
     return $class -> new([]) if $x -> is_empty();
 
