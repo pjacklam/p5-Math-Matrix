@@ -1350,6 +1350,8 @@ must be non-negative.
     $bool = $x -> is_band(2);   # is $x pentadiagonal?
     $bool = $x -> is_band(3);   # is $x heptadiagonal?
 
+See also C<L</is_aband()>> and C<L</bandwidth()>>.
+
 =cut
 
 sub is_band {
@@ -1405,6 +1407,8 @@ must be non-negative.
 
 A "anti-banded" matrix is a square matrix with nonzero elements only on the
 anti-diagonal and C<$k> anti-diagonals above and below the main anti-diagonal.
+
+See also C<L</is_band()>> and C<L</bandwidth()>>.
 
 =cut
 
@@ -3467,6 +3471,42 @@ sub cross_product {
     }
     my $axis = $class->new(\@axis);
     $axis = $axis->multiply_scalar(($dimensions % 2) ? 1 : -1);
+}
+
+=pod
+
+=item bandwidth()
+
+Returns the bandwidth of a matrix.
+
+    $n = $x -> bandwidth();
+
+The bandwidth is a non-negative integer. It is the number of the non-zero
+diagonal furthest away from the main diagonal. If the bandwidth is 0, the matrix
+is diagonal or zero. If the bandwidth is 1, the matrix is tridiagonal. If the
+bandwidth is 2, the matrix is pentadiagonal etc.
+
+See also C<L</is_band()>> and C<L</is_aband()>>.
+
+=cut
+
+sub bandwidth {
+    croak "Not enough arguments for ", (caller(0))[3] if @_ < 1;
+    croak "Too many arguments for ", (caller(0))[3] if @_ > 1;
+    my $x = shift;
+
+    my ($nrow, $ncol) = $x -> size();
+
+    my $n = 0;
+    for (my $i = 0 ; $i < $nrow ; ++$i) {
+        for (my $j = 0 ; $j < $ncol ; ++$j) {
+            next if $x -> [$i][$j] == 0;
+            my $tmp = abs($i - $j);
+            $n = $tmp if $tmp > $n;
+        }
+    }
+
+    return $n;
 }
 
 =pod
