@@ -1074,6 +1074,34 @@ sub is_perm {
 
 =pod
 
+=item is_int()
+
+Returns 1 is the invocand is an integer matrix, i.e., a matrix of integers, and
+0 otherwise.
+
+    $bool = $x -> is_int();
+
+=cut
+
+sub is_int {
+    croak "Not enough arguments for ", (caller(0))[3] if @_ < 1;
+    croak "Too many arguments for ", (caller(0))[3] if @_ > 1;
+    my $x = shift;
+    my $class = ref $x;
+
+    my ($nrow, $ncol) = $x -> size();
+
+    for (my $i = 0 ; $i < $nrow ; ++$i) {
+        for (my $j = 0 ; $j < $ncol ; ++$j) {
+            return 0 unless $x -> [$i][$j] == int $x -> [$i][$j];
+        }
+    }
+
+    return 1;
+}
+
+=pod
+
 =item is_diag()
 
 Returns 1 is the invocand is diagonal, and 0 otherwise.
