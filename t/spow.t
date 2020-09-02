@@ -6,7 +6,7 @@ use warnings;
 use Math::Matrix;
 use Test::More tests => 16;
 
-note("spow() with non-empty matrices");
+note("spow() with two matrices");
 
 {
     my $x = Math::Matrix -> new([[  0, -2 ],

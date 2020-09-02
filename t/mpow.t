@@ -6,7 +6,7 @@ use warnings;
 use Math::Matrix;
 use Test::More tests => 25;
 
-note("mpow() with non-empty matrices");
+note("mpow() with two matrices");
 
 {
     my $x = Math::Matrix -> new([[ 0, -2 ],
@@ -32,6 +32,8 @@ note("mpow() with non-empty matrices");
                         [ 1,  4 ]], '$x is unmodified');
     is_deeply([ @$y ], [[ 0 ]], '$y is unmodified');
 }
+
+note("mpow() with matrix and scalar");
 
 {
     my $x = Math::Matrix -> new([[ 0, -2 ],

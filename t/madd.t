@@ -4,9 +4,9 @@ use strict;
 use warnings;
 
 use Math::Matrix;
-use Test::More tests => 12;
+use Test::More tests => 6;
 
-note("madd() with non-empty matrices");
+note("madd() with two matrices");
 
 {
     my $x = Math::Matrix -> new([[ 1,  2,  3],
@@ -25,7 +25,7 @@ note("madd() with non-empty matrices");
     my ($nrowy, $ncoly) = $y -> size();
     for (my $i = 0 ; $i < $nrowy ; ++$i) {
         for (my $j = 0 ; $j < $ncoly ; ++$j) {
-            $z -> [$i][$j] += 10;
+            $z -> [$i][$j] += 100;
         }
     }
 
@@ -45,30 +45,4 @@ note("madd() with empty matrices");
     is(ref($z), 'Math::Matrix', '$z is a Math::Matrix');
     is_deeply([ @$z ], [],
               '$z has the right values');
-}
-
-# Test overloading.
-
-{
-    my $x = Math::Matrix -> new([[3]]);
-    my $y = $x + 4;
-    is(ref($y), 'Math::Matrix', '$y is a Math::Matrix');
-    is_deeply([ @$y ], [[7]],
-              '$y has the right values');
-}
-
-{
-    my $x = Math::Matrix -> new([[3]]);
-    my $y = 4 + $x;
-    is(ref($y), 'Math::Matrix', '$y is a Math::Matrix');
-    is_deeply([ @$y ], [[7]],
-              '$y has the right values');
-}
-
-{
-    my $x = Math::Matrix -> new([[3]]);
-    $x += 4;
-    is(ref($x), 'Math::Matrix', '$x is a Math::Matrix');
-    is_deeply([ @$x ], [[7]],
-              '$x has the right values');
 }

@@ -6,7 +6,7 @@ use warnings;
 use Math::Matrix;
 use Test::More tests => 14;
 
-note("smul() with non-empty matrices");
+note("smul() with two matrices");
 
 {
     my $x = Math::Matrix -> new([[  1,  2,  3 ],

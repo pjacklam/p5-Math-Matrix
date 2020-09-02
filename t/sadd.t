@@ -6,7 +6,7 @@ use warnings;
 use Math::Matrix;
 use Test::More tests => 14;
 
-note("sadd() with non-empty matrices");
+note("sadd() with two matrices");
 
 {
     my $x = Math::Matrix -> new([[  1,  2,  3 ],
@@ -25,7 +25,7 @@ note("sadd() with non-empty matrices");
     my ($nrowy, $ncoly) = $y -> size();
     for (my $i = 0 ; $i < $nrowy ; ++$i) {
         for (my $j = 0 ; $j < $ncoly ; ++$j) {
-            $z -> [$i][$j] += 10;
+            $z -> [$i][$j] += 100;
         }
     }
 
@@ -53,7 +53,7 @@ note("sadd() with matrix and scalar");
     my ($nrowy, $ncoly) = $y -> size();
     for (my $i = 0 ; $i < $nrowy ; ++$i) {
         for (my $j = 0 ; $j < $ncoly ; ++$j) {
-            $z -> [$i][$j] += 10;
+            $z -> [$i][$j] += 100;
         }
     }
 
@@ -80,7 +80,7 @@ note("sadd() with scalar and matrix");
     my ($nrowy, $ncoly) = $y -> size();
     for (my $i = 0 ; $i < $nrowy ; ++$i) {
         for (my $j = 0 ; $j < $ncoly ; ++$j) {
-            $z -> [$i][$j] += 10;
+            $z -> [$i][$j] += 100;
         }
     }
 

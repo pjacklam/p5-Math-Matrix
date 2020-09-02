@@ -6,7 +6,7 @@ use warnings;
 use Math::Matrix;
 use Test::More tests => 20;
 
-note("add() with non-empty matrices");
+note("add() with matrices");
 
 {
     my $x = Math::Matrix -> new([[  1,  2,  3 ],
