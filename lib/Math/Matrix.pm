@@ -2638,17 +2638,68 @@ sub reshape {
     croak "when reshaping, the number of elements can not change in ",
       (caller(0))[3] unless $nrowx * $ncolx == $nrowy * $ncoly;
 
-    my $y = bless [], $class;
+    my $y = [];
 
-    for (my $k = 0 ; $k < $nelmx ; ++ $k) {
-        my $ix = $k % $nrowx;
-        my $jx = ($k - $ix) / $nrowx;
-        my $iy = $k % $nrowy;
-        my $jy = ($k - $iy) / $nrowy;
-        $y -> [$iy][$jy] = $x -> [$ix][$jx];
+    # No reshaping; just clone.
+
+    if ($nrowx == $nrowy && $ncolx == $ncoly) {
+        $y = [ map { [ @$_ ] } @$x ];
     }
 
-    return $y;
+    elsif ($nrowx == 1) {
+
+        # Reshape from a row vector to a column vector.
+
+        if ($ncoly == 1) {
+            $y = [ map { [ $_ ] } @{ $x -> [0] } ];
+        }
+
+        # Reshape from a row vector to a matrix.
+
+        else {
+            my $k = 0;
+            for (my $j = 0 ; $j < $ncoly ; ++$j) {
+                for (my $i = 0 ; $i < $nrowy ; ++$i) {
+                    $y -> [$i][$j] = $x -> [0][$k++];
+                }
+            }
+        }
+    }
+
+    elsif ($ncolx == 1) {
+
+        # Reshape from a column vector to a row vector.
+
+        if ($nrowy == 1) {
+            $y = [[ map { @$_ } @$x ]];
+        }
+
+        # Reshape from a column vector to a matrix.
+
+        else {
+            my $k = 0;
+            for (my $j = 0 ; $j < $ncoly ; ++$j) {
+                for (my $i = 0 ; $i < $nrowy ; ++$i) {
+                    $y -> [$i][$j] = $x -> [$k++][0];
+                }
+            }
+        }
+    }
+
+    # The invocand is a matrix. This code works in all cases, but is somewhat
+    # slower than the specialized code above.
+
+    else {
+        for (my $k = 0 ; $k < $nelmx ; ++ $k) {
+            my $ix = $k % $nrowx;
+            my $jx = ($k - $ix) / $nrowx;
+            my $iy = $k % $nrowy;
+            my $jy = ($k - $iy) / $nrowy;
+            $y -> [$iy][$jy] = $x -> [$ix][$jx];
+        }
+    }
+
+    bless $y, $class;
 }
 
 =pod
