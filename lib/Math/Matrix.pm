@@ -2494,22 +2494,65 @@ sub fliplr {
 
 Rotate 90 degrees counterclockwise.
 
-    $y = $x -> rot90();
+    $y = $x -> rot90();     # rotate 90 degrees counterclockwise
+    $y = $x -> rot90($n);   # rotate 90*$n degrees counterclockwise
 
 =cut
 
 sub rot90 {
     croak "Not enough arguments for ", (caller(0))[3] if @_ < 1;
-    croak "Too many arguments for ", (caller(0))[3] if @_ > 1;
+    croak "Too many arguments for ", (caller(0))[3] if @_ > 2;
     my $x = shift;
     my $class = ref $x;
 
+    my $n = 1;
+    if (@_) {
+        $n = shift;
+        if (ref $n) {
+            $n = $class -> new($n)
+              unless defined(blessed($n)) && $n -> isa($class);
+            croak "Argument must be a scalar" unless $n -> is_scalar();
+            $n = $n -> [0][0];
+        }
+        croak "Argument must be an integer" unless $n == int $n;
+    }
+
     my $y = [];
-    my ($nrowx, $ncolx) = $x -> size();
-    my $jmax = $ncolx - 1;
-    for (my $i = 0 ; $i < $nrowx ; $i++) {
-        for (my $j = 0 ; $j < $ncolx ; $j++) {
-            $y -> [$jmax - $j][$i] = $x -> [$i][$j];
+
+    # Rotate 0 degrees, i.e., clone.
+
+    $n %= 4;
+    if ($n == 0) {
+        $y = [ map { [ @$_ ] } @$x ];
+    }
+
+    # Rotate 90 degrees.
+
+    elsif ($n == 1) {
+        my ($nrowx, $ncolx) = $x -> size();
+        my $jmax = $ncolx - 1;
+        for (my $i = 0 ; $i < $nrowx ; $i++) {
+            for (my $j = 0 ; $j < $ncolx ; $j++) {
+                $y -> [$jmax - $j][$i] = $x -> [$i][$j];
+            }
+        }
+    }
+
+    # Rotate 180 degrees.
+
+    elsif ($n == 2) {
+        $y = [ map [ reverse @$_ ], reverse @$x ];
+    }
+
+    # Rotate 270 degrees.
+
+    elsif ($n == 3) {
+        my ($nrowx, $ncolx) = $x -> size();
+        my $imax = $nrowx - 1;
+        for (my $i = 0 ; $i < $nrowx ; $i++) {
+            for (my $j = 0 ; $j < $ncolx ; $j++) {
+                $y -> [$j][$imax - $i] = $x -> [$i][$j];
+            }
         }
     }
 
@@ -2530,10 +2573,7 @@ sub rot180 {
     croak "Not enough arguments for ", (caller(0))[3] if @_ < 1;
     croak "Too many arguments for ", (caller(0))[3] if @_ > 1;
     my $x = shift;
-    my $class = ref $x;
-
-    my $y = [ map [ reverse @$_ ], reverse @$x ];
-    bless $y, $class;
+    $x -> rot90(2);
 }
 
 =pod
@@ -2550,18 +2590,7 @@ sub rot270 {
     croak "Not enough arguments for ", (caller(0))[3] if @_ < 1;
     croak "Too many arguments for ", (caller(0))[3] if @_ > 1;
     my $x = shift;
-    my $class = ref $x;
-
-    my $y = [];
-    my ($nrowx, $ncolx) = $x -> size();
-    my $imax = $nrowx - 1;
-    for (my $i = 0 ; $i < $nrowx ; $i++) {
-        for (my $j = 0 ; $j < $ncolx ; $j++) {
-            $y -> [$j][$imax - $i] = $x -> [$i][$j];
-        }
-    }
-
-    bless $y, $class;
+    $x -> rot90(3);
 }
 
 =pod
