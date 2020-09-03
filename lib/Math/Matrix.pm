@@ -436,11 +436,56 @@ sub rand {
     my $x = bless [], $class;
     for (my $i = 0 ; $i < $nrow ; ++ $i) {
         for (my $j = 0 ; $j < $ncol ; ++ $j) {
-            $x -> [$i][$j] = rand;
+            $x -> [$i][$j] = CORE::rand;
         }
     }
 
     return $x;
+}
+
+=pod
+
+=item randn()
+
+Returns a matrix of random numbers from the standard normal distribution.
+
+    $x = Math::Matrix -> randn($m);         # $m-by-1 matrix
+    $x = Math::Matrix -> randn($m, $n);     # $m-by-$n matrix
+
+To generate an C<$m>-by-C<$n> matrix with mean C<$mu> and standard deviation
+C<$sigma>, use
+
+    $x = $mu + $sigma * Math::Matrix -> randn($m, $n);
+
+=cut
+
+sub randn {
+    croak "Not enough arguments for ", (caller(0))[3] if @_ < 1;
+    croak "Too many arguments for ", (caller(0))[3] if @_ > 3;
+    my $class = shift;
+
+    croak +(caller(0))[3], " is a class method, not an instance method"
+      if ref $class;
+
+    my ($nrow, $ncol) = @_ == 0 ? (0, 0)
+                      : @_ == 1 ? (@_, 1)
+                      :           (@_);
+
+    my $nelm  = $nrow * $ncol;
+    my $twopi = 2 * atan2 0, -1;
+
+    # The following might generate one value more than we need.
+
+    my $x = [];
+    for (my $k = 0 ; $k < $nelm ; $k += 2) {
+        my $c1 = sqrt(-2 * log(CORE::rand));
+        my $c2 = $twopi * CORE::rand;
+        push @$x, $c1 * cos($c2), $c1 * sin($c2);
+    }
+    pop @$x if @$x > $nelm;
+
+    $x = bless [ $x ], $class;
+    $x -> reshape($nrow, $ncol);
 }
 
 =pod
