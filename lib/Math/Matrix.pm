@@ -316,7 +316,7 @@ sub exchg {
 
 Create a zero matrix.
 
-    # Create an $m-by-1 matrix where each element is 0.
+    # Create an $m-by-$m matrix where each element is 0.
     $x = Math::Matrix -> zeros($m);
 
     # Create an $m-by-$n matrix where each element is 0.
@@ -337,7 +337,7 @@ sub zeros {
 
 Create a matrix of ones.
 
-    # Create an $m-by-1 matrix where each element is 1.
+    # Create an $m-by-$m matrix where each element is 1.
     $x = Math::Matrix -> ones($m);
 
     # Create an $m-by-$n matrix where each element is 1.
@@ -359,7 +359,7 @@ sub ones {
 Returns a constant matrix, i.e., a matrix whose elements all have the same
 value.
 
-    # Create an $m-by-1 matrix where each element is $c.
+    # Create an $m-by-$m matrix where each element is $c.
     $x = Math::Matrix -> constant($c, $m);
 
     # Create an $m-by-$n matrix where each element is $c.
@@ -376,8 +376,8 @@ sub constant {
       if ref $class;
 
     my $c = shift;
-    my ($nrow, $ncol) = @_ == 0 ? (0, 0)
-                      : @_ == 1 ? (@_, 1)
+    my ($nrow, $ncol) = @_ == 0 ? (1, 1)
+                      : @_ == 1 ? (@_, @_)
                       :           (@_);
 
     my $x = bless [], $class;
@@ -396,7 +396,7 @@ sub constant {
 
 Returns a matrix of uniformly distributed random numbers in the range [0,1).
 
-    $x = Math::Matrix -> rand($m);          # $m-by-1 matrix
+    $x = Math::Matrix -> rand($m);          # $m-by-$m matrix
     $x = Math::Matrix -> rand($m, $n);      # $m-by-$n matrix
 
 To generate an C<$m>-by-C<$n> matrix of uniformly distributed random numbers in
@@ -429,8 +429,8 @@ sub rand {
     croak +(caller(0))[3], " is a class method, not an instance method"
       if ref $class;
 
-    my ($nrow, $ncol) = @_ == 0 ? (0, 0)
-                      : @_ == 1 ? (@_, 1)
+    my ($nrow, $ncol) = @_ == 0 ? (1, 1)
+                      : @_ == 1 ? (@_, @_)
                       :           (@_);
 
     my $x = bless [], $class;
@@ -449,7 +449,7 @@ sub rand {
 
 Returns a matrix of random numbers from the standard normal distribution.
 
-    $x = Math::Matrix -> randn($m);         # $m-by-1 matrix
+    $x = Math::Matrix -> randn($m);         # $m-by-$m matrix
     $x = Math::Matrix -> randn($m, $n);     # $m-by-$n matrix
 
 To generate an C<$m>-by-C<$n> matrix with mean C<$mu> and standard deviation
@@ -467,8 +467,8 @@ sub randn {
     croak +(caller(0))[3], " is a class method, not an instance method"
       if ref $class;
 
-    my ($nrow, $ncol) = @_ == 0 ? (0, 0)
-                      : @_ == 1 ? (@_, 1)
+    my ($nrow, $ncol) = @_ == 0 ? (1, 1)
+                      : @_ == 1 ? (@_, @_)
                       :           (@_);
 
     my $nelm  = $nrow * $ncol;
