@@ -2769,6 +2769,98 @@ sub to_col {
 
 =pod
 
+=item triu()
+
+Upper triangular part. Extract the upper triangular part of a matrix and set all
+other elements to zero.
+
+    $y = $x -> triu();
+    $y = $x -> triu($n);
+
+The optional second argument specifies how many diagonals above or below the
+main diagonal should also be set to zero. The default value of C<$n> is zero
+which includes the main diagonal.
+
+=cut
+
+sub triu {
+    croak "Not enough arguments for ", (caller(0))[3] if @_ < 1;
+    croak "Too many arguments for ", (caller(0))[3] if @_ > 2;
+    my $x = shift;
+    my $class = ref $x;
+
+    my $n = 0;
+    if (@_) {
+        $n = shift;
+        if (ref $n) {
+            $n = $class -> new($n)
+              unless defined(blessed($n)) && $n -> isa($class);
+            croak "Argument must be a scalar" unless $n -> is_scalar();
+            $n = $n -> [0][0];
+        }
+        croak "Argument must be an integer" unless $n == int $n;
+    }
+
+    my ($nrowx, $ncolx) = $x -> size();
+
+    my $y = [];
+    for (my $i = 0 ; $i < $nrowx ; ++ $i) {
+        for (my $j = 0 ; $j < $ncolx ; ++ $j) {
+            $y -> [$i][$j] = $j - $i >= $n ? $x -> [$i][$j] : 0;
+        }
+    }
+
+    bless $y, $class;
+}
+
+=pod
+
+=item tril()
+
+Lower triangular part. Extract the lower triangular part of a matrix and set all
+other elements to zero.
+
+    $y = $x -> tril();
+    $y = $x -> tril($n);
+
+The optional second argument specifies how many diagonals above or below the
+main diagonal should also be set to zero. The default value of C<$n> is zero
+which includes the main diagonal.
+
+=cut
+
+sub tril {
+    croak "Not enough arguments for ", (caller(0))[3] if @_ < 1;
+    croak "Too many arguments for ", (caller(0))[3] if @_ > 2;
+    my $x = shift;
+    my $class = ref $x;
+
+    my $n = 0;
+    if (@_) {
+        $n = shift;
+        if (ref $n) {
+            $n = $class -> new($n)
+              unless defined(blessed($n)) && $n -> isa($class);
+            croak "Argument must be a scalar" unless $n -> is_scalar();
+            $n = $n -> [0][0];
+        }
+        croak "Argument must be an integer" unless $n == int $n;
+    }
+
+    my ($nrowx, $ncolx) = $x -> size();
+
+    my $y = [];
+    for (my $i = 0 ; $i < $nrowx ; ++ $i) {
+        for (my $j = 0 ; $j < $ncolx ; ++ $j) {
+            $y -> [$i][$j] = $j - $i <= $n ? $x -> [$i][$j] : 0;
+        }
+    }
+
+    bless $y, $class;
+}
+
+=pod
+
 =item slice()
 
 Extract columns:
