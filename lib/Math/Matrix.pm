@@ -3470,6 +3470,43 @@ sub pinvert {
 
 =pod
 
+=item chol()
+
+Cholesky decomposition.
+
+    $y = $x -> chol();
+
+Every symmetric, positive definite matrix A can be decomposed into a product of
+a unique lower triangular matrix L and its transpose: A = L*L', where L' denotes
+the transpose of L. L is called the Cholesky factor of A.
+
+=cut
+
+sub chol {
+    my $x = shift;
+    my $class = ref $x;
+
+    croak "Input matrix must be a symmetric" unless $x -> is_symmetric();
+
+    my $y = [ map { [(0) x @$x ] } @$x ];       # matrix of zeros
+    for my $i (0 .. $#$x) {
+        for my $j (0 .. $i) {
+            my $z = $x->[$i][$j];
+            $z -= $y->[$i][$_] * $y->[$j][$_] for 0 .. $j;
+            if ($i == $j) {
+                croak "Matrix is not positive definite" if $z < 0;
+                $y->[$i][$j] = sqrt($z);
+            } else {
+                croak "Matrix is not positive definite" if $y->[$j][$j] == 0;
+                $y->[$i][$j] = $z / $y->[$j][$j];
+            }
+        }
+    }
+    bless $y, $class;
+}
+
+=pod
+
 =item multiply_scalar()
 
 Multiplies a matrix and a scalar resulting in a matrix of the same dimensions
