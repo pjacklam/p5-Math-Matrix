@@ -205,7 +205,7 @@ sub new {
             my $nrow = @$data;
             my $ncol;
 
-            for (my $i = 0 ; $i < $nrow ; ++$i) {
+            for my $i (0 .. $nrow - 1) {
                 my $row = $data -> [$i];
 
                 # Verify that the row is a reference to an array.
@@ -381,8 +381,8 @@ sub constant {
                       :           (@_);
 
     my $x = bless [], $class;
-    for (my $i = 0 ; $i < $nrow ; ++ $i) {
-        for (my $j = 0 ; $j < $ncol ; ++ $j) {
+    for my $i (0 .. $nrow - 1) {
+        for my $j (0 .. $ncol - 1) {
             $x -> [$i][$j] = $c;
         }
     }
@@ -434,8 +434,8 @@ sub rand {
                       :           (@_);
 
     my $x = bless [], $class;
-    for (my $i = 0 ; $i < $nrow ; ++ $i) {
-        for (my $j = 0 ; $j < $ncol ; ++ $j) {
+    for my $i (0 .. $nrow - 1) {
+        for my $j (0 .. $ncol - 1) {
             $x -> [$i][$j] = CORE::rand;
         }
     }
@@ -773,8 +773,8 @@ sub is_symmetric {
     my ($nrow, $ncol) = $x -> size();
     return 0 unless $nrow == $ncol;
 
-    for (my $i = 1 ; $i < $nrow ; ++$i) {
-        for (my $j = 0 ; $j < $i ; ++$j) {
+    for my $i (1 .. $nrow - 1) {
+        for my $j (0 .. $i - 1) {
             return 0 unless $x -> [$i][$j] == $x -> [$j][$i];
         }
     }
@@ -810,14 +810,14 @@ sub is_antisymmetric {
 
     # Check the diagonal.
 
-    for (my $i = 0 ; $i < $nrow ; ++$i) {
+    for my $i (0 .. $nrow - 1) {
         return 0 unless $x -> [$i][$i] == 0;
     }
 
     # Check the off-diagonal.
 
-    for (my $i = 1 ; $i < $nrow ; ++$i) {
-        for (my $j = 0 ; $j < $i ; ++$j) {
+    for my $i (1 .. $nrow - 1) {
+        for my $j (0 .. $i - 1) {
             return 0 unless $x -> [$i][$j] == -$x -> [$j][$i];
         }
     }
@@ -881,18 +881,18 @@ sub is_hankel {
 
     # Check the lower triangular part.
 
-    for (my $i = 0 ; $i < $nrow - 1 ; ++$i) {
+    for my $i (0 .. $nrow - 2) {
         my $first = $x -> [$i][0];
-        for (my $k = 1 ; $k < $nrow - $i ; ++$k) {
+        for my $k (1 .. $nrow - $i - 1) {
             return 0 unless $x -> [$i + $k][$k] == $first;
         }
     }
 
     # Check the strictly upper triangular part.
 
-    for (my $j = 1 ; $j < $ncol - 1 ; ++$j) {
+    for my $j (1 .. $ncol - 2) {
         my $first = $x -> [0][$j];
-        for (my $k = 1 ; $k < $nrow - $j ; ++$k) {
+        for my $k (1 .. $nrow - $j - 1) {
             return 0 unless $x -> [$k][$j + $k] == $first;
         }
     }
@@ -960,8 +960,8 @@ sub is_constant {
     return 1 if $nrow * $ncol == 0;
 
     my $c = @_ ? shift() : $x -> [0][0];
-    for (my $i = 0 ; $i < $nrow ; ++$i) {
-        for (my $j = 0 ; $j < $ncol ; ++$j) {
+    for my $i (0 .. $nrow - 1) {
+        for my $j (0 .. $ncol - 1) {
             return 0 if $x -> [$i][$j] != $c;
         }
     }
@@ -989,8 +989,8 @@ sub is_identity {
     my ($nrow, $ncol) = $x -> size();
     return 0 unless $nrow == $ncol;
 
-    for (my $i = 0 ; $i < $nrow ; ++$i) {
-        for (my $j = 0 ; $j < $ncol ; ++$j) {
+    for my $i (0 .. $nrow - 1) {
+        for my $j (0 .. $ncol - 1) {
             return 0 if $x -> [$i][$j] != ($i == $j ? 1 : 0);
         }
     }
@@ -1025,8 +1025,8 @@ sub is_exchg {
     return 0 unless $nrow == $ncol;
 
     my $imax = $nrow - 1;
-    for (my $i = 0 ; $i < $nrow ; ++$i) {
-        for (my $j = 0 ; $j < $ncol ; ++$j) {
+    for my $i (0 .. $nrow - 1) {
+        for my $j (0 .. $ncol - 1) {
             return 0 if $x -> [$i][$j] != ($i + $j == $imax ? 1 : 0);
         }
     }
@@ -1059,8 +1059,8 @@ sub is_bool {
 
     my ($nrow, $ncol) = $x -> size();
 
-    for (my $i = 0 ; $i < $nrow ; ++$i) {
-        for (my $j = 0 ; $j < $ncol ; ++$j) {
+    for my $i (0 .. $nrow - 1) {
+        for my $j (0 .. $ncol - 1) {
             my $val = $x -> [$i][$j];
             return 0 if $val != 0 && $val != 1;
         }
@@ -1098,8 +1098,8 @@ sub is_perm {
     my $rowsum = [ (0) x $nrow ];
     my $colsum = [ (0) x $ncol ];
 
-    for (my $i = 0 ; $i < $nrow ; ++$i) {
-        for (my $j = 0 ; $j < $ncol ; ++$j) {
+    for my $i (0 .. $nrow - 1) {
+        for my $j (0 .. $ncol - 1) {
             my $val = $x -> [$i][$j];
             return 0 if $val != 0 && $val != 1;
             if ($val == 1) {
@@ -1109,7 +1109,7 @@ sub is_perm {
         }
     }
 
-    for (my $i = 0 ; $i < $nrow ; ++$i) {
+    for my $i (0 .. $nrow - 1) {
         return 0 if $rowsum -> [$i] != 1;
         return 0 if $colsum -> [$i] != 1;
     }
@@ -1136,8 +1136,8 @@ sub is_int {
 
     my ($nrow, $ncol) = $x -> size();
 
-    for (my $i = 0 ; $i < $nrow ; ++$i) {
-        for (my $j = 0 ; $j < $ncol ; ++$j) {
+    for my $i (0 .. $nrow - 1) {
+        for my $j (0 .. $ncol - 1) {
             return 0 unless $x -> [$i][$j] == int $x -> [$i][$j];
         }
     }
@@ -1420,8 +1420,8 @@ sub is_band {
     return 0 if $nrow <= $k;            # if the band doesn't fit inside
     return 1 if $nrow == $k + 1;        # if the whole band fits exactly
 
-    for (my $i = $nrow - $k - 2 ; $i >= 0 ; --$i) {
-        for (my $j = $k + 1 + $i ; $j < $ncol ; ++$j) {
+    for my $i (0 .. $nrow - $k - 2) {
+        for my $j ($k + 1 + $i .. $ncol - 1) {
             return 0 if ($x -> [$i][$j] != 0 ||
                          $x -> [$j][$i] != 0);
         }
@@ -1480,16 +1480,16 @@ sub is_aband {
 
     # Check upper part.
 
-    for (my $i = $nrow - $k - 2 ; $i >= 0 ; --$i) {
-        for (my $j = $nrow - $k - 2 - $i ; $j >= 0 ; --$j) {
+    for my $i (0 .. $nrow - $k - 2) {
+        for my $j (0 .. $nrow - $k - 2 - $i) {
             return 0 if $x -> [$i][$j] != 0;
         }
     }
 
     # Check lower part.
 
-    for (my $i = $k + 1 ; $i < $nrow ; ++$i) {
-        for (my $j = $nrow - $i + $k ; $j < $nrow ; ++$j) {
+    for my $i ($k + 1 .. $nrow - 1) {
+        for my $j ($nrow - $i + $k .. $nrow - 1) {
             return 0 if $x -> [$i][$j] != 0;
         }
     }
@@ -1527,8 +1527,8 @@ sub is_triu {
 
     return 0 unless $nrow == $ncol;
 
-    for (my $i = 1 ; $i < $nrow ; ++$i) {
-        for (my $j = 0 ; $j < $i ; ++$j) {
+    for my $i (1 .. $nrow - 1) {
+        for my $j (0 .. $i - 1) {
             return 0 unless $x -> [$i][$j] == 0;
         }
     }
@@ -1565,8 +1565,8 @@ sub is_striu {
 
     return 0 unless $nrow == $ncol;
 
-    for (my $i = 0 ; $i < $nrow ; ++$i) {
-        for (my $j = 0 ; $j <= $i ; ++$j) {
+    for my $i (0 .. $nrow - 1) {
+        for my $j (0 .. $i) {
             return 0 unless $x -> [$i][$j] == 0;
         }
     }
@@ -1603,8 +1603,8 @@ sub is_tril {
 
     return 0 unless $nrow == $ncol;
 
-    for (my $i = 0 ; $i < $nrow ; ++$i) {
-        for (my $j = $i + 1 ; $j < $ncol ; ++$j) {
+    for my $i (0 .. $nrow - 1) {
+        for my $j ($i + 1 .. $ncol - 1) {
             return 0 unless $x -> [$i][$j] == 0;
         }
     }
@@ -1641,8 +1641,8 @@ sub is_stril {
 
     return 0 unless $nrow == $ncol;
 
-    for (my $i = 0 ; $i < $nrow ; ++$i) {
-        for (my $j = $i ; $j < $ncol ; ++$j) {
+    for my $i (0 .. $nrow - 1) {
+        for my $j ($i .. $ncol - 1) {
             return 0 unless $x -> [$i][$j] == 0;
         }
     }
@@ -1679,8 +1679,8 @@ sub is_atriu {
 
     return 0 unless $nrow == $ncol;
 
-    for (my $i = 1 ; $i < $nrow ; ++$i) {
-        for (my $j = $ncol - $i ; $j < $ncol ; ++$j) {
+    for my $i (1 .. $nrow - 1) {
+        for my $j ($ncol - $i .. $ncol - 1) {
             return 0 unless $x -> [$i][$j] == 0;
         }
     }
@@ -1717,8 +1717,8 @@ sub is_satriu {
 
     return 0 unless $nrow == $ncol;
 
-    for (my $i = 0 ; $i < $nrow ; ++$i) {
-        for (my $j = $ncol - $i - 1 ; $j < $ncol ; ++$j) {
+    for my $i (0 .. $nrow - 1) {
+        for my $j ($ncol - $i - 1 .. $ncol - 1) {
             return 0 unless $x -> [$i][$j] == 0;
         }
     }
@@ -1755,8 +1755,8 @@ sub is_atril {
 
     return 0 unless $nrow == $ncol;
 
-    for (my $i = 0 ; $i < $nrow ; ++$i) {
-        for (my $j = 0 ; $j < $ncol - $i - 1; ++$j) {
+    for my $i (0 .. $nrow - 1) {
+        for my $j (0 .. $ncol - $i - 2) {
             return 0 unless $x -> [$i][$j] == 0;
         }
     }
@@ -1793,8 +1793,8 @@ sub is_satril {
 
     return 0 unless $nrow == $ncol;
 
-    for (my $i = 0 ; $i < $nrow ; ++$i) {
-        for (my $j = 0 ; $j < $ncol - $i ; ++$j) {
+    for my $i (0 .. $nrow - 1) {
+        for my $j (0 .. $ncol - $i - 1) {
             return 0 unless $x -> [$i][$j] == 0;
         }
     }
@@ -1998,7 +1998,7 @@ sub catcol {
             $nrow = $nrowy;
         }
 
-        for (my $i = 0 ; $i < $nrow ; ++$i) {
+        for my $i (0 .. $nrow - 1) {
             push @{ $z -> [$i] }, @{ $y -> [$i] };
         }
     }
@@ -2039,7 +2039,7 @@ sub getrow {
     my ($nrowx, $ncolx) = $x -> size();
 
     my $y = [];
-    for (my $iy = 0 ; $iy <= $#$idx ; ++$iy) {
+    for my $iy (0 .. $#$idx) {
         my $ix = $idx -> [$iy];
         croak "Row index value $ix too large for $nrowx-by-$ncolx matrix in ",
           (caller(0))[3] if $ix >= $nrowx;
@@ -2082,11 +2082,11 @@ sub getcol {
     my ($nrowx, $ncolx) = $x -> size();
 
     my $y = [];
-    for (my $jy = 0 ; $jy <= $#$idx ; ++$jy) {
+    for my $jy (0 .. $#$idx) {
         my $jx = $idx -> [$jy];
         croak "Column index value $jx too large for $nrowx-by-$ncolx matrix in ",
           (caller(0))[3] if $jx >= $ncolx;
-        for (my $i = 0 ; $i < $nrowx ; ++$i) {
+        for my $i (0 .. $nrowx - 1) {
             $y -> [$i][$jy] = $x -> [$i][$jx];
         }
     }
@@ -2128,7 +2128,7 @@ sub delrow {
     # This should be made faster.
 
     my $idxget = [];
-    for (my $i = 0 ; $i < $nrowx ; ++$i) {
+    for my $i (0 .. $nrowx - 1) {
         my $seen = 0;
         for my $idx (@$idxdel) {
             if ($i == int $idx) {
@@ -2178,7 +2178,7 @@ sub delcol {
     # This should be made faster.
 
     my $idxget = [];
-    for (my $j = 0 ; $j < $ncolx ; ++$j) {
+    for my $j (0 .. $ncolx - 1) {
         my $seen = 0;
         for my $idx (@$idxdel) {
             if ($j == int $idx) {
@@ -2388,7 +2388,7 @@ sub splicecol {
 
     if ($offs == $len) {
         unless ($repl -> is_empty()) {
-            for (my $i = 0 ; $i < $nrowx ; ++$i) {
+            for my $i (0 .. $nrowx - 1) {
                 push @{ $y -> [$i] }, @{ $repl -> [$i] };
             }
         }
@@ -2408,11 +2408,11 @@ sub splicecol {
 
     else {
         if ($repl -> is_empty()) {
-            for (my $i = 0 ; $i < $nrowx ; ++$i) {
+            for my $i (0 .. $nrowx - 1) {
                 @{ $z -> [$i] } = splice @{ $y -> [$i] }, $offs, $len;
             }
         } else {
-            for (my $i = 0 ; $i < $nrowx ; ++$i) {
+            for my $i (0 .. $nrowx - 1) {
                 @{ $z -> [$i] } = splice @{ $y -> [$i] }, $offs, $len, @{ $repl -> [$i] };
             }
         }
@@ -2442,7 +2442,7 @@ sub swaprc {
     my $ncolx = $x -> ncol();
     return $y if $ncolx == 0;
 
-    for (my $j = 0 ; $j < $ncolx ; ++$j) {
+    for my $j (0 .. $ncolx - 1) {
         push @$y, [ map $_->[$j], @$x ];
     }
     return $y;
@@ -2531,8 +2531,8 @@ sub rot90 {
     elsif ($n == 1) {
         my ($nrowx, $ncolx) = $x -> size();
         my $jmax = $ncolx - 1;
-        for (my $i = 0 ; $i < $nrowx ; $i++) {
-            for (my $j = 0 ; $j < $ncolx ; $j++) {
+        for my $i (0 .. $nrowx - 1) {
+            for my $j (0 .. $ncolx - 1) {
                 $y -> [$jmax - $j][$i] = $x -> [$i][$j];
             }
         }
@@ -2549,8 +2549,8 @@ sub rot90 {
     elsif ($n == 3) {
         my ($nrowx, $ncolx) = $x -> size();
         my $imax = $nrowx - 1;
-        for (my $i = 0 ; $i < $nrowx ; $i++) {
-            for (my $j = 0 ; $j < $ncolx ; $j++) {
+        for my $i (0 .. $nrowx - 1) {
+            for my $j (0 .. $ncolx - 1) {
                 $y -> [$j][$imax - $i] = $x -> [$i][$j];
             }
         }
@@ -2658,8 +2658,8 @@ sub reshape {
 
         else {
             my $k = 0;
-            for (my $j = 0 ; $j < $ncoly ; ++$j) {
-                for (my $i = 0 ; $i < $nrowy ; ++$i) {
+            for my $j (0 .. $ncoly - 1) {
+                for my $i (0 .. $nrowy - 1) {
                     $y -> [$i][$j] = $x -> [0][$k++];
                 }
             }
@@ -2678,8 +2678,8 @@ sub reshape {
 
         else {
             my $k = 0;
-            for (my $j = 0 ; $j < $ncoly ; ++$j) {
-                for (my $i = 0 ; $i < $nrowy ; ++$i) {
+            for my $j (0 .. $ncoly - 1) {
+                for my $i (0 .. $nrowy - 1) {
                     $y -> [$i][$j] = $x -> [$k++][0];
                 }
             }
@@ -2690,7 +2690,7 @@ sub reshape {
     # slower than the specialized code above.
 
     else {
-        for (my $k = 0 ; $k < $nelmx ; ++ $k) {
+        for my $k (0 .. $nelmx - 1) {
             my $ix = $k % $nrowx;
             my $jx = ($k - $ix) / $nrowx;
             my $iy = $k % $nrowy;
@@ -2728,7 +2728,7 @@ sub to_row {
     my $ncolx = $x -> ncol();
     return $y if $ncolx == 0;
 
-    for (my $j = 0 ; $j < $ncolx ; ++$j) {
+    for my $j (0 .. $ncolx - 1) {
         push @{ $y -> [0] }, map $_->[$j], @$x;
     }
     return $y;
@@ -2761,7 +2761,7 @@ sub to_col {
     my $ncolx = $x -> ncol();
     return $y if $ncolx == 0;
 
-    for (my $j = 0 ; $j < $ncolx ; ++$j) {
+    for my $j (0 .. $ncolx - 1) {
         push @$y, map [ $_->[$j] ], @$x;
     }
     return $y;
@@ -2804,8 +2804,8 @@ sub triu {
     my ($nrowx, $ncolx) = $x -> size();
 
     my $y = [];
-    for (my $i = 0 ; $i < $nrowx ; ++ $i) {
-        for (my $j = 0 ; $j < $ncolx ; ++ $j) {
+    for my $i (0 .. $nrowx - 1) {
+        for my $j (0 .. $ncolx - 1) {
             $y -> [$i][$j] = $j - $i >= $n ? $x -> [$i][$j] : 0;
         }
     }
@@ -2850,8 +2850,8 @@ sub tril {
     my ($nrowx, $ncolx) = $x -> size();
 
     my $y = [];
-    for (my $i = 0 ; $i < $nrowx ; ++ $i) {
-        for (my $j = 0 ; $j < $ncolx ; ++ $j) {
+    for my $i (0 .. $nrowx - 1) {
+        for my $j (0 .. $ncolx - 1) {
             $y -> [$i][$j] = $j - $i <= $n ? $x -> [$i][$j] : 0;
         }
     }
@@ -2957,7 +2957,7 @@ sub transpose {
     my $ncolx = $x -> ncol();
     return $y if $ncolx == 0;
 
-    for (my $j = 0 ; $j < $ncolx ; ++$j) {
+    for my $j (0 .. $ncolx - 1) {
         push @$y, [ map $_->[$j], @$x ];
     }
     return $y;
@@ -3017,8 +3017,8 @@ sub madd {
       unless $nrowx == $nrowy && $ncolx == $ncoly;
 
     my $z = [];
-    for (my $i = 0 ; $i < $nrowx ; ++$i) {
-        for (my $j = 0 ; $j < $ncolx ; ++$j) {
+    for my $i (0 .. $nrowx - 1) {
+        for my $j (0 .. $ncolx - 1) {
             $z->[$i][$j] = $x->[$i][$j] + $y->[$i][$j];
         }
     }
@@ -3102,8 +3102,8 @@ sub msub {
       unless $nrowx == $nrowy && $ncolx == $ncoly;
 
     my $z = [];
-    for (my $i = 0 ; $i < $nrowx ; ++$i) {
-        for (my $j = 0 ; $j < $ncolx ; ++$j) {
+    for my $i (0 .. $nrowx - 1) {
+        for my $j (0 .. $ncolx - 1) {
             $z->[$i][$j] = $x->[$i][$j] - $y->[$i][$j];
         }
     }
@@ -3165,8 +3165,8 @@ sub neg {
     my $y = [];
 
     my ($nrowx, $ncolx) = $x -> size();
-    for (my $i = 0 ; $i < $nrowx ; ++$i) {
-        for (my $j = 0 ; $j < $ncolx ; ++$j) {
+    for my $i (0 .. $nrowx - 1) {
+        for my $j (0 .. $ncolx - 1) {
             $y->[$i][$j] = -$x->[$i][$j];
         }
     }
@@ -3241,10 +3241,10 @@ sub mmul {
       unless $ncolx == $nrowy;
 
     my $z = [];
-    for (my $i = 0 ; $i < $nrowx ; ++ $i) {
-        for (my $j = 0 ; $j < $ncoly ; ++ $j) {
+    for my $i (0 .. $nrowx - 1) {
+        for my $j (0 .. $ncoly - 1) {
             $z -> [$i][$j] = 0;
-            for (my $k = 0 ; $k < $ncolx ; ++ $k) {
+            for my $k (0 .. $ncolx - 1) {
                 $z -> [$i][$j] += $x -> [$i][$k] * $y -> [$k][$j];
             }
         }
@@ -3752,8 +3752,8 @@ sub bandwidth {
     my ($nrow, $ncol) = $x -> size();
 
     my $n = 0;
-    for (my $i = 0 ; $i < $nrow ; ++$i) {
-        for (my $j = 0 ; $j < $ncol ; ++$j) {
+    for my $i (0 .. $nrow - 1) {
+        for my $j (0 .. $ncol - 1) {
             next if $x -> [$i][$j] == 0;
             my $tmp = abs($i - $j);
             $n = $tmp if $tmp > $n;
@@ -3800,7 +3800,7 @@ sub to_permmat {
     croak "Invocand must be a vector" unless $v -> is_vector();
     $v = $v -> to_col();
 
-    for (my $i = 0 ; $i < $n ; ++$i) {
+    for my $i (0 .. $n - 1) {
         my $j = $v -> [$i][0];
         croak "index out of range" unless 0 <= $j && $j < $n;
         $P -> [$i][$j] = 1;
@@ -3846,9 +3846,9 @@ sub to_permvec {
 
     my $seen = [ (0) x $n ];            # keep track of the ones
 
-    for (my $i = 0 ; $i < $n ; ++$i) {
+    for my $i (0 .. $n - 1) {
         my $k;
-        for (my $j = 0 ; $j < $n ; ++$j) {
+        for my $j (0 .. $n - 1) {
             next if $P -> [$i][$j] == 0;
             if ($P -> [$i][$j] == 1) {
                 croak "invalid permutation matrix; more than one row has",
@@ -3992,8 +3992,8 @@ sub sapply {
         my ($nrowx, $ncolx) = $x -> size();
         return $y if $nrowx * $ncolx == 0;      # quick exit if $x is empty
 
-        for (my $i = 0 ; $i < $nrowx ; ++ $i) {
-            for (my $j = 0 ; $j < $ncolx ; ++ $j) {
+        for my $i (0 .. $nrowx - 1) {
+            for my $j (0 .. $ncolx - 1) {
                 $y -> [$i][$j] = $sub -> ($x -> [$i][$j]);
             }
         }
@@ -4012,7 +4012,7 @@ sub sapply {
     my $nrowy = 0;
     my $ncoly = 0;
 
-    for (my $k = 0 ; $k <= $#args ; ++ $k) {
+    for my $k (0 .. $#args) {
 
         # Get the number of rows, columns, and elements in the k'th argument,
         # and save this information for later.
@@ -4040,8 +4040,8 @@ sub sapply {
 
     # Loop over the subscripts into the output matrix.
 
-    for (my $i = 0 ; $i < $nrowy ; ++ $i) {
-        for (my $j = 0 ; $j < $ncoly ; ++ $j) {
+    for my $i (0 .. $nrowy - 1) {
+        for my $j (0 .. $ncoly - 1) {
 
             # Initialize the argument list for the subroutine call that will
             # give the value for element ($i,$j) in the output matrix.
@@ -4050,7 +4050,7 @@ sub sapply {
 
             # Loop over the matrices.
 
-            for (my $k = 0 ; $k <= $#args ; ++ $k) {
+            for my $k (0 .. $#args) {
 
                 # Get the number of rows and columns in the k'th matrix.
 
