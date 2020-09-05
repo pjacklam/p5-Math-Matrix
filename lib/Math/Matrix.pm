@@ -3575,43 +3575,58 @@ sub equal {
 
 =item determinant()
 
-Compute the determinant of a matrix.
+Determinant. Returns the determinant of a matrix. The matrix must be square.
 
-    $a = Math::Matrix->new([3, 1],
-                           [4, 2]);
-    $d = $a->determinant;                   # $d = 2
+    $y = $x -> determinant();
+
+The matrix is computed by recursion.
 
 =cut
 
 sub determinant {
-    my $self = shift;
-    my $class = ref($self);
-    my $imax = $#$self;
-    my $jmax = $#{$self->[0]};
+    my $x = shift;
+    my $class = ref($x);
+    my $imax = $#$x;
+    my $jmax = $#{$x->[0]};
 
     return undef unless $imax == $jmax;     # input must be a square matrix
 
-    if ($imax == 0) {
-        return $self->[0][0];
-    } else {
-        my $result = 0;
+    # Matrix is 3 × 3
 
-        # Create a matrix with row 0 removed. We only need to do this once.
-        my $matrix0 = $class -> new(@$self[1 .. $jmax]);
+    return
+        $x -> [0][0] * ($x -> [1][1] * $x -> [2][2] - $x -> [1][2] * $x -> [2][1])
+      - $x -> [0][1] * ($x -> [1][0] * $x -> [2][2] - $x -> [1][2] * $x -> [2][0])
+      + $x -> [0][2] * ($x -> [1][0] * $x -> [2][1] - $x -> [1][1] * $x -> [2][0])
+      if $imax == 2;
 
-        foreach my $j (0 .. $jmax) {
+    # Matrix is 2 × 2
 
-            # Create a matrix with row 0 and column $j removed.
-            my $matrix0j = $matrix0 -> slice(0 .. $j-1, $j+1 .. $jmax);
+    return $x -> [0][0] * $x -> [1][1] - $x -> [1][0] * $x -> [0][1]
+      if $imax == 1;
 
-            my $term = $matrix0j -> determinant();
-            $term *= $j % 2 ? -$self->[0][$j]
-                            :  $self->[0][$j];
+    # Matrix is 1 × 1
 
-            $result += $term;
-        }
-        return $result;
+    return $x -> [0][0] if $imax == 0;
+
+    # Matrix is N × N for N > 3.
+
+    my $det = 0;
+
+    # Create a matrix with column 0 removed. We only need to do this once.
+    my $x0 = bless [ map { [ @{$_}[1 .. $jmax]] } @$x ], $class;
+
+    for my $i (0 .. $imax) {
+
+        # Create a matrix with row $i and column 0 removed.
+        my $x1 = bless [ map { [ @$_ ] } @{$x0}[ 0 .. $i-1, $i+1 .. $imax ] ], $class;
+
+        my $term = $x1 -> determinant();
+        $term *= $i % 2 ? -$x->[$i][0] : $x->[$i][0];
+
+        $det += $term;
     }
+
+    return $det;
 }
 
 =pod
