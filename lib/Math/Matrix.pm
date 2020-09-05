@@ -3731,14 +3731,26 @@ sub cross_product {
 
 =item bandwidth()
 
-Returns the bandwidth of a matrix.
+Returns the bandwidth of a matrix. In scalar context, returns the number of the
+non-zero diagonal furthest away from the main diagonal. In list context,
+separate values are returned for the lower and upper bandwidth.
 
     $n = $x -> bandwidth();
+    ($l, $u) = $x -> bandwidth();
 
-The bandwidth is a non-negative integer. It is the number of the non-zero
-diagonal furthest away from the main diagonal. If the bandwidth is 0, the matrix
-is diagonal or zero. If the bandwidth is 1, the matrix is tridiagonal. If the
+The bandwidth is a non-negative integer. If the bandwidth is 0, the matrix is
+diagonal or zero. If the bandwidth is 1, the matrix is tridiagonal. If the
 bandwidth is 2, the matrix is pentadiagonal etc.
+
+A matrix with the following pattern, where C<x> denotes a non-zero value, would
+return 2 in scalar context, and (1,2) in list context.
+
+    [ x x x 0 0 0 ]
+    [ x x x x 0 0 ]
+    [ 0 x x x x 0 ]
+    [ 0 0 x x x x ]
+    [ 0 0 0 x x x ]
+    [ 0 0 0 0 x x ]
 
 See also C<L</is_band()>> and C<L</is_aband()>>.
 
@@ -3751,16 +3763,24 @@ sub bandwidth {
 
     my ($nrow, $ncol) = $x -> size();
 
-    my $n = 0;
+    my $upper = 0;
+    my $lower = 0;
+
     for my $i (0 .. $nrow - 1) {
         for my $j (0 .. $ncol - 1) {
             next if $x -> [$i][$j] == 0;
-            my $tmp = abs($i - $j);
-            $n = $tmp if $tmp > $n;
+            my $dist = $j - $i;
+            if ($dist > 0) {
+                $upper = $dist if $dist > $upper;
+            } else {
+                $lower = $dist if $dist < $lower;
+            }
         }
     }
 
-    return $n;
+    $lower = -$lower;
+    return $lower, $upper if wantarray;
+    return $lower > $upper ? $lower : $upper;
 }
 
 =pod
