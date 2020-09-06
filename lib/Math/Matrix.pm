@@ -237,6 +237,82 @@ sub new {
 
 =pod
 
+=item new_from_sub()
+
+Creates a new matrix object by doing a subroutine call to create each element.
+
+    $sub = sub { ... };
+    $x = Math::Matrix -> new_from_sub($sub);          # 1-by-1
+    $x = Math::Matrix -> new_from_sub($sub, $m);      # $m-by-$m
+    $x = Math::Matrix -> new_from_sub($sub, $m, $n);  # $m-by-$n
+
+The subroutine is called in scalar context with two input arguments, the row and
+column indices of the element to be created. Note that no checks are performed
+on the output of the subroutine.
+
+Example 1, a 4-by-4 identity matrix can be created with
+
+    $sub = sub { $_[0] == $_[1] ? 1 : 0 };
+    $x = Math::Matrix -> new_from_sub($sub, 4);
+
+Example 2, the code
+
+    $x = Math::Matrix -> new_from_sub(sub { 2**$_[1] }, 1, 11);
+
+creates the following 1-by-11 vector with powers of two
+
+    [ 1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024 ]
+
+Example 3, the code, using C<$i> and C<$j> for increased readability
+
+    $sub = sub {
+        ($i, $j) = @_;
+        $d = $j - $i;
+        return $d == -1 ? 5
+             : $d ==  0 ? 6
+             : $d ==  1 ? 7
+             : 0;
+    };
+    $x = Math::Matrix -> new_from_sub($sub, 5);
+
+creates the tridiagonal matrix
+
+    [ 6 7 0 0 0 ]
+    [ 5 6 7 0 0 ]
+    [ 0 5 6 7 0 ]
+    [ 0 0 5 6 7 ]
+    [ 0 0 0 5 6 ]
+
+=cut
+
+sub new_from_sub {
+    croak "Not enough arguments for ", (caller(0))[3] if @_ < 2;
+    croak "Too many arguments for ", (caller(0))[3] if @_ > 4;
+    my $class = shift;
+
+    croak +(caller(0))[3], " is a class method, not an instance method"
+      if ref $class;
+
+    my $sub = shift;
+    croak "The first input argument must be a code reference"
+      unless ref($sub) eq 'CODE';
+
+    my ($nrow, $ncol) = @_ == 0 ? (1, 1)
+                      : @_ == 1 ? (@_, @_)
+                      :           (@_);
+
+    my $x = bless [], $class;
+    for my $i (0 .. $nrow - 1) {
+        for my $j (0 .. $ncol - 1) {
+            $x -> [$i][$j] = $sub -> ($i, $j);
+        }
+    }
+
+    return $x;
+}
+
+=pod
+
 =item id()
 
 Returns a new identity matrix.
