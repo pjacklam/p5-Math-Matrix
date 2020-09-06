@@ -409,15 +409,7 @@ the range [C<$a>,C<$b>), use
 
     $x = $a + ($b - $a) * Math::Matrix -> rand($m, $n);
 
-To generate an C<$m>-by-C<$n> matrix of uniformly distributed random integers in
-the range [,C<$a>], use
-
-    $x = int(($a + 1) * Math::Matrix -> rand($m, $n));
-
-To generate an C<$m>-by-C<$n> matrix of uniformly distributed random integers in
-the range [C<$a>,C<$b>], use
-
-    $x = $a + int(($b - $a + 1) * Math::Matrix -> rand($m, $n));
+See also C<L</randi()>> and C<L</randn()>>.
 
 =cut
 
@@ -445,6 +437,56 @@ sub rand {
 
 =pod
 
+=item randi()
+
+Returns a matrix of uniformly distributed random integers.
+
+    $x = Math::Matrix -> randi($max);                 # 1-by-1 matrix
+    $x = Math::Matrix -> randi($max, $n);             # $n-by-$n matrix
+    $x = Math::Matrix -> randi($max, $m, $n);         # $m-by-$n matrix
+
+    $x = Math::Matrix -> randi([$min, $max]);         # 1-by-1 matrix
+    $x = Math::Matrix -> randi([$min, $max], $n);     # $n-by-$n matrix
+    $x = Math::Matrix -> randi([$min, $max], $m, $n); # $m-by-$n matrix
+
+See also C<L</rand()>> and C<L</randn()>>.
+
+=cut
+
+sub randi {
+    croak "Not enough arguments for ", (caller(0))[3] if @_ < 2;
+    croak "Too many arguments for ", (caller(0))[3] if @_ > 4;
+    my $class = shift;
+
+    croak +(caller(0))[3], " is a class method, not an instance method"
+      if ref $class;
+
+    my ($min, $max);
+    my $lim = shift;
+    if (ref($lim) eq 'ARRAY') {
+        ($min, $max) = @$lim;
+    } else {
+        $min = 0;
+        $max = $lim;
+    }
+
+    my ($nrow, $ncol) = @_ == 0 ? (1, 1)
+                      : @_ == 1 ? (@_, @_)
+                      :           (@_);
+
+    my $c = $max - $min + 1;
+    my $x = bless [], $class;
+    for my $i (0 .. $nrow - 1) {
+        for my $j (0 .. $ncol - 1) {
+            $x -> [$i][$j] = $min + CORE::int(CORE::rand($c));
+        }
+    }
+
+    return $x;
+}
+
+=pod
+
 =item randn()
 
 Returns a matrix of random numbers from the standard normal distribution.
@@ -456,6 +498,8 @@ To generate an C<$m>-by-C<$n> matrix with mean C<$mu> and standard deviation
 C<$sigma>, use
 
     $x = $mu + $sigma * Math::Matrix -> randn($m, $n);
+
+See also C<L</rand()>> and C<L</randi()>>.
 
 =cut
 
