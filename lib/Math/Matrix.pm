@@ -805,6 +805,65 @@ sub tridiagonal {
 
 =pod
 
+=item blkdiag()
+
+Create block diagonal matrix. Returns a block diagonal matrix given a list of
+matrices.
+
+    $z = Math::Matrix -> blkdiag($x, $y, ...);
+
+=cut
+
+sub blkdiag {
+    croak "Not enough arguments for ", (caller(0))[3] if @_ < 1;
+    #croak "Too many arguments for ", (caller(0))[3] if @_ > 1;
+    my $class = shift;
+
+    my $y = [];
+    my $nrowy = 0;
+    my $ncoly = 0;
+
+    for my $i (0 .. $#_) {
+        my $x = $_[$i];
+
+        $x = $class -> new($x)
+          unless defined(blessed($x)) && $x -> isa($class);
+
+        my ($nrowx, $ncolx) = $x -> size();
+
+        # Upper right submatrix.
+
+        for my $i (0 .. $nrowy - 1) {
+            for my $j (0 .. $ncolx - 1) {
+                $y -> [$i][$ncoly + $j] = 0;
+            }
+        }
+
+        # Lower left submatrix.
+
+        for my $i (0 .. $nrowx - 1) {
+            for my $j (0 .. $ncoly - 1) {
+                $y -> [$nrowy + $i][$j] = 0;
+            }
+        }
+
+        # Lower right submatrix.
+
+        for my $i (0 .. $nrowx - 1) {
+            for my $j (0 .. $ncolx - 1) {
+                $y -> [$nrowy + $i][$ncoly + $j] = $x -> [$i][$j];
+            }
+        }
+
+        $nrowy += $nrowx;
+        $ncoly += $ncolx;
+    }
+
+    bless $y, $class;
+}
+
+=pod
+
 =back
 
 =head2 Identify matrices
