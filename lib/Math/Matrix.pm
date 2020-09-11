@@ -388,6 +388,49 @@ sub exchg {
 
 =pod
 
+=item scalar()
+
+Returns a scalar matrix, i.e., a diagonal matrix with the diagonal set to a
+given value.
+
+    # Create an $m-by-$m scalar matrix where each element is $c.
+    $x = Math::Matrix -> scalar($c, $m);
+
+    # Create an $m-by-$n scalar matrix where each element is $c.
+    $x = Math::Matrix -> scalar($c, $m, $n);
+
+Multiplying a matrix A by a scalar matrix B is effectively the same as multiply
+each element in A by the constant on the diagonal of B.
+
+=cut
+
+sub scalar {
+    croak "Not enough arguments for ", (caller(0))[3] if @_ < 2;
+    croak "Too many arguments for ", (caller(0))[3] if @_ > 4;
+    my $class = shift;
+
+    croak +(caller(0))[3], " is a class method, not an instance method"
+      if ref $class;
+
+    my $c = shift;
+    my ($nrow, $ncol) = @_ == 0 ? (1, 1)
+                      : @_ == 1 ? (@_, @_)
+                      :           (@_);
+    croak "The number of rows must be equal to the number of columns"
+      unless $nrow == $ncol;
+
+    my $x = [];
+    for my $i (0 .. $nrow - 1) {
+        my $row = [ (0) x $ncol ];
+        $row -> [$i] = $c;
+        push @$x, $row;
+    }
+
+    bless $x, $class;
+}
+
+=pod
+
 =item zeros()
 
 Create a zero matrix.
