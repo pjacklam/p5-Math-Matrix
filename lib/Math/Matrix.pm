@@ -2715,6 +2715,134 @@ sub rot270 {
 
 =pod
 
+=item repelm()
+
+Repeat elements.
+
+    $x -> repelm($y);
+
+Repeats each element in $x the number of times specified in $y.
+
+If $x is the matrix
+
+    [ 4 5 6 ]
+    [ 7 8 9 ]
+
+and $y is
+
+    [ 3 2 ]
+
+the returned matrix is
+
+    [ 4 4 5 5 6 6 ]
+    [ 4 4 5 5 6 6 ]
+    [ 4 4 5 5 6 6 ]
+    [ 7 7 8 8 9 9 ]
+    [ 7 7 8 8 9 9 ]
+    [ 7 7 8 8 9 9 ]
+
+=cut
+
+sub repelm {
+    croak "Not enough arguments for ", (caller(0))[3] if @_ < 2;
+    croak "Too many arguments for ", (caller(0))[3] if @_ > 2;
+    my $x = shift;
+    my $class = ref $x;
+
+    my $y = shift;
+    $y = __PACKAGE__ -> new($y)
+      unless defined(blessed($y)) && $y -> isa(__PACKAGE__);
+    croak "Input argument must contain two elements"
+      unless $y -> nelm() == 2;
+
+    my ($nrowx, $ncolx) = $x -> size();
+
+    $y = $y -> to_col();
+    my $nrowrep = $y -> [0][0];
+    my $ncolrep = $y -> [1][0];
+
+    my $z = [];
+    for my $ix (0 .. $nrowx - 1) {
+        for my $jx (0 .. $ncolx - 1) {
+            for my $iy (0 .. $nrowrep - 1) {
+                for my $jy (0 .. $ncolrep - 1) {
+                    my $iz = $ix * $nrowrep + $iy;
+                    my $jz = $jx * $ncolrep + $jy;
+                    $z -> [$iz][$jz] = $x -> [$ix][$jx];
+                }
+            }
+        }
+    }
+
+    bless $z, $class;
+}
+
+=pod
+
+=item repmat()
+
+Repeat elements.
+
+    $x -> repmat($y);
+
+Repeats the matrix $x the number of times specified in $y.
+
+If $x is the matrix
+
+    [ 4 5 6 ]
+    [ 7 8 9 ]
+
+and $y is
+
+    [ 3 2 ]
+
+the returned matrix is
+
+    [ 4 5 6 4 5 6 ]
+    [ 7 8 9 7 8 9 ]
+    [ 4 5 6 4 5 6 ]
+    [ 7 8 9 7 8 9 ]
+    [ 4 5 6 4 5 6 ]
+    [ 7 8 9 7 8 9 ]
+
+=cut
+
+sub repmat {
+    croak "Not enough arguments for ", (caller(0))[3] if @_ < 2;
+    croak "Too many arguments for ", (caller(0))[3] if @_ > 2;
+    my $x = shift;
+    my $class = ref $x;
+
+    my $y = shift;
+    $y = __PACKAGE__ -> new($y)
+      unless defined(blessed($y)) && $y -> isa(__PACKAGE__);
+    croak "Input argument must contain two elements"
+      unless $y -> nelm() == 2;
+
+    my ($nrowx, $ncolx) = $x -> size();
+
+    $y = $y -> to_col();
+    my $nrowrep = $y -> [0][0];
+    my $ncolrep = $y -> [1][0];
+
+    my $z = [];
+    for my $ix (0 .. $nrowx - 1) {
+        for my $jx (0 .. $ncolx - 1) {
+            for my $iy (0 .. $nrowrep - 1) {
+                for my $jy (0 .. $ncolrep - 1) {
+                    my $iz = $iy * $nrowx + $ix;
+                    my $jz = $jy * $ncolx + $jx;
+                    $z -> [$iz][$jz] = $x -> [$ix][$jx];
+                }
+            }
+        }
+    }
+
+    bless $z, $class;
+}
+
+=pod
+
 =item reshape()
 
 Returns a reshaped copy of a matrix. The reshaping is done by creating a new
