@@ -4579,13 +4579,13 @@ Truncate to integer.
 
 =head1 SUBCLASSING
 
-The majority of methods work fine with numerical objects, provided that the
-assignment operator C<=> returns a clone of the object and not just a reference
-to the same object.
+The majority of methods work fine with any kind of numerical objects, provided
+that the assignment operator C<=> returns a clone of the object and not just a
+reference to the same object.
 
 You can check the behaviour of the assignment operator by assigning a value to a
 new variable, modify the new variable, and check whether this also modifies the
-original value.
+original value, like this:
 
     $x = Some::Class -> new(0);           # create object $x
     $y = $x;                              # create new variable $y
@@ -4607,7 +4607,7 @@ Math::Matrix, where each element is a Math::Complex object.
 
     use Math::Matrix;
     use Scalar::Util 'blessed';
-    use Math::Complex 1.57;
+    use Math::Complex 1.57;     # "=" didn't clone before 1.57
 
     our @ISA = ('Math::Matrix');
 
