@@ -4548,6 +4548,38 @@ sub sapply {
 
 =pod
 
+Apply a subroutine to every element of a matrix.
+
+    $y = $x -> map(sub { $_ ** 2 });    # square each element
+
+The row index and column index of the element currenty being processed are
+passed as input arguments to the subroutine.
+
+=cut
+
+sub map {
+    my $x = shift;
+    my $class = ref $x;
+
+
+    my $sub = shift;
+    croak "The first input argument must be a code reference"
+      unless ref($sub) eq 'CODE';
+
+    my $y = [];
+    my ($nrow, $ncol) = $x -> size();
+    for my $i (0 .. $nrow - 1) {
+        for my $j (0 .. $ncol - 1) {
+            local $_ = $x -> [$i][$j];
+            $y -> [$i][$j] = $sub -> ($i, $j);
+        }
+    }
+
+    bless $y, $class;
+}
+
+=pod
+
 =item as_string()
 
 Creates a string representation of the matrix and returns it.
