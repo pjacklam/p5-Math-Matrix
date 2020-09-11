@@ -3638,6 +3638,49 @@ sub multiply {
 
 =pod
 
+=item kron()
+
+Kronecker tensor product.
+
+    $A -> kronprod($B);
+
+If C<$A> is an C<$m>-by-C<$n> matrix and C<$B> is a C<$p>-by-C<$q> matrix, then
+C<< $A -> kron($B) >> is an C<$m>*C<$p>-by-C<$n>*C<$q> matrix formed by taking
+all possible products between the elements of C<$A> and the elements of C<$B>.
+
+=cut
+
+sub kron {
+    croak "Not enough arguments for ", (caller(0))[3] if @_ < 2;
+    croak "Too many arguments for ", (caller(0))[3] if @_ > 2;
+    my $x = shift;
+    my $class = ref $x;
+
+    my $y = shift;
+    $y = $class -> new($y) unless defined(blessed($y)) && $y -> isa($class);
+
+    my ($nrowx, $ncolx) = $x -> size();
+    my ($nrowy, $ncoly) = $y -> size();
+
+    my $z = bless [], $class;
+
+    for my $ix (0 .. $nrowx - 1) {
+        for my $jx (0 .. $ncolx - 1) {
+            for my $iy (0 .. $nrowy - 1) {
+                for my $jy (0 .. $ncoly - 1) {
+                    my $iz = $ix * $nrowx + $iy;
+                    my $jz = $jx * $ncolx + $jy;
+                    $z -> [$iz][$jz] = $x -> [$ix][$jx] * $y -> [$iy][$jy];
+                }
+            }
+        }
+    }
+
+    return $z;
+}
+
+=pod
+
 =item pow()
 
 Power function.
