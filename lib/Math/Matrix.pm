@@ -3900,6 +3900,47 @@ sub int {
 
 =pod
 
+=item floor()
+
+Round to negative infinity. Rounds each element to negative infinity.
+
+    $y = $x -> floor();
+
+=cut
+
+sub floor {
+    croak "Not enough arguments for ", (caller(0))[3] if @_ < 1;
+    croak "Too many arguments for ", (caller(0))[3] if @_ > 1;
+    my $x = shift;
+
+    $x -> sapply(sub {
+                     my $ix = CORE::int($_[0]);
+                     ($ix <= $_[0]) ? $ix : $ix - 1;
+                 });
+}
+
+=pod
+
+=item ceil()
+
+Round to positive infinity. Rounds each element to positive infinity.
+
+    $y = $x -> int();
+
+=cut
+
+sub ceil {
+    my $x = shift;
+    my $class = ref $x;
+
+    $x -> sapply(sub {
+                     my $ix = CORE::int($_[0]);
+                     ($ix >= $_[0]) ? $ix : $ix + 1;
+                 });
+}
+
+=pod
+
 =item equal()
 
 Decide if two matrices are equal. The criterion is, that each pair of elements
