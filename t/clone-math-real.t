@@ -29,8 +29,8 @@ my ($nrow, $ncol) = $x -> size();
 
 # Modify the new object, and verify that the original matrix is unmodified.
 
-for (my $i = 0 ; $i < $nrow ; ++$i) {
-    for (my $j = 0 ; $j < $ncol ; ++$j) {
+for my $i (0 .. $nrow - 1) {
+    for my $j (0 .. $ncol - 1) {
         is(ref($y->[$i][$j]), 'Math::Real',
            "\$y->[$i][$j] is a Math::Real");
         my $oldval = $x->[$i][$j];

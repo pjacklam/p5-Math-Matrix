@@ -21,8 +21,8 @@ note('triu() on 2-by-3 matrix');
     # Verify that modifying $y does not modify $x.
 
     my ($nrowy, $ncoly) = $y -> size();
-    for (my $i = 0 ; $i < $nrowy ; ++$i) {
-        for (my $j = 0 ; $j < $ncoly ; ++$j) {
+    for my $i (0 .. $nrowy - 1) {
+        for my $j (0 .. $ncoly - 1) {
             $y -> [$i][$j] += 100;
         }
     }
@@ -46,8 +46,8 @@ note('triu(-1) on 2-by-3 matrix');
     # Verify that modifying $y does not modify $x.
 
     my ($nrowy, $ncoly) = $y -> size();
-    for (my $i = 0 ; $i < $nrowy ; ++$i) {
-        for (my $j = 0 ; $j < $ncoly ; ++$j) {
+    for my $i (0 .. $nrowy - 1) {
+        for my $j (0 .. $ncoly - 1) {
             $y -> [$i][$j] += 100;
         }
     }
@@ -71,8 +71,8 @@ note('triu(0) on 2-by-3 matrix');
     # Verify that modifying $y does not modify $x.
 
     my ($nrowy, $ncoly) = $y -> size();
-    for (my $i = 0 ; $i < $nrowy ; ++$i) {
-        for (my $j = 0 ; $j < $ncoly ; ++$j) {
+    for my $i (0 .. $nrowy - 1) {
+        for my $j (0 .. $ncoly - 1) {
             $y -> [$i][$j] += 100;
         }
     }
@@ -96,8 +96,8 @@ note('triu(1) on 2-by-3 matrix');
     # Verify that modifying $y does not modify $x.
 
     my ($nrowy, $ncoly) = $y -> size();
-    for (my $i = 0 ; $i < $nrowy ; ++$i) {
-        for (my $j = 0 ; $j < $ncoly ; ++$j) {
+    for my $i (0 .. $nrowy - 1) {
+        for my $j (0 .. $ncoly - 1) {
             $y -> [$i][$j] += 100;
         }
     }
@@ -121,8 +121,8 @@ note('triu(2) on 2-by-3 matrix');
     # Verify that modifying $y does not modify $x.
 
     my ($nrowy, $ncoly) = $y -> size();
-    for (my $i = 0 ; $i < $nrowy ; ++$i) {
-        for (my $j = 0 ; $j < $ncoly ; ++$j) {
+    for my $i (0 .. $nrowy - 1) {
+        for my $j (0 .. $ncoly - 1) {
             $y -> [$i][$j] += 100;
         }
     }
@@ -146,8 +146,8 @@ note('triu(3) on 2-by-3 matrix');
     # Verify that modifying $y does not modify $x.
 
     my ($nrowy, $ncoly) = $y -> size();
-    for (my $i = 0 ; $i < $nrowy ; ++$i) {
-        for (my $j = 0 ; $j < $ncoly ; ++$j) {
+    for my $i (0 .. $nrowy - 1) {
+        for my $j (0 .. $ncoly - 1) {
             $y -> [$i][$j] += 100;
         }
     }
@@ -173,8 +173,8 @@ note('triu() on 3-by-2 matrix');
     # Verify that modifying $y does not modify $x.
 
     my ($nrowy, $ncoly) = $y -> size();
-    for (my $i = 0 ; $i < $nrowy ; ++$i) {
-        for (my $j = 0 ; $j < $ncoly ; ++$j) {
+    for my $i (0 .. $nrowy - 1) {
+        for my $j (0 .. $ncoly - 1) {
             $y -> [$i][$j] += 100;
         }
     }
@@ -201,8 +201,8 @@ note('triu(-2) on 3-by-2 matrix');
     # Verify that modifying $y does not modify $x.
 
     my ($nrowy, $ncoly) = $y -> size();
-    for (my $i = 0 ; $i < $nrowy ; ++$i) {
-        for (my $j = 0 ; $j < $ncoly ; ++$j) {
+    for my $i (0 .. $nrowy - 1) {
+        for my $j (0 .. $ncoly - 1) {
             $y -> [$i][$j] += 100;
         }
     }
@@ -229,8 +229,8 @@ note('triu(-1) on 3-by-2 matrix');
     # Verify that modifying $y does not modify $x.
 
     my ($nrowy, $ncoly) = $y -> size();
-    for (my $i = 0 ; $i < $nrowy ; ++$i) {
-        for (my $j = 0 ; $j < $ncoly ; ++$j) {
+    for my $i (0 .. $nrowy - 1) {
+        for my $j (0 .. $ncoly - 1) {
             $y -> [$i][$j] += 100;
         }
     }
@@ -257,8 +257,8 @@ note('triu(0) on 3-by-2 matrix');
     # Verify that modifying $y does not modify $x.
 
     my ($nrowy, $ncoly) = $y -> size();
-    for (my $i = 0 ; $i < $nrowy ; ++$i) {
-        for (my $j = 0 ; $j < $ncoly ; ++$j) {
+    for my $i (0 .. $nrowy - 1) {
+        for my $j (0 .. $ncoly - 1) {
             $y -> [$i][$j] += 100;
         }
     }
@@ -285,8 +285,8 @@ note('triu(1) on 3-by-2 matrix');
     # Verify that modifying $y does not modify $x.
 
     my ($nrowy, $ncoly) = $y -> size();
-    for (my $i = 0 ; $i < $nrowy ; ++$i) {
-        for (my $j = 0 ; $j < $ncoly ; ++$j) {
+    for my $i (0 .. $nrowy - 1) {
+        for my $j (0 .. $ncoly - 1) {
             $y -> [$i][$j] += 100;
         }
     }
@@ -313,8 +313,8 @@ note('triu(2) on 3-by-2 matrix');
     # Verify that modifying $y does not modify $x.
 
     my ($nrowy, $ncoly) = $y -> size();
-    for (my $i = 0 ; $i < $nrowy ; ++$i) {
-        for (my $j = 0 ; $j < $ncoly ; ++$j) {
+    for my $i (0 .. $nrowy - 1) {
+        for my $j (0 .. $ncoly - 1) {
             $y -> [$i][$j] += 100;
         }
     }

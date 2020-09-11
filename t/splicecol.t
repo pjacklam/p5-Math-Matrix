@@ -37,8 +37,8 @@ note('($y, $z) = $x -> splicecol();');
     # Verify that modifying $z does not modify $x.
 
     my ($nrowz, $ncolz) = $z -> size();
-    for (my $i = 0 ; $i < $nrowz ; ++$i) {
-        for (my $j = 0 ; $j < $ncolz ; ++$j) {
+    for my $i (0 .. $nrowz - 1) {
+        for my $j (0 .. $ncolz - 1) {
             $z -> [$i][$j] += 100;
         }
     }
@@ -61,8 +61,8 @@ note('$y = $x -> splicecol(1);');
     # Verify that modifying $y does not modify $x.
 
     my ($nrowy, $ncoly) = $y -> size();
-    for (my $i = 0 ; $i < $nrowy ; ++$i) {
-        for (my $j = 0 ; $j < $ncoly ; ++$j) {
+    for my $i (0 .. $nrowy - 1) {
+        for my $j (0 .. $ncoly - 1) {
             $y -> [$i][$j] += 100;
         }
     }
@@ -89,15 +89,15 @@ note('($y, $z) = $x -> splicecol(1);');
     # Verify that modifying $y and $z does not modify $x.
 
     my ($nrowy, $ncoly) = $y -> size();
-    for (my $i = 0 ; $i < $nrowy ; ++$i) {
-        for (my $j = 0 ; $j < $ncoly ; ++$j) {
+    for my $i (0 .. $nrowy - 1) {
+        for my $j (0 .. $ncoly - 1) {
             $y -> [$i][$j] += 100;
         }
     }
 
     my ($nrowz, $ncolz) = $z -> size();
-    for (my $i = 0 ; $i < $nrowz ; ++$i) {
-        for (my $j = 0 ; $j < $ncolz ; ++$j) {
+    for my $i (0 .. $nrowz - 1) {
+        for my $j (0 .. $ncolz - 1) {
             $z -> [$i][$j] += 100;
         }
     }
@@ -120,8 +120,8 @@ note('$y = $x -> splicecol(1, 2);');
     # Verify that modifying $y does not modify $x.
 
     my ($nrowy, $ncoly) = $y -> size();
-    for (my $i = 0 ; $i < $nrowy ; ++$i) {
-        for (my $j = 0 ; $j < $ncoly ; ++$j) {
+    for my $i (0 .. $nrowy - 1) {
+        for my $j (0 .. $ncoly - 1) {
             $y -> [$i][$j] += 100;
         }
     }
@@ -148,15 +148,15 @@ note('($y, $z) = $x -> splicecol(1, 2);');
                                 # Verify that modifying $y and $z does not modify $x.
 
     my ($nrowy, $ncoly) = $y -> size();
-    for (my $i = 0 ; $i < $nrowy ; ++$i) {
-        for (my $j = 0 ; $j < $ncoly ; ++$j) {
+    for my $i (0 .. $nrowy - 1) {
+        for my $j (0 .. $ncoly - 1) {
             $y -> [$i][$j] += 100;
         }
     }
 
     my ($nrowz, $ncolz) = $z -> size();
-    for (my $i = 0 ; $i < $nrowz ; ++$i) {
-        for (my $j = 0 ; $j < $ncolz ; ++$j) {
+    for my $i (0 .. $nrowz - 1) {
+        for my $j (0 .. $ncolz - 1) {
             $z -> [$i][$j] += 100;
         }
     }
@@ -183,8 +183,8 @@ note('$y = $x -> splicecol(1, 2, $a, $b);');
     # Verify that modifying $y does not modify $x, $a, or $b.
 
     my ($nrowy, $ncoly) = $y -> size();
-    for (my $i = 0 ; $i < $nrowy ; ++$i) {
-        for (my $j = 0 ; $j < $ncoly ; ++$j) {
+    for my $i (0 .. $nrowy - 1) {
+        for my $j (0 .. $ncoly - 1) {
             $y -> [$i][$j] += 100;
         }
     }
@@ -219,15 +219,15 @@ note('($y, $z) = $x -> splicecol(1, 2, $a, $b);');
     # Verify that modifying $y and $z does not modify $x, $a, or $b.
 
     my ($nrowy, $ncoly) = $y -> size();
-    for (my $i = 0 ; $i < $nrowy ; ++$i) {
-        for (my $j = 0 ; $j < $ncoly ; ++$j) {
+    for my $i (0 .. $nrowy - 1) {
+        for my $j (0 .. $ncoly - 1) {
             $y -> [$i][$j] += 100;
         }
     }
 
     my ($nrowz, $ncolz) = $z -> size();
-    for (my $i = 0 ; $i < $nrowz ; ++$i) {
-        for (my $j = 0 ; $j < $ncolz ; ++$j) {
+    for my $i (0 .. $nrowz - 1) {
+        for my $j (0 .. $ncolz - 1) {
             $z -> [$i][$j] += 100;
         }
     }
@@ -254,8 +254,8 @@ note('$y = $x -> splicecol(1);');
     # Verify that modifying $y does not modify $x.
 
     my ($nrowy, $ncoly) = $y -> size();
-    for (my $i = 0 ; $i < $nrowy ; ++$i) {
-        for (my $j = 0 ; $j < $ncoly ; ++$j) {
+    for my $i (0 .. $nrowy - 1) {
+        for my $j (0 .. $ncoly - 1) {
             $y -> [$i][$j] += 100;
         }
     }
@@ -281,8 +281,8 @@ note('($y, $z) = $x -> splicecol(1);');
     # Verify that modifying $y does not modify $x.
 
     my ($nrowy, $ncoly) = $y -> size();
-    for (my $i = 0 ; $i < $nrowy ; ++$i) {
-        for (my $j = 0 ; $j < $ncoly ; ++$j) {
+    for my $i (0 .. $nrowy - 1) {
+        for my $j (0 .. $ncoly - 1) {
             $y -> [$i][$j] += 100;
         }
     }
@@ -321,8 +321,8 @@ note('($y, $z) = $x -> splicecol(0);');
     # Verify that modifying $z does not modify $x.
 
     my ($nrowz, $ncolz) = $z -> size();
-    for (my $i = 0 ; $i < $nrowz ; ++$i) {
-        for (my $j = 0 ; $j < $ncolz ; ++$j) {
+    for my $i (0 .. $nrowz - 1) {
+        for my $j (0 .. $ncolz - 1) {
             $z -> [$i][$j] += 100;
         }
     }

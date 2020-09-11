@@ -22,8 +22,8 @@ note('$x -> getrow(1);');
     # Verify that modifying $y does not modify $x.
 
     my ($nrowy, $ncoly) = $y -> size();
-    for (my $i = 0 ; $i < $nrowy ; ++$i) {
-        for (my $j = 0 ; $j < $ncoly ; ++$j) {
+    for my $i (0 .. $nrowy - 1) {
+        for my $j (0 .. $ncoly - 1) {
             $y -> [$i][$j] += 10;
         }
     }
@@ -51,8 +51,8 @@ note('$x -> getrow([3, 1]);');
     # Verify that modifying $y does not modify $x.
 
     my ($nrowy, $ncoly) = $y -> size();
-    for (my $i = 0 ; $i < $nrowy ; ++$i) {
-        for (my $j = 0 ; $j < $ncoly ; ++$j) {
+    for my $i (0 .. $nrowy - 1) {
+        for my $j (0 .. $ncoly - 1) {
             $y -> [$i][$j] += 10;
         }
     }
@@ -94,8 +94,8 @@ note('$x -> getrow([3.14, 1.25]);');
     # Verify that modifying $y does not modify $x.
 
     my ($nrowy, $ncoly) = $y -> size();
-    for (my $i = 0 ; $i < $nrowy ; ++$i) {
-        for (my $j = 0 ; $j < $ncoly ; ++$j) {
+    for my $i (0 .. $nrowy - 1) {
+        for my $j (0 .. $ncoly - 1) {
             $y -> [$i][$j] += 10;
         }
     }

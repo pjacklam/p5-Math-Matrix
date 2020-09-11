@@ -21,8 +21,8 @@ note("one non-empty operand");
     # Verify that modifying $y does not modify $x.
 
     my ($nrowx, $ncolx) = $x -> size();
-    for (my $i = 0 ; $i < $nrowx ; ++$i) {
-        for (my $j = 0 ; $j < $ncolx ; ++$j) {
+    for my $i (0 .. $nrowx - 1) {
+        for my $j (0 .. $ncolx - 1) {
             $y -> [$i][$j] += 10;
         }
     }
@@ -45,8 +45,8 @@ note("two non-empty operands with the same size");
     # Verify that modifying $z does not modify $x or $y.
 
     my ($nrowz, $ncolz) = $z -> size();
-    for (my $i = 0 ; $i < $nrowz ; ++$i) {
-        for (my $j = 0 ; $j < $ncolz ; ++$j) {
+    for my $i (0 .. $nrowz - 1) {
+        for my $j (0 .. $ncolz - 1) {
             $z -> [$i][$j] += 10;
         }
     }
@@ -70,8 +70,8 @@ note("three non-empty operands with the same size");
     # Verify that modifying $w does not modify $x, $y, or $z.
 
     my ($nroww, $ncolw) = $w -> size();
-    for (my $i = 0 ; $i < $nroww ; ++$i) {
-        for (my $j = 0 ; $j < $ncolw ; ++$j) {
+    for my $i (0 .. $nroww - 1) {
+        for my $j (0 .. $ncolw - 1) {
             $w -> [$i][$j] += 10;
         }
     }
@@ -97,8 +97,8 @@ note("two non-empty operands with different size");
     # Verify that modifying $z does not modify $x or $y.
 
     my ($nrowz, $ncolz) = $z -> size();
-    for (my $i = 0 ; $i < $nrowz ; ++$i) {
-        for (my $j = 0 ; $j < $ncolz ; ++$j) {
+    for my $i (0 .. $nrowz - 1) {
+        for my $j (0 .. $ncolz - 1) {
             $z -> [$i][$j] += 10;
         }
     }

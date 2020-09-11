@@ -22,8 +22,8 @@ use Test::More tests => 14;
     # Verify that modifying $w does not modify $x, $y, or $z.
 
     my ($nroww, $ncolw) = $w -> size();
-    for (my $i = 0 ; $i < $nroww ; ++$i) {
-        for (my $j = 0 ; $j < $ncolw ; ++$j) {
+    for my $i (0 .. $nroww - 1) {
+        for my $j (0 .. $ncolw - 1) {
             $w -> [$i][$j] += 100;
         }
     }
@@ -49,8 +49,8 @@ use Test::More tests => 14;
     # Verify that modifying $w does not modify $x, $y, or $z.
 
     my ($nroww, $ncolw) = $w -> size();
-    for (my $i = 0 ; $i < $nroww ; ++$i) {
-        for (my $j = 0 ; $j < $ncolw ; ++$j) {
+    for my $i (0 .. $nroww - 1) {
+        for my $j (0 .. $ncolw - 1) {
             $w -> [$i][$j] += 100;
         }
     }

@@ -25,8 +25,8 @@ is(ref($B), 'Math::Matrix::Real', '$B is a Math::Matrix::Real');
 
 # Modify the new object, and verify that the original matrix is unmodified.
 
-for (my $i = 0 ; $i < 2 ; ++$i) {
-    for (my $jB = 0 ; $jB < @colidx ; ++$jB) {
+for my $i (0 .. 1) {
+    for my $jB (0 .. @colidx - 1) {
         my $j = $colidx[$jB];
         is(ref($B->[$i][$jB]), 'Math::Real',
            "\$B->[$i][$jB] is a Math::Real");

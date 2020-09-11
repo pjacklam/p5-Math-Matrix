@@ -21,8 +21,8 @@ note('rot90()');
     # Verify that modifying $y does not modify $x.
 
     my ($nrowy, $ncoly) = $y -> size();
-    for (my $i = 0 ; $i < $nrowy ; ++$i) {
-        for (my $j = 0 ; $j < $ncoly ; ++$j) {
+    for my $i (0 .. $nrowy - 1) {
+        for my $j (0 .. $ncoly - 1) {
             $y -> [$i][$j] += 100;
         }
     }
@@ -45,8 +45,8 @@ note('rot90(0)');
     # Verify that modifying $y does not modify $x.
 
     my ($nrowy, $ncoly) = $y -> size();
-    for (my $i = 0 ; $i < $nrowy ; ++$i) {
-        for (my $j = 0 ; $j < $ncoly ; ++$j) {
+    for my $i (0 .. $nrowy - 1) {
+        for my $j (0 .. $ncoly - 1) {
             $y -> [$i][$j] += 100;
         }
     }
@@ -70,8 +70,8 @@ note('rot90(1)');
     # Verify that modifying $y does not modify $x.
 
     my ($nrowy, $ncoly) = $y -> size();
-    for (my $i = 0 ; $i < $nrowy ; ++$i) {
-        for (my $j = 0 ; $j < $ncoly ; ++$j) {
+    for my $i (0 .. $nrowy - 1) {
+        for my $j (0 .. $ncoly - 1) {
             $y -> [$i][$j] += 100;
         }
     }
@@ -94,8 +94,8 @@ note('rot90(2)');
     # Verify that modifying $y does not modify $x.
 
     my ($nrowy, $ncoly) = $y -> size();
-    for (my $i = 0 ; $i < $nrowy ; ++$i) {
-        for (my $j = 0 ; $j < $ncoly ; ++$j) {
+    for my $i (0 .. $nrowy - 1) {
+        for my $j (0 .. $ncoly - 1) {
             $y -> [$i][$j] += 100;
         }
     }
@@ -119,8 +119,8 @@ note('rot90(3)');
     # Verify that modifying $y does not modify $x.
 
     my ($nrowy, $ncoly) = $y -> size();
-    for (my $i = 0 ; $i < $nrowy ; ++$i) {
-        for (my $j = 0 ; $j < $ncoly ; ++$j) {
+    for my $i (0 .. $nrowy - 1) {
+        for my $j (0 .. $ncoly - 1) {
             $y -> [$i][$j] += 100;
         }
     }
@@ -155,8 +155,8 @@ note('rot90([[1]])');
     # Verify that modifying $y does not modify $x.
 
     my ($nrowy, $ncoly) = $y -> size();
-    for (my $i = 0 ; $i < $nrowy ; ++$i) {
-        for (my $j = 0 ; $j < $ncoly ; ++$j) {
+    for my $i (0 .. $nrowy - 1) {
+        for my $j (0 .. $ncoly - 1) {
             $y -> [$i][$j] += 100;
         }
     }
@@ -180,8 +180,8 @@ note('rot90(Math::Matrix -> new([[1]]))');
     # Verify that modifying $y does not modify $x.
 
     my ($nrowy, $ncoly) = $y -> size();
-    for (my $i = 0 ; $i < $nrowy ; ++$i) {
-        for (my $j = 0 ; $j < $ncoly ; ++$j) {
+    for my $i (0 .. $nrowy - 1) {
+        for my $j (0 .. $ncoly - 1) {
             $y -> [$i][$j] += 100;
         }
     }

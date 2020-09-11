@@ -22,8 +22,8 @@ note("spow() with two matrices");
     # Verify that modifying $z does not modify $x or $y.
 
     my ($nrowy, $ncoly) = $y -> size();
-    for (my $i = 0 ; $i < $nrowy ; ++$i) {
-        for (my $j = 0 ; $j < $ncoly ; ++$j) {
+    for my $i (0 .. $nrowy - 1) {
+        for my $j (0 .. $ncoly - 1) {
             $z -> [$i][$j] += 10;
         }
     }
@@ -49,8 +49,8 @@ note("spow() with matrix and scalar");
     # Verify that modifying $z does not modify $x or $y.
 
     my ($nrowy, $ncoly) = $y -> size();
-    for (my $i = 0 ; $i < $nrowy ; ++$i) {
-        for (my $j = 0 ; $j < $ncoly ; ++$j) {
+    for my $i (0 .. $nrowy - 1) {
+        for my $j (0 .. $ncoly - 1) {
             $z -> [$i][$j] += 10;
         }
     }
@@ -76,8 +76,8 @@ note("spow() with scalar and matrix");
     # Verify that modifying $z does not modify $x or $y.
 
     my ($nrowy, $ncoly) = $y -> size();
-    for (my $i = 0 ; $i < $nrowy ; ++$i) {
-        for (my $j = 0 ; $j < $ncoly ; ++$j) {
+    for my $i (0 .. $nrowy - 1) {
+        for my $j (0 .. $ncoly - 1) {
             $z -> [$i][$j] += 10;
         }
     }

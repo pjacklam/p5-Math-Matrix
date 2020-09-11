@@ -31,8 +31,8 @@ plan tests => 26;
     # Verify that modifying $z does not modify $x or $y.
 
     my ($nrowz, $ncolz) = $z -> size();
-    for (my $i = 0 ; $i < $nrowz ; ++$i) {
-        for (my $j = 0 ; $j < $ncolz ; ++$j) {
+    for my $i (0 .. $nrowz - 1) {
+        for my $j (0 .. $ncolz - 1) {
             $z -> [$i][$j] += 10;
         }
     }
@@ -59,8 +59,8 @@ plan tests => 26;
     # Verify that modifying $z does not modify $x or $y.
 
     my ($nrowz, $ncolz) = $z -> size();
-    for (my $i = 0 ; $i < $nrowz ; ++$i) {
-        for (my $j = 0 ; $j < $ncolz ; ++$j) {
+    for my $i (0 .. $nrowz - 1) {
+        for my $j (0 .. $ncolz - 1) {
             $z -> [$i][$j] += 10;
         }
     }
@@ -86,8 +86,8 @@ plan tests => 26;
     # Verify that modifying $z does not modify $x or $y.
 
     my ($nrowz, $ncolz) = $z -> size();
-    for (my $i = 0 ; $i < $nrowz ; ++$i) {
-        for (my $j = 0 ; $j < $ncolz ; ++$j) {
+    for my $i (0 .. $nrowz - 1) {
+        for my $j (0 .. $ncolz - 1) {
             $z -> [$i][$j] += 10;
         }
     }
@@ -110,8 +110,8 @@ plan tests => 26;
     # Verify that modifying $z does not modify $x or $y.
 
     my ($nrowz, $ncolz) = $z -> size();
-    for (my $i = 0 ; $i < $nrowz ; ++$i) {
-        for (my $j = 0 ; $j < $ncolz ; ++$j) {
+    for my $i (0 .. $nrowz - 1) {
+        for my $j (0 .. $ncolz - 1) {
             $z -> [$i][$j] += 10;
         }
     }
