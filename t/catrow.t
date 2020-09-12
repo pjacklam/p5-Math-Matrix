@@ -13,9 +13,9 @@ use Test::More tests => 28;
     my $z = $x -> catrow($y);
 
     is(ref($z), 'Math::Matrix', '$z is a Math::Matrix');
-    is_deeply([ @$z ], [[ 1, 2 ],
-                        [ 3, 4 ],
-                        [ 5, 6 ]], '$z has the right values');
+    is_deeply([ @$z ], [[1, 2],
+                        [3, 4],
+                        [5, 6]], '$z has the right values');
 
     # Verify that modifying $z does not modify $x or $y.
 
@@ -32,18 +32,18 @@ use Test::More tests => 28;
 }
 
 {
-    my $x = Math::Matrix -> new([0, 1],
-                                [2, 3],
-                                [4, 5]);
-    my $y = Math::Matrix -> new([6, 7],
-                                [8, 9]);
+    my $x = Math::Matrix -> new([[0, 1],
+                                 [2, 3],
+                                 [4, 5]]);
+    my $y = Math::Matrix -> new([[6, 7],
+                                 [8, 9]]);
     my $z = $x -> catrow($y);
     is(ref($z), 'Math::Matrix', '$z is a Math::Matrix');
-    is_deeply([ @$z ], [[ 0, 1 ],
-                        [ 2, 3 ],
-                        [ 4, 5 ],
-                        [ 6, 7 ],
-                        [ 8, 9 ]], '$z has the right values');
+    is_deeply([ @$z ], [[0, 1],
+                        [2, 3],
+                        [4, 5],
+                        [6, 7],
+                        [8, 9]], '$z has the right values');
 
     # Verify that modifying $z does not modify $x or $y.
 
@@ -62,15 +62,15 @@ use Test::More tests => 28;
 }
 
 {
-    my $x = Math::Matrix -> new([0, 1],
-                                [2, 3],
-                                [4, 5]);
+    my $x = Math::Matrix -> new([[0, 1],
+                                 [2, 3],
+                                 [4, 5]]);
     my $y = Math::Matrix -> new([]);
     my $z = $x -> catrow($y);
     is(ref($z), 'Math::Matrix', '$z is a Math::Matrix');
-    is_deeply([ @$z ], [[ 0, 1 ],
-                        [ 2, 3 ],
-                        [ 4, 5 ]], '$z has the right values');
+    is_deeply([ @$z ], [[0, 1],
+                        [2, 3],
+                        [4, 5]], '$z has the right values');
 
     # Verify that modifying $z does not modify $x or $y.
 
@@ -127,7 +127,7 @@ use Test::More tests => 28;
 }
 
 {
-    my $x = Math::Matrix -> new([3]);
+    my $x = Math::Matrix -> new([[3]]);
     my $z = $x -> catrow($x, $x, $x);
     is(ref($z), 'Math::Matrix', '$z is a Math::Matrix');
     is_deeply([ @$z ], [[3], [3], [3], [3]], '$z has the right values');
@@ -135,7 +135,7 @@ use Test::More tests => 28;
 }
 
 {
-    my $x = Math::Matrix -> new([3]);
+    my $x = Math::Matrix -> new([[3]]);
     my $z = $x -> catrow();
     is(ref($z), 'Math::Matrix', '$z is a Math::Matrix');
     is_deeply([ @$z ], [[3]], '$z has the right values');

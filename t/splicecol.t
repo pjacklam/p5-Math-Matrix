@@ -168,8 +168,8 @@ note('($y, $z) = $x -> splicecol(1, 2);');
 note('$y = $x -> splicecol(1, 2, $a, $b);');
 
 {
-    my $x = Math::Matrix -> new([[ 1, 3, 5, 7 ],
-                                 [ 2, 4, 6, 8 ]]);
+    my $x = Math::Matrix -> new([[1, 3, 5, 7],
+                                 [2, 4, 6, 8]]);
     my $a = Math::Matrix -> new([[11, 13, 15],
                                  [12, 14, 16]]);
     my $b = Math::Matrix -> new([[17],
@@ -200,8 +200,8 @@ note('$y = $x -> splicecol(1, 2, $a, $b);');
 note('($y, $z) = $x -> splicecol(1, 2, $a, $b);');
 
 {
-    my $x = Math::Matrix -> new([[ 1, 3, 5, 7],
-                                 [ 2, 4, 6, 8]]);
+    my $x = Math::Matrix -> new([[1, 3, 5, 7],
+                                 [2, 4, 6, 8]]);
     my $a = Math::Matrix -> new([[11, 13, 15],
                                  [12, 14, 16]]);
     my $b = Math::Matrix -> new([[17],
@@ -209,12 +209,12 @@ note('($y, $z) = $x -> splicecol(1, 2, $a, $b);');
     my ($y, $z) = $x -> splicecol(1, 2, $a, $b);
 
     is(ref($y), 'Math::Matrix', '$y is a Math::Matrix');
-    is_deeply([ @$y ], [[ 1, 11, 13, 15, 17, 7],
-                        [ 2, 12, 14, 16, 18, 8 ]], '$y has the right values');
+    is_deeply([ @$y ], [[1, 11, 13, 15, 17, 7],
+                        [2, 12, 14, 16, 18, 8]], '$y has the right values');
 
     is(ref($z), 'Math::Matrix', '$z is a Math::Matrix');
-    is_deeply([ @$z ], [[ 3,  5],
-                        [ 4,  6]], '$z has the right values');
+    is_deeply([ @$z ], [[3, 5],
+                        [4, 6]], '$z has the right values');
 
     # Verify that modifying $y and $z does not modify $x, $a, or $b.
 

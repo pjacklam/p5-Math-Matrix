@@ -26,7 +26,7 @@ note("mul() with two matrices");
     my ($nrowy, $ncoly) = $y -> size();
     for my $i (0 .. $nrowy - 1) {
         for my $j (0 .. $ncoly - 1) {
-            $z -> [$i][$j] += 10;
+            $z -> [$i][$j] += 100;
         }
     }
 
@@ -55,7 +55,7 @@ note("mul() with matrix and scalar");
     my ($nrowy, $ncoly) = $y -> size();
     for my $i (0 .. $nrowy - 1) {
         for my $j (0 .. $ncoly - 1) {
-            $z -> [$i][$j] += 10;
+            $z -> [$i][$j] += 100;
         }
     }
 
@@ -82,7 +82,7 @@ note("mul() with scalar and matrix");
     my ($nrowy, $ncoly) = $y -> size();
     for my $i (0 .. $nrowy - 1) {
         for my $j (0 .. $ncoly - 1) {
-            $z -> [$i][$j] += 10;
+            $z -> [$i][$j] += 100;
         }
     }
 

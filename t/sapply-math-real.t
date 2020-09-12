@@ -13,8 +13,8 @@ plan tests => 21;
 note("one non-empty operand");
 
 {
-    my $x = Math::Matrix::Real -> new([1, 2, 3],
-                                      [4, 5, 6]);
+    my $x = Math::Matrix::Real -> new([[1, 2, 3],
+                                       [4, 5, 6]]);
     my $sub = sub { $_[0] * 3 };
     my $y = $x -> sapply($sub);
 
@@ -27,7 +27,7 @@ note("one non-empty operand");
     my ($nrowx, $ncolx) = $x -> size();
     for my $i (0 .. $nrowx - 1) {
         for my $j (0 .. $ncolx - 1) {
-            $y -> [$i][$j] += 10;
+            $y -> [$i][$j] += 100;
         }
     }
 
@@ -38,8 +38,8 @@ note("one non-empty operand");
 note("two non-empty operands with the same size");
 
 {
-    my $x = Math::Matrix::Real -> new([1, 2, 3]);
-    my $y = Math::Matrix::Real -> new([4, 5, 6]);
+    my $x = Math::Matrix::Real -> new([[1, 2, 3]]);
+    my $y = Math::Matrix::Real -> new([[4, 5, 6]]);
     my $sub = sub { $_[0] * $_[1] };
     my $z = $x -> sapply($sub, $y);
 
@@ -51,7 +51,7 @@ note("two non-empty operands with the same size");
     my ($nrowz, $ncolz) = $z -> size();
     for my $i (0 .. $nrowz - 1) {
         for my $j (0 .. $ncolz - 1) {
-            $z -> [$i][$j] += 10;
+            $z -> [$i][$j] += 100;
         }
     }
 
@@ -62,9 +62,9 @@ note("two non-empty operands with the same size");
 note("three non-empty operands with the same size");
 
 {
-    my $x = Math::Matrix::Real -> new([1, 2, 3]);
-    my $y = Math::Matrix::Real -> new([4, 5, 6]);
-    my $z = Math::Matrix::Real -> new([7, 8, 9]);
+    my $x = Math::Matrix::Real -> new([[1, 2, 3]]);
+    my $y = Math::Matrix::Real -> new([[4, 5, 6]]);
+    my $z = Math::Matrix::Real -> new([[7, 8, 9]]);
     my $sub = sub { $_[0] * $_[1] + $_[2] };
     my $w = $x -> sapply($sub, $y, $z);
 
@@ -76,7 +76,7 @@ note("three non-empty operands with the same size");
     my ($nroww, $ncolw) = $w -> size();
     for my $i (0 .. $nroww - 1) {
         for my $j (0 .. $ncolw - 1) {
-            $w -> [$i][$j] += 10;
+            $w -> [$i][$j] += 100;
         }
     }
 
@@ -88,8 +88,8 @@ note("three non-empty operands with the same size");
 note("two non-empty operands with different size");
 
 {
-    my $x = Math::Matrix::Real -> new([1, 2, 3]);
-    my $y = Math::Matrix::Real -> new([4], [5], [6]);
+    my $x = Math::Matrix::Real -> new([[1, 2, 3]]);
+    my $y = Math::Matrix::Real -> new([[4], [5], [6]]);
     my $sub = sub { $_[0] * $_[1] };
     my $z = $x -> sapply($sub, $y);
 
@@ -103,7 +103,7 @@ note("two non-empty operands with different size");
     my ($nrowz, $ncolz) = $z -> size();
     for my $i (0 .. $nrowz - 1) {
         for my $j (0 .. $ncolz - 1) {
-            $z -> [$i][$j] += 10;
+            $z -> [$i][$j] += 100;
         }
     }
 

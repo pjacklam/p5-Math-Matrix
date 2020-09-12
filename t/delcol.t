@@ -27,7 +27,7 @@ note('$x -> delcol(1);');
     my ($nrowy, $ncoly) = $y -> size();
     for my $i (0 .. $nrowy - 1) {
         for my $j (0 .. $ncoly - 1) {
-            $y -> [$i][$j] += 10;
+            $y -> [$i][$j] += 100;
         }
     }
 
@@ -58,7 +58,7 @@ note('$x -> delcol([3, 1]);');
     my ($nrowy, $ncoly) = $y -> size();
     for my $i (0 .. $nrowy - 1) {
         for my $j (0 .. $ncoly - 1) {
-            $y -> [$i][$j] += 10;
+            $y -> [$i][$j] += 100;
         }
     }
 
@@ -89,7 +89,7 @@ note('$x -> delcol([]);');
     my ($nrowy, $ncoly) = $y -> size();
     for my $i (0 .. $nrowy - 1) {
         for my $j (0 .. $ncoly - 1) {
-            $y -> [$i][$j] += 10;
+            $y -> [$i][$j] += 100;
         }
     }
 
@@ -134,7 +134,7 @@ note('$x -> delcol([3.14, 1.25]);');
     my ($nrowy, $ncoly) = $y -> size();
     for my $i (0 .. $nrowy - 1) {
         for my $j (0 .. $ncoly - 1) {
-            $y -> [$i][$j] += 10;
+            $y -> [$i][$j] += 100;
         }
     }
 

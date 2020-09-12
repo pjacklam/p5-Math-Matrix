@@ -22,7 +22,7 @@ note('from 2-by-3 to 1-by-6');
     my ($nrowy, $ncoly) = $y -> size();
     for my $i (0 .. $nrowy - 1) {
         for my $j (0 .. $ncoly - 1) {
-            $y -> [$i][$j] += 10;
+            $y -> [$i][$j] += 100;
         }
     }
 
@@ -46,7 +46,7 @@ note('from 2-by-3 to 3-by-2');
     my ($nrowy, $ncoly) = $y -> size();
     for my $i (0 .. $nrowy - 1) {
         for my $j (0 .. $ncoly - 1) {
-            $y -> [$i][$j] += 10;
+            $y -> [$i][$j] += 100;
         }
     }
 
@@ -70,7 +70,7 @@ note('from 2-by-3 to 6-by-1');
     my ($nrowy, $ncoly) = $y -> size();
     for my $i (0 .. $nrowy - 1) {
         for my $j (0 .. $ncoly - 1) {
-            $y -> [$i][$j] += 10;
+            $y -> [$i][$j] += 100;
         }
     }
 
@@ -94,7 +94,7 @@ note('from 1-by-6 to 2-by-3');
     my ($nrowy, $ncoly) = $y -> size();
     for my $i (0 .. $nrowy - 1) {
         for my $j (0 .. $ncoly - 1) {
-            $y -> [$i][$j] += 10;
+            $y -> [$i][$j] += 100;
         }
     }
 
@@ -116,7 +116,7 @@ note('from 1-by-6 to 6-by-1');
     my ($nrowy, $ncoly) = $y -> size();
     for my $i (0 .. $nrowy - 1) {
         for my $j (0 .. $ncoly - 1) {
-            $y -> [$i][$j] += 10;
+            $y -> [$i][$j] += 100;
         }
     }
 
@@ -139,7 +139,7 @@ note('from 6-by-1 to 2-by-3');
     my ($nrowy, $ncoly) = $y -> size();
     for my $i (0 .. $nrowy - 1) {
         for my $j (0 .. $ncoly - 1) {
-            $y -> [$i][$j] += 10;
+            $y -> [$i][$j] += 100;
         }
     }
 
@@ -161,7 +161,7 @@ note('from 6-by-1 to 1-by-6');
     my ($nrowy, $ncoly) = $y -> size();
     for my $i (0 .. $nrowy - 1) {
         for my $j (0 .. $ncoly - 1) {
-            $y -> [$i][$j] += 10;
+            $y -> [$i][$j] += 100;
         }
     }
 

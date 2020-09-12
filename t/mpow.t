@@ -24,7 +24,7 @@ note("mpow() with two matrices");
     my ($nrowy, $ncoly) = $y -> size();
     for my $i (0 .. $nrowy - 1) {
         for my $j (0 .. $ncoly - 1) {
-            $z -> [$i][$j] += 10;
+            $z -> [$i][$j] += 100;
         }
     }
 
@@ -51,7 +51,7 @@ note("mpow() with matrix and scalar");
     my ($nrowy, $ncoly) = $y -> size();
     for my $i (0 .. $nrowy - 1) {
         for my $j (0 .. $ncoly - 1) {
-            $z -> [$i][$j] += 10;
+            $z -> [$i][$j] += 100;
         }
     }
 
@@ -76,7 +76,7 @@ note("mpow() with matrix and scalar");
     my ($nrowy, $ncoly) = $y -> size();
     for my $i (0 .. $nrowy - 1) {
         for my $j (0 .. $ncoly - 1) {
-            $z -> [$i][$j] += 10;
+            $z -> [$i][$j] += 100;
         }
     }
 
@@ -117,7 +117,7 @@ note("overloading");
     my ($nrowy, $ncoly) = $z -> size();
     for my $i (0 .. $nrowy - 1) {
         for my $j (0 .. $ncoly - 1) {
-            $z -> [$i][$j] += 10;
+            $z -> [$i][$j] += 100;
         }
     }
 
@@ -138,7 +138,7 @@ note("overloading");
     my ($nrowy, $ncoly) = $z -> size();
     for my $i (0 .. $nrowy - 1) {
         for my $j (0 .. $ncoly - 1) {
-            $z -> [$i][$j] += 10;
+            $z -> [$i][$j] += 100;
         }
     }
 

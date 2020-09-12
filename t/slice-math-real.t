@@ -10,8 +10,8 @@ use Math::Matrix::Real;
 
 plan tests => 19;
 
-my $orig = [[ 11 .. 19 ],
-            [ 21 .. 29 ]];
+my $orig = [[11 .. 19],
+            [21 .. 29]];
 
 # Create an object.
 

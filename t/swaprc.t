@@ -7,9 +7,9 @@ use Math::Matrix;
 use Test::More tests => 12;
 
 {
-    my $x = Math::Matrix -> new([1, 2, 3],
-                                [4, 5, 6],
-                                [7, 8, 9]);
+    my $x = Math::Matrix -> new([[1, 2, 3],
+                                 [4, 5, 6],
+                                 [7, 8, 9]]);
     my $y = $x -> swaprc($x);
 
     is(ref($y), 'Math::Matrix', '$y is a Math::Matrix');
@@ -22,7 +22,7 @@ use Test::More tests => 12;
     my ($nrowy, $ncoly) = $y -> size();
     for my $i (0 .. $nrowy - 1) {
         for my $j (0 .. $ncoly - 1) {
-            $y -> [$i][$j] += 10;
+            $y -> [$i][$j] += 100;
         }
     }
 
@@ -32,8 +32,8 @@ use Test::More tests => 12;
 }
 
 {
-    my $x = Math::Matrix -> new([1, 2],
-                                [4, 5]);
+    my $x = Math::Matrix -> new([[1, 2],
+                                 [4, 5]]);
     my $y = $x -> swaprc($x);
 
     is(ref($y), 'Math::Matrix', '$y is a Math::Matrix');
@@ -45,7 +45,7 @@ use Test::More tests => 12;
     my ($nrowy, $ncoly) = $y -> size();
     for my $i (0 .. $nrowy - 1) {
         for my $j (0 .. $ncoly - 1) {
-            $y -> [$i][$j] += 10;
+            $y -> [$i][$j] += 100;
         }
     }
 
@@ -54,7 +54,7 @@ use Test::More tests => 12;
 }
 
 {
-    my $x = Math::Matrix -> new([1]);
+    my $x = Math::Matrix -> new([[1]]);
     my $y = $x -> swaprc($x);
 
     is(ref($y), 'Math::Matrix', '$y is a Math::Matrix');
@@ -65,7 +65,7 @@ use Test::More tests => 12;
     my ($nrowy, $ncoly) = $y -> size();
     for my $i (0 .. $nrowy - 1) {
         for my $j (0 .. $ncoly - 1) {
-            $y -> [$i][$j] += 10;
+            $y -> [$i][$j] += 100;
         }
     }
 
