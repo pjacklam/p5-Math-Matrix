@@ -4603,6 +4603,21 @@ sub as_string {
 
 =pod
 
+=item as_array()
+
+Returns the matrix as an unblessed Perl ARRAY, i.e., and ordinary reference.
+
+    $y = $x -> as_array();      # ref($y) returns 'ARRAY'
+
+=cut
+
+sub as_array {
+    my $x = shift;
+    [ map { [ @$_ ] } @$x ];
+}
+
+=pod
+
 =item print()
 
 Prints the matrix on STDOUT. If the method has additional parameters, these are
