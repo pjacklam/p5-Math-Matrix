@@ -3865,11 +3865,11 @@ sub pinvert {
 
 Cholesky decomposition.
 
-    $y = $x -> chol();
+    $L = $A -> chol();
 
 Every symmetric, positive definite matrix A can be decomposed into a product of
-a unique lower triangular matrix L and its transpose: A = L*L', where L' denotes
-the transpose of L. L is called the Cholesky factor of A.
+a unique lower triangular matrix L and its transpose, so that A = L*L', where L'
+denotes the transpose of L. L is called the Cholesky factor of A.
 
 =cut
 
