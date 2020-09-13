@@ -3245,7 +3245,7 @@ sub diagonal_vector {
     my $idx = 0;
     my($m, $n) = $self->size();
 
-    die "Not a square matrix" if ($m != $n);
+    croak "Not a square matrix" if $m != $n;
 
     foreach my $r (@{$self}) {
         push @diag, $r->[$idx++];
@@ -3269,7 +3269,7 @@ sub tridiagonal_vector {
     my($m, $n) = $self->size();
     my $idx = 0;
 
-    die "Not a square matrix" if ($m != $n);
+    croak "Not a square matrix" if $m != $n;
 
     foreach my $r (@{$self}) {
         push @low_d, $r->[$idx - 1] if ($idx > 0);
@@ -3361,7 +3361,7 @@ sub madd {
     my ($nrowx, $ncolx) = $x -> size();
     my ($nrowy, $ncoly) = $y -> size();
 
-    croak "Matrix sizes don't match in ", (caller(0))[3]
+    croak "Can't add $nrowx-by-$ncolx matrix to $nrowy-by-$ncoly matrix"
       unless $nrowx == $nrowy && $ncolx == $ncoly;
 
     my $z = [];
@@ -3446,7 +3446,7 @@ sub msub {
     my ($nrowx, $ncolx) = $x -> size();
     my ($nrowy, $ncoly) = $y -> size();
 
-    croak "Matrix sizes don't match in ", (caller(0))[3]
+    croak "Can't subtract $nrowy-by-$ncoly matrix from $nrowx-by-$ncolx matrix"
       unless $nrowx == $nrowy && $ncolx == $ncoly;
 
     my $z = [];
@@ -3585,7 +3585,7 @@ sub mmul {
     my $nrowy = $y -> nrow();
     my $ncoly = $y -> ncol();
 
-    croak "Matrix dimensions don't match in ", (caller(0))[3]
+    croak "Can't multiply $nrowx-by-$ncolx matrix with $nrowy-by-$ncoly matrix"
       unless $ncolx == $nrowy;
 
     my $z = [];
@@ -3838,7 +3838,7 @@ Invert a Matrix using C<solve>.
 sub invert {
     my $M = shift;
     my ($m, $n) = $M->size;
-    die "Matrix dimensions are $m X $n. -- Matrix not invertible.\n"
+    croak "Can't invert $m-by-$n matrix; matrix must be square"
       if $m != $n;
     my $I = $M->new_identity($n);
     ($M->concat($I))->solve;
