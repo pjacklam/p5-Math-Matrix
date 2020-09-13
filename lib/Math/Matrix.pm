@@ -3573,24 +3573,17 @@ Negation. Negate a matrix.
 
     $y = $x -> neg();
 
+It is effectively equivalent to
+
+    $y = $x -> map(sub { -$_ });
+
 =cut
 
 sub neg {
     croak "Not enough arguments for ", (caller(0))[3] if @_ < 1;
     croak "Too many arguments for ", (caller(0))[3] if @_ > 1;
     my $x = shift;
-    my $class = ref $x;
-
-    my $y = [];
-
-    my ($nrowx, $ncolx) = $x -> size();
-    for my $i (0 .. $nrowx - 1) {
-        for my $j (0 .. $ncolx - 1) {
-            $y->[$i][$j] = -$x->[$i][$j];
-        }
-    }
-
-    bless $y, $class;
+    bless [ map { [ map { -$_ } @$_ ] } @$x ], ref $x;
 }
 
 =pod
