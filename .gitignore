@@ -31,6 +31,10 @@ pod2htm*
 *.rej
 *.diff
 
+# dumps
+
+*.stackdump
+
 # development files
 
 /devel/
