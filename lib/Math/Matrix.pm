@@ -3995,20 +3995,21 @@ sub ceil {
 Decide if two matrices are equal. The criterion is, that each pair of elements
 differs less than $Math::Matrix::eps.
 
+    $bool = $x -> equal($y);
+
 =cut
 
 sub equal {
     my $A = shift;
     my $B = shift;
-    my $ok = 1;
 
-    my $last = $#{$A->[0]};
+    my $jmax = $#{$A->[0]};
     for my $i (0 .. $#{$A}) {
-        for my $j (0 .. $last) {
-            abs($A->[$i][$j]-$B->[$i][$j])<$eps or $ok=0;
+        for my $j (0 .. $jmax) {
+            return 0 if abs($A->[$i][$j] - $B->[$i][$j]) >= $eps;
         }
     }
-    $ok;
+    return 1;
 }
 
 =pod
