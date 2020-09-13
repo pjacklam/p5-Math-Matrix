@@ -311,6 +311,77 @@ sub new_from_sub {
 
 =pod
 
+=item new_from_rows()
+
+Creates a new matrix by assuming each argument is a row vector.
+
+    $x = Math::Matrix -> new_from_rows($y, $z, ...);
+
+For example
+
+    $x = Math::Matrix -> new_from_rows([1, 2, 3],[4, 5, 6]);
+
+returns the matrix
+
+    [ 1 2 3 ]
+    [ 4 5 6 ]
+
+=cut
+
+sub new_from_rows {
+    croak "Not enough arguments for ", (caller(0))[3] if @_ < 1;
+    my $class = shift;
+
+    croak +(caller(0))[3], " is a class method, not an instance method"
+      if ref $class;
+
+    my @args = ();
+    for (my $i = 0 ; $i <= $#_ ; ++$i) {
+        my $x = $_[$i];
+        $x = $class -> new($x)
+          unless defined(blessed($x)) && $x -> isa($class);
+        if ($x -> is_vector()) {
+            push @args, $x -> to_row();
+        } else {
+            push @args, $x;
+        }
+    }
+
+    $class -> new([]) -> catrow(@args);
+}
+
+=pod
+
+=item new_from_cols()
+
+Creates a matrix by assuming each argument is a column vector.
+
+    $x = Math::Matrix -> new_from_cols($y, $z, ...);
+
+For example,
+
+    $x = Math::Matrix -> new_from_cols([1, 2, 3],[4, 5, 6]);
+
+returns the matrix
+
+    [ 1 4 ]
+    [ 2 5 ]
+    [ 3 6 ]
+
+=cut
+
+sub new_from_cols {
+    croak "Not enough arguments for ", (caller(0))[3] if @_ < 1;
+    my $class = shift;
+
+    croak +(caller(0))[3], " is a class method, not an instance method"
+      if ref $class;
+
+    $class -> new_from_rows(@_) -> swaprc();
+}
+
+=pod
+
 =item id()
 
 Returns a new identity matrix.
