@@ -3931,6 +3931,10 @@ Truncate to integer. Truncates each element to an integer.
 
     $y = $x -> int();
 
+This function is effectivly the same as
+
+    $y = $x -> map(sub { int });
+
 =cut
 
 sub int {
@@ -3938,7 +3942,7 @@ sub int {
     croak "Too many arguments for ", (caller(0))[3] if @_ > 1;
     my $x = shift;
 
-    $x -> sapply(sub { int $_[0] });
+    bless [ map { [ map { int($_) } @$_ ] } @$x ], ref $x;
 }
 
 =pod
@@ -3956,10 +3960,12 @@ sub floor {
     croak "Too many arguments for ", (caller(0))[3] if @_ > 1;
     my $x = shift;
 
-    $x -> sapply(sub {
-                     my $ix = CORE::int($_[0]);
-                     ($ix <= $_[0]) ? $ix : $ix - 1;
-                 });
+    bless [ map { [
+                   map {
+                       my $ix = CORE::int($_);
+                       ($ix <= $_) ? $ix : $ix - 1;
+                   } @$_
+                  ] } @$x ], ref $x;
 }
 
 =pod
@@ -3976,10 +3982,12 @@ sub ceil {
     my $x = shift;
     my $class = ref $x;
 
-    $x -> sapply(sub {
-                     my $ix = CORE::int($_[0]);
-                     ($ix >= $_[0]) ? $ix : $ix + 1;
-                 });
+    bless [ map { [
+                   map {
+                       my $ix = CORE::int($_);
+                     ($ix >= $_) ? $ix : $ix + 1;
+                   } @$_
+                  ] } @$x ], ref $x;
 }
 
 =pod
