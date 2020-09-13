@@ -153,7 +153,7 @@ sub new {
     # zero matrix of the same size as the invocand.
 
     if (ref($that) && (@_ == 0)) {
-        @$self = map { [ map { 0 } @$_ ] } @$that;
+        @$self = map { [ (0) x @$_ ] } @$that;
     }
 
     # Otherwise return a new matrix based on the input arguments. The object
