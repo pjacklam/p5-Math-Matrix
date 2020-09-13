@@ -459,8 +459,8 @@ sub exchg {
 
 =item scalar()
 
-Returns a scalar matrix, i.e., a diagonal matrix with the diagonal set to a
-given value.
+Returns a scalar matrix, i.e., a diagonal matrix with all the diagonal elements
+set to the same value.
 
     # Create an $m-by-$m scalar matrix where each element is $c.
     $x = Math::Matrix -> scalar($c, $m);
