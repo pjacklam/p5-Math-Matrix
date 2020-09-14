@@ -4054,6 +4054,50 @@ sub ceil {
 
 =pod
 
+=item abs()
+
+Absolute value. The absolute value of each element.
+
+    $y = $x -> abs();
+
+This is effectivly the same as
+
+    $y = $x -> map(sub { abs });
+
+=cut
+
+sub abs {
+    croak "Not enough arguments for ", (caller(0))[3] if @_ < 1;
+    croak "Too many arguments for ", (caller(0))[3] if @_ > 1;
+    my $x = shift;
+
+    bless [ map { [ map { abs($_) } @$_ ] } @$x ], ref $x;
+}
+
+=pod
+
+=item sign()
+
+Sign function. Apply the sign function to each element.
+
+    $y = $x -> sign();
+
+This is effectivly the same as
+
+    $y = $x -> map(sub { $_ <=> 0 });
+
+=cut
+
+sub sign {
+    croak "Not enough arguments for ", (caller(0))[3] if @_ < 1;
+    croak "Too many arguments for ", (caller(0))[3] if @_ > 1;
+    my $x = shift;
+
+    bless [ map { [ map { $_ <=> 0 } @$_ ] } @$x ], ref $x;
+}
+
+=pod
+
 =item equal()
 
 Decide if two matrices are equal. The criterion is, that each pair of elements
@@ -4070,7 +4114,7 @@ sub equal {
     my $jmax = $#{$A->[0]};
     for my $i (0 .. $#{$A}) {
         for my $j (0 .. $jmax) {
-            return 0 if abs($A->[$i][$j] - $B->[$i][$j]) >= $eps;
+            return 0 if CORE::abs($A->[$i][$j] - $B->[$i][$j]) >= $eps;
         }
     }
     return 1;
