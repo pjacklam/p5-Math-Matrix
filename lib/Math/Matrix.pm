@@ -4078,6 +4078,176 @@ sub equal {
 
 =pod
 
+=item seq()
+
+Scalar equality. Performs scalar (element-by-element) comparison of two
+matrices.
+
+    $bool = $x -> seq($y);
+
+=cut
+
+sub seq {
+    croak "Not enough arguments for ", (caller(0))[3] if @_ < 2;
+    croak "Too many arguments for ", (caller(0))[3] if @_ > 2;
+    my $x = shift;
+    my $class = ref $x;
+
+    my $y = shift;
+    $y = $class -> new($y)
+      unless defined(blessed($y)) && $y -> isa($class);
+
+    $x -> sapply(sub { $_[0] == $_[1] ? 1 : 0 }, $y);
+}
+
+=pod
+
+=item sne()
+
+Scalar (element-by-element) not equal to. Performs scalar (element-by-element)
+comparison of two matrices.
+
+    $bool = $x -> sne($y);
+
+=cut
+
+sub sne {
+    croak "Not enough arguments for ", (caller(0))[3] if @_ < 2;
+    croak "Too many arguments for ", (caller(0))[3] if @_ > 2;
+    my $x = shift;
+    my $class = ref $x;
+
+    my $y = shift;
+    $y = $class -> new($y)
+      unless defined(blessed($y)) && $y -> isa($class);
+
+    $x -> sapply(sub { $_[0] != $_[1] ? 1 : 0 }, $y);
+}
+
+=pod
+
+=item slt()
+
+Scalar (element-by-element) less than. Performs scalar (element-by-element)
+comparison of two matrices.
+
+    $bool = $x -> slt($y);
+
+=cut
+
+sub slt {
+    croak "Not enough arguments for ", (caller(0))[3] if @_ < 2;
+    croak "Too many arguments for ", (caller(0))[3] if @_ > 2;
+    my $x = shift;
+    my $class = ref $x;
+
+    my $y = shift;
+    $y = $class -> new($y)
+      unless defined(blessed($y)) && $y -> isa($class);
+
+    $x -> sapply(sub { $_[0] < $_[1] ? 1 : 0 }, $y);
+}
+
+=pod
+
+=item sle()
+
+Scalar (element-by-element) less than or equal to. Performs scalar
+(element-by-element) comparison of two matrices.
+
+    $bool = $x -> sle($y);
+
+=cut
+
+sub sle {
+    croak "Not enough arguments for ", (caller(0))[3] if @_ < 2;
+    croak "Too many arguments for ", (caller(0))[3] if @_ > 2;
+    my $x = shift;
+    my $class = ref $x;
+
+    my $y = shift;
+    $y = $class -> new($y)
+      unless defined(blessed($y)) && $y -> isa($class);
+
+    $x -> sapply(sub { $_[0] <= $_[1] ? 1 : 0 }, $y);
+}
+
+=pod
+
+=item sgt()
+
+Scalar (element-by-element) greater than. Performs scalar (element-by-element)
+comparison of two matrices.
+
+    $bool = $x -> sgt($y);
+
+=cut
+
+sub sgt {
+    croak "Not enough arguments for ", (caller(0))[3] if @_ < 2;
+    croak "Too many arguments for ", (caller(0))[3] if @_ > 2;
+    my $x = shift;
+    my $class = ref $x;
+
+    my $y = shift;
+    $y = $class -> new($y)
+      unless defined(blessed($y)) && $y -> isa($class);
+
+    $x -> sapply(sub { $_[0] > $_[1] ? 1 : 0 }, $y);
+}
+
+=pod
+
+=item sge()
+
+Scalar (element-by-element) greater than or equal to. Performs scalar
+(element-by-element) comparison of two matrices.
+
+    $bool = $x -> sge($y);
+
+=cut
+
+sub sge {
+    croak "Not enough arguments for ", (caller(0))[3] if @_ < 2;
+    croak "Too many arguments for ", (caller(0))[3] if @_ > 2;
+    my $x = shift;
+    my $class = ref $x;
+
+    my $y = shift;
+    $y = $class -> new($y)
+      unless defined(blessed($y)) && $y -> isa($class);
+
+    $x -> sapply(sub { $_[0] >= $_[1] ? 1 : 0 }, $y);
+}
+
+=pod
+
+=item scmp()
+
+Scalar (element-by-element) comparison. Performs scalar (element-by-element)
+comparison of two matrices. Each element in the output matrix is either -1, 0,
+or 1 depending on whether the elements are less than, equal to, or greater than
+each other.
+
+    $bool = $x -> scmp($y);
+
+=cut
+
+sub scmp {
+    croak "Not enough arguments for ", (caller(0))[3] if @_ < 2;
+    croak "Too many arguments for ", (caller(0))[3] if @_ > 2;
+    my $x = shift;
+    my $class = ref $x;
+
+    my $y = shift;
+    $y = $class -> new($y)
+      unless defined(blessed($y)) && $y -> isa($class);
+
+    $x -> sapply(sub { $_[0] <=> $_[1] }, $y);
+}
+
+=pod
+
 =item determinant()
 
 Determinant. Returns the determinant of a matrix. The matrix must be square.
