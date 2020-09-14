@@ -4547,12 +4547,19 @@ sub sapply {
     my @size = ();          # size of each matrix
     my @nelm = ();          # number of elements in each matrix
 
-    # Get the size (number of rows and columns) in the output matrix.
+    # Loop over the input arguments to perform some checks and get their
+    # properties. Also get the size (number of rows and columns) of the output
+    # matrix.
 
     my $nrowy = 0;
     my $ncoly = 0;
 
     for my $k (0 .. $#args) {
+
+        # Make sure the k'th argument is a matrix object.
+
+        $args[$k] = $class -> new($args[$k])
+          unless defined(blessed($args[$k])) && $args[$k] -> isa($class);
 
         # Get the number of rows, columns, and elements in the k'th argument,
         # and save this information for later.
