@@ -4041,8 +4041,9 @@ Round to positive infinity. Rounds each element to positive infinity.
 =cut
 
 sub ceil {
+    croak "Not enough arguments for ", (caller(0))[3] if @_ < 1;
+    croak "Too many arguments for ", (caller(0))[3] if @_ > 1;
     my $x = shift;
-    my $class = ref $x;
 
     bless [ map { [
                    map {
