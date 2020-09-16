@@ -388,15 +388,8 @@ sub id {
     my $self = shift;
     my $class = ref($self) || $self;
 
-    my $x = [];
     my $n = shift;
-    for my $i (0 .. $n - 1) {
-        my $row = [ (0) x $n ];
-        $row -> [$i] = 1;
-        push @$x, $row;
-    }
-
-    bless $x, $class;
+    bless [ map { [ (0) x ($_ - 1), 1, (0) x ($n - $_)] } 1 .. $n ], $class;
 }
 
 =pod
@@ -437,16 +430,9 @@ sub exchg {
     croak "Not enough arguments for ", (caller(0))[3] if @_ < 2;
     croak "Too many arguments for ", (caller(0))[3] if @_ > 2;
     my $class = shift;
-    my $size = shift;
 
-    my $x = [];
-    for my $i (1 .. $size) {
-        my $row = [ (0) x $size ];
-        $row -> [$size - $i] = 1;
-        push @$x, $row;
-    }
-
-    bless $x, $class;
+    my $n = shift;
+    bless [ map { [ (0) x ($n - $_), 1, (0) x ($_ - 1)] } 1 .. $n ], $class;
 }
 
 =pod
@@ -476,20 +462,13 @@ sub scalar {
       if ref $class;
 
     my $c = shift;
-    my ($nrow, $ncol) = @_ == 0 ? (1, 1)
-                      : @_ == 1 ? (@_, @_)
-                      :           (@_);
+    my ($m, $n) = @_ == 0 ? (1, 1)
+                : @_ == 1 ? (@_, @_)
+                :           (@_);
     croak "The number of rows must be equal to the number of columns"
-      unless $nrow == $ncol;
+      unless $m == $n;
 
-    my $x = [];
-    for my $i (0 .. $nrow - 1) {
-        my $row = [ (0) x $ncol ];
-        $row -> [$i] = $c;
-        push @$x, $row;
-    }
-
-    bless $x, $class;
+    bless [ map { [ (0) x ($_ - 1), $c, (0) x ($n - $_)] } 1 .. $m ], $class;
 }
 
 =pod
@@ -536,6 +515,55 @@ sub ones {
 
 =pod
 
+=item inf()
+
+Create a matrix of positive infinities.
+
+    # Create an $m-by-$m matrix where each element is Inf.
+    $x = Math::Matrix -> inf($m);
+
+    # Create an $m-by-$n matrix where each element is Inf.
+    $x = Math::Matrix -> inf($m, $n);
+
+=cut
+
+sub inf {
+    croak "Not enough arguments for ", (caller(0))[3] if @_ < 1;
+    croak "Too many arguments for ", (caller(0))[3] if @_ > 3;
+    my $self = shift;
+
+    require Math::Trig;
+    my $inf = Math::Trig::Inf();
+    $self -> constant($inf, @_);
+};
+
+=pod
+
+=item nan()
+
+Create a matrix of NaNs (Not-a-Number).
+
+    # Create an $m-by-$m matrix where each element is NaN.
+    $x = Math::Matrix -> nan($m);
+
+    # Create an $m-by-$n matrix where each element is NaN.
+    $x = Math::Matrix -> nan($m, $n);
+
+=cut
+
+sub nan {
+    croak "Not enough arguments for ", (caller(0))[3] if @_ < 1;
+    croak "Too many arguments for ", (caller(0))[3] if @_ > 3;
+    my $self = shift;
+
+    require Math::Trig;
+    my $inf = Math::Trig::Inf();
+    my $nan = $inf - $inf;
+    $self -> constant($nan, @_);
+};
+
+=pod
+
 =item constant()
 
 Returns a constant matrix, i.e., a matrix whose elements all have the same
@@ -558,18 +586,11 @@ sub constant {
       if ref $class;
 
     my $c = shift;
-    my ($nrow, $ncol) = @_ == 0 ? (1, 1)
-                      : @_ == 1 ? (@_, @_)
-                      :           (@_);
+    my ($m, $n) = @_ == 0 ? (1, 1)
+                : @_ == 1 ? (@_, @_)
+                :           (@_);
 
-    my $x = bless [], $class;
-    for my $i (0 .. $nrow - 1) {
-        for my $j (0 .. $ncol - 1) {
-            $x -> [$i][$j] = $c;
-        }
-    }
-
-    return $x;
+    bless [ map [ ($c) x $n ], 1 .. $m ], $class;
 }
 
 =pod
