@@ -2112,6 +2112,128 @@ sub is_satril {
 
 =back
 
+=head2 Identify elements
+
+This section contains methods for identifying and locating elements within an
+array. See also C<L</Scalar comparison>>.
+
+=over 4
+
+=item find()
+
+Returns the location of each non-zero element.
+
+    $K = $x -> find();          # linear index
+    ($I, $J) = $x -> find();    # subscripts
+
+For example, to find the linear index of each element that is greater than or
+equal to 1, use
+
+    $K = $x -> sge(1) -> find();
+
+=cut
+
+sub find {
+    croak "Not enough arguments for ", (caller(0))[3] if @_ < 1;
+    croak "Too many arguments for ", (caller(0))[3] if @_ > 1;
+    my $x = shift;
+
+    my ($m, $n) = $x -> size();
+
+    my $I = [];
+    my $J = [];
+    for my $j (0 .. $n - 1) {
+        for my $i (0 .. $m - 1) {
+            next unless $x->[$i][$j];
+            push @$I, $i;
+            push @$J, $j;
+        }
+    }
+
+    return $I, $J if wantarray;
+
+    my $K = [ map { $m * $J -> [$_] + $I -> [$_] } 0 .. $#$I ];
+    return $K;
+}
+
+=pod
+
+=item is_finite()
+
+Returns a matrix of ones and zeros. The element is one if the corresponding
+element in the invocand matrix is finite, and zero otherwise.
+
+    $y = $x -> is_finite();
+
+=cut
+
+sub is_finite {
+    croak "Not enough arguments for ", (caller(0))[3] if @_ < 1;
+    croak "Too many arguments for ", (caller(0))[3] if @_ > 1;
+    my $x = shift;
+
+    require Math::Trig;
+    my $pinf = Math::Trig::Inf();       # positiv infinity
+    my $ninf = -$pinf;                  # negative infinity
+
+    bless [ map { [
+                   map {
+                       $ninf < $_ && $_ < $pinf ? 1 : 0
+                   } @$_
+                  ] } @$x ], ref $x;
+}
+
+=pod
+
+=item is_inf()
+
+Returns a matrix of ones and zeros. The element is one if the corresponding
+element in the invocand matrix is positive or negative infinity, and zero
+otherwise.
+
+    $y = $x -> is_inf();
+
+=cut
+
+sub is_inf {
+    croak "Not enough arguments for ", (caller(0))[3] if @_ < 1;
+    croak "Too many arguments for ", (caller(0))[3] if @_ > 1;
+    my $x = shift;
+
+    require Math::Trig;
+    my $pinf = Math::Trig::Inf();       # positiv infinity
+    my $ninf = -$pinf;                  # negative infinity
+
+    bless [ map { [
+                   map {
+                       $_ == $pinf || $_ == $ninf ? 1 : 0;
+                   } @$_
+                  ] } @$x ], ref $x;
+}
+
+=pod
+
+=item is_nan()
+
+Returns a matrix of ones and zeros. The element is one if the corresponding
+element in the invocand matrix is a NaN (Not-a-Number), and zero otherwise.
+
+    $y = $x -> is_nan();
+
+=cut
+
+sub is_nan {
+    croak "Not enough arguments for ", (caller(0))[3] if @_ < 1;
+    croak "Too many arguments for ", (caller(0))[3] if @_ > 1;
+    my $x = shift;
+
+    bless [ map { [ map { $_ != $_ ? 1 : 0 } @$_ ] } @$x ], ref $x;
+}
+
+=pod
+
+=back
+
 =head2 Basic properties
 
 =over 4
@@ -4422,9 +4544,8 @@ sub equal {
 
 =head2 Scalar comparison
 
-These methods do scalar (element by element) comparison. These methods perform
-scalar expansion if necessary and return an empty matrix, scalar, vector, or
-matrix depending on the size of the input.
+Each of these methods performs scalar (element by element) comparison and
+returns a matrix of ones and zeros. Scalar expansion is performed if necessary.
 
 =over 4
 
