@@ -104,7 +104,7 @@ modified directly.
 
 =head2 Constructors
 
-=over
+=over 4
 
 =item new()
 
@@ -122,12 +122,6 @@ If a single input argument is given, and that argument is not a reference to an
 array, a 1-by-1 matrix is returned.
 
     $x = Math::Matrix->new(1);                      # 1-by-1 matrix
-
-Otherwise it is assumed that each input argument is a row, like this:
-
-    $x = Math::Matrix->new([1, 2, 3], [4, 5, 6]);   # 2-by-3 matrix
-    $x = Math::Matrix->new([1, 2, 3]);              # 1-by-3 matrix
-    $x = Math::Matrix->new([1], [2], [3]);          # 3-by-1 matrix
 
 Note that all the folling cases result in an empty matrix:
 
@@ -937,7 +931,7 @@ sub blkdiag {
 
 =head2 Identify matrices
 
-=over
+=over 4
 
 =item is_empty()
 
@@ -2097,9 +2091,9 @@ sub is_satril {
 
 =back
 
-=head2 Shape and size
+=head2 Basic properties
 
-=over
+=over 4
 
 =item size()
 
@@ -2208,6 +2202,62 @@ sub ndim {
 
 =pod
 
+=item bandwidth()
+
+Returns the bandwidth of a matrix. In scalar context, returns the number of the
+non-zero diagonal furthest away from the main diagonal. In list context,
+separate values are returned for the lower and upper bandwidth.
+
+    $n = $x -> bandwidth();
+    ($l, $u) = $x -> bandwidth();
+
+The bandwidth is a non-negative integer. If the bandwidth is 0, the matrix is
+diagonal or zero. If the bandwidth is 1, the matrix is tridiagonal. If the
+bandwidth is 2, the matrix is pentadiagonal etc.
+
+A matrix with the following pattern, where C<x> denotes a non-zero value, would
+return 2 in scalar context, and (1,2) in list context.
+
+    [ x x x 0 0 0 ]
+    [ x x x x 0 0 ]
+    [ 0 x x x x 0 ]
+    [ 0 0 x x x x ]
+    [ 0 0 0 x x x ]
+    [ 0 0 0 0 x x ]
+
+See also C<L</is_band()>> and C<L</is_aband()>>.
+
+=cut
+
+sub bandwidth {
+    croak "Not enough arguments for ", (caller(0))[3] if @_ < 1;
+    croak "Too many arguments for ", (caller(0))[3] if @_ > 1;
+    my $x = shift;
+
+    my ($nrow, $ncol) = $x -> size();
+
+    my $upper = 0;
+    my $lower = 0;
+
+    for my $i (0 .. $nrow - 1) {
+        for my $j (0 .. $ncol - 1) {
+            next if $x -> [$i][$j] == 0;
+            my $dist = $j - $i;
+            if ($dist > 0) {
+                $upper = $dist if $dist > $upper;
+            } else {
+                $lower = $dist if $dist < $lower;
+            }
+        }
+    }
+
+    $lower = -$lower;
+    return $lower, $upper if wantarray;
+    return $lower > $upper ? $lower : $upper;
+}
+
+=pod
+
 =back
 
 =head2 Manipulate matrices
@@ -2219,7 +2269,7 @@ inside a matrix.
 
 These methods are not concerned with the values of the elements.
 
-=over
+=over 4
 
 =item catrow()
 
@@ -3188,6 +3238,110 @@ sub to_col {
 
 =pod
 
+=item to_permmat()
+
+Permutation vector to permutation matrix. Converts a vector of zero-based
+permutation indices to a permutation matrix.
+
+    $P = $v -> to_permmat();
+
+For example
+
+    $v = Math::Matrix -> new([[0, 3, 1, 4, 2]]);
+    $m = $v -> to_permmat();
+
+gives the permutation matrix C<$m>
+
+    [ 1 0 0 0 0 ]
+    [ 0 0 0 1 0 ]
+    [ 0 1 0 0 0 ]
+    [ 0 0 0 0 1 ]
+    [ 0 0 1 0 0 ]
+
+=cut
+
+sub to_permmat {
+    croak "Not enough arguments for ", (caller(0))[3] if @_ < 1;
+    croak "Too many arguments for ", (caller(0))[3] if @_ > 1;
+    my $v = shift;
+    my $class = ref $v;
+
+    my $n = $v -> nelm();
+    my $P = $class -> zeros($n, $n);    # initialize output
+    return $P if $n == 0;               # if emtpy $v
+
+    croak "Invocand must be a vector" unless $v -> is_vector();
+    $v = $v -> to_col();
+
+    for my $i (0 .. $n - 1) {
+        my $j = $v -> [$i][0];
+        croak "index out of range" unless 0 <= $j && $j < $n;
+        $P -> [$i][$j] = 1;
+    }
+
+    return $P;
+}
+
+=pod
+
+=item to_permvec()
+
+Permutation matrix to permutation vector. Converts a permutation matrix to a
+vector of zero-based permutation indices.
+
+    $v = $P -> to_permvec();
+
+    $v = Math::Matrix -> new([[0, 3, 1, 4, 2]]);
+    $m = $v -> to_permmat();
+
+Gives the permutation matrix C<$m>
+
+    [ 1 0 0 0 0 ]
+    [ 0 0 0 1 0 ]
+    [ 0 1 0 0 0 ]
+    [ 0 0 0 0 1 ]
+    [ 0 0 1 0 0 ]
+
+See also C<L</to_permmat()>>.
+
+=cut
+
+sub to_permvec {
+    croak "Not enough arguments for ", (caller(0))[3] if @_ < 1;
+    croak "Too many arguments for ", (caller(0))[3] if @_ > 1;
+    my $P = shift;
+    my $class = ref $P;
+
+    croak "Invocand matrix must be square" unless $P -> is_square();
+    my $n = $P -> nrow();
+
+    my $v = $class -> zeros($n, 1);     # initialize output
+
+    my $seen = [ (0) x $n ];            # keep track of the ones
+
+    for my $i (0 .. $n - 1) {
+        my $k;
+        for my $j (0 .. $n - 1) {
+            next if $P -> [$i][$j] == 0;
+            if ($P -> [$i][$j] == 1) {
+                croak "invalid permutation matrix; more than one row has",
+                  " an element with value 1 in column $j" if $seen->[$j]++;
+                $k = $j;
+                next;
+            }
+            croak "invalid permutation matrix; element ($i,$j)",
+              " is neither 0 nor 1";
+        }
+        croak "invalid permutation matrix; row $i has no element with value 1"
+          unless defined $k;
+        $v->[$i][0] = $k;
+    }
+
+    return $v;
+}
+
+=pod
+
 =item triu()
 
 Upper triangular part. Extract the upper triangular part of a matrix and set all
@@ -3354,35 +3508,11 @@ sub tridiagonal_vector {
 
 =back
 
-=head2 Mathematical operators
+=head2 Mathematical functions
 
-=over
+=head3 Addition
 
-=item transpose()
-
-Returns the transposed matrix. This is the matrix where colums and rows of the
-argument matrix are swapped.
-
-A subclass implementing matrices of complex numbers should provide a
-C<L</transpose()>> method that takes the complex conjugate of each element.
-
-=cut
-
-sub transpose {
-    my $x = shift;
-    my $class = ref $x;
-
-    my $y = bless [], $class;
-    my $ncolx = $x -> ncol();
-    return $y if $ncolx == 0;
-
-    for my $j (0 .. $ncolx - 1) {
-        push @$y, [ map $_->[$j], @$x ];
-    }
-    return $y;
-}
-
-=pod
+=over 4
 
 =item add()
 
@@ -3412,7 +3542,8 @@ sub add {
 
 =item madd()
 
-Matrix addition. Add two matrices of the same dimensions.
+Matrix addition. Add two matrices of the same dimensions. An error is thrown if
+the matrices don't have the same size.
 
     $z = $x -> madd($y);
 
@@ -3449,8 +3580,8 @@ sub madd {
 
 =item sadd()
 
-Scalar (element by element) addition. This method doesn't require the matrices
-to have the same size.
+Scalar (element by element) addition with scalar expansion. This method places
+no requirements on the size of the input matrices.
 
     $z = $x -> sadd($y);
 
@@ -3468,6 +3599,12 @@ sub sadd {
 }
 
 =pod
+
+=back
+
+=head3 Subtraction
+
+=over 4
 
 =item sub()
 
@@ -3497,7 +3634,8 @@ sub sub {
 
 =item msub()
 
-Matrix subtraction. Subtract two matrices of the same size.
+Matrix subtraction. Subtract two matrices of the same size. An error is thrown
+if the matrices don't have the same size.
 
     $z = $x -> msub($y);
 
@@ -3534,8 +3672,8 @@ sub msub {
 
 =item ssub()
 
-Scalar (element by element) subtraction. This method doesn't require the
-matrices to have the same size.
+Scalar (element by element) subtraction with scalar expansion. This method
+places no requirements on the size of the input matrices.
 
     $z = $x -> ssub($y);
 
@@ -3566,6 +3704,12 @@ sub subtract {
 }
 
 =pod
+
+=back
+
+=head3 Negation
+
+=over 4
 
 =item neg()
 
@@ -3601,6 +3745,12 @@ sub negative {
 
 =pod
 
+=back
+
+=head3 Multiplication
+
+=over 4
+
 =item mul()
 
 Multiplication. If one operands is a scalar, it is treated as a constant matrix
@@ -3627,8 +3777,9 @@ sub mul {
 
 =item mmul()
 
-Matrix multiplication. The number of columns in the first operand must be equal
-to the number of rows in the second operand.
+Matrix multiplication. An error is thrown if the sizes don't match; the number
+of columns in the first operand must be equal to the number of rows in the
+second operand.
 
     $z = $x -> mmul($y);
 
@@ -3669,8 +3820,8 @@ sub mmul {
 
 =item smul()
 
-Scalar (element by element) multiplication. This method doesn't require the
-matrices to have the same size.
+Scalar (element by element) multiplication with scalar expansion. This method
+places no requirements on the size of the input matrices.
 
     $z = $x -> smul($y);
 
@@ -3683,19 +3834,6 @@ sub smul {
 
     my $sub = sub { $_[0] * $_[1] };
     $x -> sapply($sub, @_);
-}
-
-=pod
-
-=item multiply()
-
-This is an alias for C<L</mmul()>>.
-
-=cut
-
-sub multiply {
-    my $x = shift;
-    $x -> mmul(@_);
 }
 
 =pod
@@ -3743,6 +3881,50 @@ sub kron {
 
 =pod
 
+=item multiply()
+
+This is an alias for C<L</mmul()>>.
+
+=cut
+
+sub multiply {
+    my $x = shift;
+    $x -> mmul(@_);
+}
+
+=pod
+
+=item multiply_scalar()
+
+Multiplies a matrix and a scalar resulting in a matrix of the same dimensions
+with each element scaled with the scalar.
+
+    $a->multiply_scalar(2);  scale matrix by factor 2
+
+=cut
+
+sub multiply_scalar {
+    my $self = shift;
+    my $factor = shift;
+    my $result = $self->new();
+
+    my $last = $#{$self->[0]};
+    for my $i (0 .. $#{$self}) {
+        for my $j (0 .. $last) {
+            $result->[$i][$j] = $factor * $self->[$i][$j];
+        }
+    }
+    $result;
+}
+
+=pod
+
+=back
+
+=head3 Powers
+
+=over 4
+
 =item pow()
 
 Power function.
@@ -3766,7 +3948,7 @@ Matrix power. The second operand must be a non-negative integer.
 
     $y = $x -> mpow($n);
 
-The following matrix power
+The following example
 
     $x = Math::Matrix -> new([[0, -2],[1, 4]]);
     $y = 4;
@@ -3843,6 +4025,44 @@ sub spow {
 
 =pod
 
+=back
+
+=head3 Inversion
+
+=over 4
+
+=item invert()
+
+Invert a Matrix using C<solve>.
+
+=cut
+
+sub invert {
+    my $M = shift;
+    my ($m, $n) = $M->size;
+    croak "Can't invert $m-by-$n matrix; matrix must be square"
+      if $m != $n;
+    my $I = $M->new_identity($n);
+    ($M->concat($I))->solve;
+}
+
+=pod
+
+=item pinvert()
+
+Compute the pseudo-inverse of the matrix: ((A'A)^-1)A'
+
+=cut
+
+sub pinvert {
+    my $self  = shift;
+    my $m    = $self->clone();
+
+    $m->transpose->multiply($m)->invert->multiply($m->transpose);
+}
+
+=pod
+
 =item solve()
 
 Solves a equation system given by the matrix. The number of colums must be
@@ -3887,43 +4107,18 @@ sub solve {
             }
         }
     }
+
     # Answer is in augmented column
-    transpose $class->new(@{$m->transpose}[$mr+1 .. $mc]);
+    $class -> new([ @{ $m -> transpose }[$mr+1 .. $mc] ]) -> transpose;
 }
 
 =pod
 
-=item invert()
+=back
 
-Invert a Matrix using C<solve>.
+=head3 Factorisation
 
-=cut
-
-sub invert {
-    my $M = shift;
-    my ($m, $n) = $M->size;
-    croak "Can't invert $m-by-$n matrix; matrix must be square"
-      if $m != $n;
-    my $I = $M->new_identity($n);
-    ($M->concat($I))->solve;
-}
-
-=pod
-
-=item pinvert()
-
-Compute the pseudo-inverse of the matrix: ((A'A)^-1)A'
-
-=cut
-
-sub pinvert {
-    my $self  = shift;
-    my $m    = $self->clone();
-
-    $m->transpose->multiply($m)->invert->multiply($m->transpose);
-}
-
-=pod
+=over 4
 
 =item chol()
 
@@ -3962,30 +4157,101 @@ sub chol {
 
 =pod
 
-=item multiply_scalar()
+=back
 
-Multiplies a matrix and a scalar resulting in a matrix of the same dimensions
-with each element scaled with the scalar.
+=head3 Miscellaneous matrix functions
 
-    $a->multiply_scalar(2);  scale matrix by factor 2
+=over 4
+
+=item transpose()
+
+Returns the transposed matrix. This is the matrix where colums and rows of the
+argument matrix are swapped.
+
+A subclass implementing matrices of complex numbers should provide a
+C<L</transpose()>> method that takes the complex conjugate of each element.
 
 =cut
 
-sub multiply_scalar {
-    my $self = shift;
-    my $factor = shift;
-    my $result = $self->new();
+sub transpose {
+    my $x = shift;
+    my $class = ref $x;
 
-    my $last = $#{$self->[0]};
-    for my $i (0 .. $#{$self}) {
-        for my $j (0 .. $last) {
-            $result->[$i][$j] = $factor * $self->[$i][$j];
-        }
+    my $y = bless [], $class;
+    my $ncolx = $x -> ncol();
+    return $y if $ncolx == 0;
+
+    for my $j (0 .. $ncolx - 1) {
+        push @$y, [ map $_->[$j], @$x ];
     }
-    $result;
+    return $y;
 }
 
 =pod
+
+=item determinant()
+
+Determinant. Returns the determinant of a matrix. The matrix must be square.
+
+    $y = $x -> determinant();
+
+The matrix is computed by recursion.
+
+=cut
+
+sub determinant {
+    my $x = shift;
+    my $class = ref($x);
+    my $imax = $#$x;
+    my $jmax = $#{$x->[0]};
+
+    return undef unless $imax == $jmax;     # input must be a square matrix
+
+    # Matrix is 3 × 3
+
+    return
+        $x -> [0][0] * ($x -> [1][1] * $x -> [2][2] - $x -> [1][2] * $x -> [2][1])
+      - $x -> [0][1] * ($x -> [1][0] * $x -> [2][2] - $x -> [1][2] * $x -> [2][0])
+      + $x -> [0][2] * ($x -> [1][0] * $x -> [2][1] - $x -> [1][1] * $x -> [2][0])
+      if $imax == 2;
+
+    # Matrix is 2 × 2
+
+    return $x -> [0][0] * $x -> [1][1] - $x -> [1][0] * $x -> [0][1]
+      if $imax == 1;
+
+    # Matrix is 1 × 1
+
+    return $x -> [0][0] if $imax == 0;
+
+    # Matrix is N × N for N > 3.
+
+    my $det = 0;
+
+    # Create a matrix with column 0 removed. We only need to do this once.
+    my $x0 = bless [ map { [ @{$_}[1 .. $jmax]] } @$x ], $class;
+
+    for my $i (0 .. $imax) {
+
+        # Create a matrix with row $i and column 0 removed.
+        my $x1 = bless [ map { [ @$_ ] } @{$x0}[ 0 .. $i-1, $i+1 .. $imax ] ], $class;
+
+        my $term = $x1 -> determinant();
+        $term *= $i % 2 ? -$x->[$i][0] : $x->[$i][0];
+
+        $det += $term;
+    }
+
+    return $det;
+}
+
+=pod
+
+=back
+
+=head3 Miscellaneous mathematical functions
+
+=over 4
 
 =item int()
 
@@ -4099,6 +4365,14 @@ sub sign {
 
 =pod
 
+=back
+
+=head2 Matrix comparison
+
+Methods matrix comparison. These methods return a scalar value.
+
+=over 4
+
 =item equal()
 
 Decide if two matrices are equal. The criterion is, that each pair of elements
@@ -4123,9 +4397,19 @@ sub equal {
 
 =pod
 
+=back
+
+=head2 Scalar comparison
+
+These methods do scalar (element by element) comparison. These methods perform
+scalar expansion if necessary and return an empty matrix, scalar, vector, or
+matrix depending on the size of the input.
+
+=over 4
+
 =item seq()
 
-Scalar equality. Performs scalar (element-by-element) comparison of two
+Scalar equality. Performs scalar (element by element) comparison of two
 matrices.
 
     $bool = $x -> seq($y);
@@ -4149,7 +4433,7 @@ sub seq {
 
 =item sne()
 
-Scalar (element-by-element) not equal to. Performs scalar (element-by-element)
+Scalar (element by element) not equal to. Performs scalar (element by element)
 comparison of two matrices.
 
     $bool = $x -> sne($y);
@@ -4173,7 +4457,7 @@ sub sne {
 
 =item slt()
 
-Scalar (element-by-element) less than. Performs scalar (element-by-element)
+Scalar (element by element) less than. Performs scalar (element by element)
 comparison of two matrices.
 
     $bool = $x -> slt($y);
@@ -4197,8 +4481,8 @@ sub slt {
 
 =item sle()
 
-Scalar (element-by-element) less than or equal to. Performs scalar
-(element-by-element) comparison of two matrices.
+Scalar (element by element) less than or equal to. Performs scalar
+(element by element) comparison of two matrices.
 
     $bool = $x -> sle($y);
 
@@ -4221,7 +4505,7 @@ sub sle {
 
 =item sgt()
 
-Scalar (element-by-element) greater than. Performs scalar (element-by-element)
+Scalar (element by element) greater than. Performs scalar (element by element)
 comparison of two matrices.
 
     $bool = $x -> sgt($y);
@@ -4245,8 +4529,8 @@ sub sgt {
 
 =item sge()
 
-Scalar (element-by-element) greater than or equal to. Performs scalar
-(element-by-element) comparison of two matrices.
+Scalar (element by element) greater than or equal to. Performs scalar
+(element by element) comparison of two matrices.
 
     $bool = $x -> sge($y);
 
@@ -4269,7 +4553,7 @@ sub sge {
 
 =item scmp()
 
-Scalar (element-by-element) comparison. Performs scalar (element-by-element)
+Scalar (element by element) comparison. Performs scalar (element by element)
 comparison of two matrices. Each element in the output matrix is either -1, 0,
 or 1 depending on whether the elements are less than, equal to, or greater than
 each other.
@@ -4293,63 +4577,11 @@ sub scmp {
 
 =pod
 
-=item determinant()
+=back
 
-Determinant. Returns the determinant of a matrix. The matrix must be square.
+=head2 Vector functions
 
-    $y = $x -> determinant();
-
-The matrix is computed by recursion.
-
-=cut
-
-sub determinant {
-    my $x = shift;
-    my $class = ref($x);
-    my $imax = $#$x;
-    my $jmax = $#{$x->[0]};
-
-    return undef unless $imax == $jmax;     # input must be a square matrix
-
-    # Matrix is 3 × 3
-
-    return
-        $x -> [0][0] * ($x -> [1][1] * $x -> [2][2] - $x -> [1][2] * $x -> [2][1])
-      - $x -> [0][1] * ($x -> [1][0] * $x -> [2][2] - $x -> [1][2] * $x -> [2][0])
-      + $x -> [0][2] * ($x -> [1][0] * $x -> [2][1] - $x -> [1][1] * $x -> [2][0])
-      if $imax == 2;
-
-    # Matrix is 2 × 2
-
-    return $x -> [0][0] * $x -> [1][1] - $x -> [1][0] * $x -> [0][1]
-      if $imax == 1;
-
-    # Matrix is 1 × 1
-
-    return $x -> [0][0] if $imax == 0;
-
-    # Matrix is N × N for N > 3.
-
-    my $det = 0;
-
-    # Create a matrix with column 0 removed. We only need to do this once.
-    my $x0 = bless [ map { [ @{$_}[1 .. $jmax]] } @$x ], $class;
-
-    for my $i (0 .. $imax) {
-
-        # Create a matrix with row $i and column 0 removed.
-        my $x1 = bless [ map { [ @$_ ] } @{$x0}[ 0 .. $i-1, $i+1 .. $imax ] ], $class;
-
-        my $term = $x1 -> determinant();
-        $term *= $i % 2 ? -$x->[$i][0] : $x->[$i][0];
-
-        $det += $term;
-    }
-
-    return $det;
-}
-
-=pod
+=over 4
 
 =item dot_product()
 
@@ -4464,162 +4696,87 @@ sub cross_product {
 
 =pod
 
-=item bandwidth()
+=back
 
-Returns the bandwidth of a matrix. In scalar context, returns the number of the
-non-zero diagonal furthest away from the main diagonal. In list context,
-separate values are returned for the lower and upper bandwidth.
+=head2 Conversion
 
-    $n = $x -> bandwidth();
-    ($l, $u) = $x -> bandwidth();
+=over 4
 
-The bandwidth is a non-negative integer. If the bandwidth is 0, the matrix is
-diagonal or zero. If the bandwidth is 1, the matrix is tridiagonal. If the
-bandwidth is 2, the matrix is pentadiagonal etc.
+=item as_string()
 
-A matrix with the following pattern, where C<x> denotes a non-zero value, would
-return 2 in scalar context, and (1,2) in list context.
+Creates a string representation of the matrix and returns it.
 
-    [ x x x 0 0 0 ]
-    [ x x x x 0 0 ]
-    [ 0 x x x x 0 ]
-    [ 0 0 x x x x ]
-    [ 0 0 0 x x x ]
-    [ 0 0 0 0 x x ]
-
-See also C<L</is_band()>> and C<L</is_aband()>>.
+    $x = Math::Matrix -> new([1, 2], [3, 4]);
+    $s = $x -> as_string();
 
 =cut
 
-sub bandwidth {
-    croak "Not enough arguments for ", (caller(0))[3] if @_ < 1;
-    croak "Too many arguments for ", (caller(0))[3] if @_ > 1;
+sub as_string {
+    my $self = shift;
+    my $out = "";
+    for my $row (@{$self}) {
+        for my $col (@{$row}) {
+            $out = $out . sprintf "%10.5f ", $col;
+        }
+        $out = $out . sprintf "\n";
+    }
+    $out;
+}
+
+=pod
+
+=item as_array()
+
+Returns the matrix as an unblessed Perl ARRAY, i.e., and ordinary reference.
+
+    $y = $x -> as_array();      # ref($y) returns 'ARRAY'
+
+=cut
+
+sub as_array {
     my $x = shift;
+    [ map { [ @$_ ] } @$x ];
+}
 
+=pod
+
+=back
+
+=head2 Matrix utilities
+
+=over 4
+
+=item map()
+
+Call a subroutine for every element of a matrix, locally setting C<$_> to each
+element and passing the matrix row and column indices as input arguments.
+
+    # square each element
+    $y = $x -> map(sub { $_ ** 2 });
+
+    # set strictly lower triangular part to zero
+    $y = $x -> map(sub { $_[0] > $_[1] ? 0 : $_ })'
+
+=cut
+
+sub map {
+    my $x = shift;
+    my $class = ref $x;
+
+    my $sub = shift;
+    croak "The first input argument must be a code reference"
+      unless ref($sub) eq 'CODE';
+
+    my $y = [];
     my ($nrow, $ncol) = $x -> size();
-
-    my $upper = 0;
-    my $lower = 0;
-
     for my $i (0 .. $nrow - 1) {
         for my $j (0 .. $ncol - 1) {
-            next if $x -> [$i][$j] == 0;
-            my $dist = $j - $i;
-            if ($dist > 0) {
-                $upper = $dist if $dist > $upper;
-            } else {
-                $lower = $dist if $dist < $lower;
-            }
+            local $_ = $x -> [$i][$j];
+            $y -> [$i][$j] = $sub -> ($i, $j);
         }
     }
 
-    $lower = -$lower;
-    return $lower, $upper if wantarray;
-    return $lower > $upper ? $lower : $upper;
-}
-
-=pod
-
-=item to_permmat()
-
-Permutation vector to permutation matrix. Converts a vector of zero-based
-permutation indices to a permutation matrix.
-
-    $P = $v -> to_permmat();
-
-For example
-
-    $v = Math::Matrix -> new([[0, 3, 1, 4, 2]]);
-    $m = $v -> to_permmat();
-
-gives the permutation matrix C<$m>
-
-    [ 1 0 0 0 0 ]
-    [ 0 0 0 1 0 ]
-    [ 0 1 0 0 0 ]
-    [ 0 0 0 0 1 ]
-    [ 0 0 1 0 0 ]
-
-=cut
-
-sub to_permmat {
-    croak "Not enough arguments for ", (caller(0))[3] if @_ < 1;
-    croak "Too many arguments for ", (caller(0))[3] if @_ > 1;
-    my $v = shift;
-    my $class = ref $v;
-
-    my $n = $v -> nelm();
-    my $P = $class -> zeros($n, $n);    # initialize output
-    return $P if $n == 0;               # if emtpy $v
-
-    croak "Invocand must be a vector" unless $v -> is_vector();
-    $v = $v -> to_col();
-
-    for my $i (0 .. $n - 1) {
-        my $j = $v -> [$i][0];
-        croak "index out of range" unless 0 <= $j && $j < $n;
-        $P -> [$i][$j] = 1;
-    }
-
-    return $P;
-}
-
-=pod
-
-=item to_permvec()
-
-Permutation matrix to permutation vector. Converts a permutation matrix to a
-vector of zero-based permutation indices.
-
-    $v = $P -> to_permvec();
-
-    $v = Math::Matrix -> new([[0, 3, 1, 4, 2]]);
-    $m = $v -> to_permmat();
-
-Gives the permutation matrix C<$m>
-
-    [ 1 0 0 0 0 ]
-    [ 0 0 0 1 0 ]
-    [ 0 1 0 0 0 ]
-    [ 0 0 0 0 1 ]
-    [ 0 0 1 0 0 ]
-
-See also C<L</to_permmat()>>.
-
-=cut
-
-sub to_permvec {
-    croak "Not enough arguments for ", (caller(0))[3] if @_ < 1;
-    croak "Too many arguments for ", (caller(0))[3] if @_ > 1;
-    my $P = shift;
-    my $class = ref $P;
-
-    croak "Invocand matrix must be square" unless $P -> is_square();
-    my $n = $P -> nrow();
-
-    my $v = $class -> zeros($n, 1);     # initialize output
-
-    my $seen = [ (0) x $n ];            # keep track of the ones
-
-    for my $i (0 .. $n - 1) {
-        my $k;
-        for my $j (0 .. $n - 1) {
-            next if $P -> [$i][$j] == 0;
-            if ($P -> [$i][$j] == 1) {
-                croak "invalid permutation matrix; more than one row has",
-                  " an element with value 1 in column $j" if $seen->[$j]++;
-                $k = $j;
-                next;
-            }
-            croak "invalid permutation matrix; element ($i,$j)",
-              " is neither 0 nor 1";
-        }
-        croak "invalid permutation matrix; row $i has no element with value 1"
-          unless defined $k;
-        $v->[$i][0] = $k;
-    }
-
-    return $v;
+    bless $y, $class;
 }
 
 =pod
@@ -4633,7 +4790,7 @@ matrices on which to apply the subroutine.
 
 See also C<L</to_permvec()>>.
 
-=over
+=over 4
 
 =item One operand
 
@@ -4692,7 +4849,7 @@ to compute the sum of the four matrices C<$x>, C<$y>, C<$z>, and C<$w>,
 
 Note
 
-=over
+=over 4
 
 =item *
 
@@ -4841,75 +4998,11 @@ sub sapply {
 
 =pod
 
-Apply a subroutine to every element of a matrix.
+=back
 
-    $y = $x -> map(sub { $_ ** 2 });    # square each element
+=head2 Miscellaneous methods
 
-The row index and column index of the element currenty being processed are
-passed as input arguments to the subroutine.
-
-=cut
-
-sub map {
-    my $x = shift;
-    my $class = ref $x;
-
-
-    my $sub = shift;
-    croak "The first input argument must be a code reference"
-      unless ref($sub) eq 'CODE';
-
-    my $y = [];
-    my ($nrow, $ncol) = $x -> size();
-    for my $i (0 .. $nrow - 1) {
-        for my $j (0 .. $ncol - 1) {
-            local $_ = $x -> [$i][$j];
-            $y -> [$i][$j] = $sub -> ($i, $j);
-        }
-    }
-
-    bless $y, $class;
-}
-
-=pod
-
-=item as_string()
-
-Creates a string representation of the matrix and returns it.
-
-    $x = Math::Matrix -> new([1, 2], [3, 4]);
-    $s = $x -> as_string();
-
-=cut
-
-sub as_string {
-    my $self = shift;
-    my $out = "";
-    for my $row (@{$self}) {
-        for my $col (@{$row}) {
-            $out = $out . sprintf "%10.5f ", $col;
-        }
-        $out = $out . sprintf "\n";
-    }
-    $out;
-}
-
-=pod
-
-=item as_array()
-
-Returns the matrix as an unblessed Perl ARRAY, i.e., and ordinary reference.
-
-    $y = $x -> as_array();      # ref($y) returns 'ARRAY'
-
-=cut
-
-sub as_array {
-    my $x = shift;
-    [ map { [ @$_ ] } @$x ];
-}
-
-=pod
+=over 4
 
 =item print()
 
@@ -4945,7 +5038,7 @@ sub version {
 
 The following operators are overloaded.
 
-=over
+=over 4
 
 =item C<+> and C<+=>
 
