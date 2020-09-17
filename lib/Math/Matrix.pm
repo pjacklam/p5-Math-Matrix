@@ -4062,6 +4062,62 @@ sub multiply_scalar {
 
 =pod
 
+=item sum()
+
+Sum of elements. If the dimension argument is not given, the sum is computed
+along the first non-singleton dimension.
+
+    $y = $x -> sum($dim);
+    $y = $x -> sum();
+
+=cut
+
+sub sum {
+    croak "Not enough arguments for ", (caller(0))[3] if @_ < 1;
+    croak "Too many arguments for ", (caller(0))[3] if @_ > 2;
+    my $x = shift;
+    my $class = ref $x;
+
+    # Get the size of the input $x.
+
+    my ($m, $n) = $x -> size();
+
+    # Get the dimension along which to compute the sum.
+
+    my $dim;
+    if (@_) {
+        $dim = shift;
+        croak "Dimension can not be undefined" unless defined $dim;
+        if (ref $dim) {
+            $dim = $class -> new($dim)
+              unless defined(blessed($dim)) && $dim -> isa($class);
+            croak "Dimension must be a scalar" unless $dim -> is_scalar();
+            $dim = $dim -> [0][0];
+            croak "Dimension must be a positive integer"
+              unless $dim > 0 && $dim == int $dim;
+        }
+    } else {
+        $dim = $m > 1 ? 1 : 2;
+    }
+
+    my $y = [];
+    if ($dim == 1) {
+        for my $j (0 .. $n - 1) {
+            $y -> [0][$j] = $class -> _sum(map $_ -> [$j], @$x);
+        }
+    } elsif ($dim == 2) {
+        for my $i (0 .. $m - 1) {
+            $y -> [$i][0] = $class -> _sum(@{ $x -> [$i] });
+        }
+    } else {
+        @$y = map [ @$_ ], @$x;
+    }
+
+    bless $y, $class;
+}
+
+=pod
+
 =back
 
 =head3 Powers
@@ -5170,6 +5226,33 @@ Returns a string contining the package name and version number.
 
 sub version {
     return "Math::Matrix $VERSION";
+}
+
+# Internal utility methods.
+
+# Compute the sum of all elements using Neumaier's algorithm, an improvement
+# over Kahan's algorithm.
+#
+# See
+# https://en.wikipedia.org/wiki/Kahan_summation_algorithm#Further_enhancements
+
+sub _sum {
+    my $self = shift;
+
+    my $sum = 0;
+    my $c = 0;
+
+    for (my $i = 0 ; $i <= $#_ ; ++$i) {
+        my $t = $sum + $_[$i];
+        if (CORE::abs($sum) >= CORE::abs($_[$i])) {
+            $c += ($sum - $t) + $_[$i];
+        } else {
+            $c += ($_[$i] - $t) + $sum;
+        }
+        $sum = $t;
+    }
+
+    return $sum + $c;
 }
 
 =pod
