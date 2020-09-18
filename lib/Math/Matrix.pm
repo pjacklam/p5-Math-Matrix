@@ -4922,32 +4922,23 @@ an object.
 =cut
 
 sub dot_product {
-    my $vector1 = shift;
-    my $class = ref $vector1;
+    my $x = shift;
+    my $class = ref $x;
 
-    my $vector2 = shift;
+    my $y = shift;
+    $y = $class -> new($y)
+      unless defined(blessed($y)) && $y -> isa($class);
 
-    # Allow the input to be an ordinary array, i.e., not an object. Ideally, we
-    # should use the following test, but that requires the Scalar::Util module,
-    # which might not be installed.
-    #
-    #   $vector2 = $class -> new($vector2)
-    #     unless blessed($vector2) && $vector2 -> isa($class);
+    croak "First argument must be a vector"  unless $x -> is_vector();
+    $x = $x -> to_row() unless $x -> is_row();
 
-    $vector2 = $class -> new($vector2)
-      if ref($vector2) eq 'ARRAY';
+    croak "Second argument must be a vector" unless $x -> is_vector();
+    $y = $y -> to_col() unless $x -> is_col();
 
-    $vector1 = $vector1->transpose()
-      unless @$vector1 == 1;
-    return undef
-      unless @$vector1 == 1;
+    croak "The two vectors must have the same length"
+      unless $x -> nelm() == $y -> nelm();
 
-    $vector2 = $vector2->transpose()
-      unless @{$vector2->[0]} == 1;
-    return undef
-      unless @{$vector2->[0]} == 1;
-
-    return $vector1->multiply($vector2)->[0][0];
+    $x -> multiply($y) -> [0][0];
 }
 
 =pod
