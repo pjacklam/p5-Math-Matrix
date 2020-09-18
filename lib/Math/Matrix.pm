@@ -4953,8 +4953,10 @@ Compute the absolute value (i.e., length) of a vector.
 =cut
 
 sub absolute {
-    my $vector = shift;
-    sqrt $vector->dot_product($vector);
+    my $x = shift;
+    croak "Argument must be a vector"  unless $x -> is_vector();
+
+    $x -> _hypot(@{ $x -> to_row() -> [0] });
 }
 
 =pod
@@ -5369,6 +5371,37 @@ sub _sum {
     }
 
     return $sum + $c;
+}
+
+# Method used to calculate the length of the hypotenuse of a right-angle
+# triangle. It is designed to avoid errors arising due to limited-precision
+# calculations performed on computers. E.g., with double-precision arithmetic:
+#
+#     sqrt(3e300**2 + 4e300**2)    # = Inf, due to overflow
+#     _hypot(3e300, 4e300)         # = 5e300, which is correct
+#
+# See https://en.wikipedia.org/wiki/Hypot
+
+sub _hypot {
+    my $class = shift;
+
+    my @x = map { CORE::abs($_) } @_;
+
+    # Compute the maximum value.
+
+    my $max = 0;
+    for (@x) {
+        $max = $_ if $_ > $max;
+    }
+
+    # Scale and square the values.
+
+    for (@x) {
+        $_ /= $max;
+        $_ *= $_;
+    }
+
+    $max * sqrt($class -> _sum(@x))
 }
 
 =pod
