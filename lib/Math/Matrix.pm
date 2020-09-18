@@ -3937,22 +3937,21 @@ sub mmul {
     my $y = shift;
     $y = $class -> new($y) unless defined(blessed($y)) && $y -> isa($class);
 
-    my $nrowx = $x -> nrow();
-    my $ncolx = $x -> ncol();
+    my $mx = $x -> nrow();
+    my $nx = $x -> ncol();
 
-    my $nrowy = $y -> nrow();
-    my $ncoly = $y -> ncol();
+    my $my = $y -> nrow();
+    my $ny = $y -> ncol();
 
-    croak "Can't multiply $nrowx-by-$ncolx matrix with $nrowy-by-$ncoly matrix"
-      unless $ncolx == $nrowy;
+    croak "Can't multiply $mx-by-$nx matrix with $my-by-$ny matrix"
+      unless $nx == $my;
 
     my $z = [];
-    for my $i (0 .. $nrowx - 1) {
-        for my $j (0 .. $ncoly - 1) {
-            $z -> [$i][$j] = 0;
-            for my $k (0 .. $ncolx - 1) {
-                $z -> [$i][$j] += $x -> [$i][$k] * $y -> [$k][$j];
-            }
+    my $l = $nx - 1;            # "inner length"
+    for my $i (0 .. $mx - 1) {
+        for my $j (0 .. $ny - 1) {
+            $z -> [$i][$j]
+              = $class -> _sum(map $x -> [$i][$_] * $y -> [$_][$j], 0 .. $l);
         }
     }
 
