@@ -4118,6 +4118,68 @@ sub sum {
 
 =pod
 
+=item prod()
+
+Product of elements. If the dimension argument is not given, the product is
+computed along the first non-singleton dimension.
+
+    $y = $x -> prod($dim);
+    $y = $x -> prod();
+
+=cut
+
+sub prod {
+    croak "Not enough arguments for ", (caller(0))[3] if @_ < 1;
+    croak "Too many arguments for ", (caller(0))[3] if @_ > 2;
+    my $x = shift;
+    my $class = ref $x;
+
+    # Get the size of the input $x.
+
+    my ($m, $n) = $x -> size();
+
+    # Get the dimension along which to compute the prod.
+
+    my $dim;
+    if (@_) {
+        $dim = shift;
+        croak "Dimension can not be undefined" unless defined $dim;
+        if (ref $dim) {
+            $dim = $class -> new($dim)
+              unless defined(blessed($dim)) && $dim -> isa($class);
+            croak "Dimension must be a scalar" unless $dim -> is_scalar();
+            $dim = $dim -> [0][0];
+            croak "Dimension must be a positive integer"
+              unless $dim > 0 && $dim == int $dim;
+        }
+    } else {
+        $dim = $m > 1 ? 1 : 2;
+    }
+
+    my $y = [];
+    if ($dim == 1) {
+        for my $j (0 .. $n - 1) {
+            $y -> [0][$j] = 1;
+            for my $i (0 .. $m - 1) {
+                $y -> [0][$j] *= $x -> [$i][$j];
+            }
+        }
+    } elsif ($dim == 2) {
+        for my $i (0 .. $m - 1) {
+            $y -> [$i][0] = 1;
+            for my $j (0 .. $n - 1) {
+                $y -> [$i][0] *= $x -> [$i][$j];
+            }
+        }
+    } else {
+        @$y = map [ @$_ ], @$x;
+    }
+
+    bless $y, $class;
+}
+
+=pod
+
 =back
 
 =head3 Powers
