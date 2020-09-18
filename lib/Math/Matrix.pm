@@ -4450,6 +4450,70 @@ sub transpose {
 
 =pod
 
+=item minormatrix()
+
+Minor matrix. The (i,j) minor matrix of a matrix is identical to the original
+matrix except that row i and column j has been removed.
+
+    $y = $x -> minormatrix($i, $j);
+
+See also C<L</minor()>>.
+
+=cut
+
+sub minormatrix {
+    croak "Not enough arguments for ", (caller(0))[3] if @_ < 3;
+    croak "Too many arguments for ", (caller(0))[3] if @_ > 3;
+    my $x = shift;
+    my $class = ref $x;
+
+    my ($m, $n) = $x -> size();
+
+    my $i = shift;
+    croak "Row index value $i outside of $m-by-$n matrix"
+      unless 0 <= $i && $i < $m;
+
+    my $j = shift;
+    croak "Column index value $j outside of $m-by-$n matrix"
+      unless 0 <= $j && $j < $n;
+
+    # We could just use the following, which is simpler, but also slower:
+    #
+    #     $x -> delrow($i) -> delcol($j);
+
+    my @rowidx = 0 .. $m - 1;
+    splice @rowidx, $i, 1;
+
+    my @colidx = 0 .. $n - 1;
+    splice @colidx, $j, 1;
+
+    bless [ map [ @{$_}[@colidx] ], @{$x}[@rowidx] ], $class;
+}
+
+=pod
+
+=item minor()
+
+Minor. The (i,j) minor of a matrix is the determinant of the (i,j) minor matrix.
+
+    $y = $x -> minor($i, $j);
+
+See also C<L</minormatrix()>>.
+
+=cut
+
+sub minor {
+    croak "Not enough arguments for ", (caller(0))[3] if @_ < 3;
+    croak "Too many arguments for ", (caller(0))[3] if @_ > 3;
+    my $x = shift;
+
+    croak "Matrix must be square" unless $x -> is_square();
+
+    $x -> minormatrix(@_) -> determinant();
+}
+
+=pod
+
 =item determinant()
 
 Determinant. Returns the determinant of a matrix. The matrix must be square.
