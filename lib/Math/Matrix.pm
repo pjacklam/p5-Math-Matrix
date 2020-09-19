@@ -147,7 +147,7 @@ sub new {
     # zero matrix of the same size as the invocand.
 
     if (ref($that) && (@_ == 0)) {
-        @$self = map { [ (0) x @$_ ] } @$that;
+        @$self = map [ (0) x @$_ ], @$that;
     }
 
     # Otherwise return a new matrix based on the input arguments. The object
@@ -220,7 +220,7 @@ sub new {
 
             # Copy the data into $self only if the matrix is non-emtpy.
 
-            @$self = map { [ @$_ ] } @$data if $ncol;
+            @$self = map [ @$_ ], @$data if $ncol;
         }
     }
 
@@ -389,7 +389,7 @@ sub id {
     my $class = ref($self) || $self;
 
     my $n = shift;
-    bless [ map { [ (0) x ($_ - 1), 1, (0) x ($n - $_)] } 1 .. $n ], $class;
+    bless [ map [ (0) x ($_ - 1), 1, (0) x ($n - $_) ], 1 .. $n ], $class;
 }
 
 =pod
@@ -432,7 +432,7 @@ sub exchg {
     my $class = shift;
 
     my $n = shift;
-    bless [ map { [ (0) x ($n - $_), 1, (0) x ($_ - 1)] } 1 .. $n ], $class;
+    bless [ map [ (0) x ($n - $_), 1, (0) x ($_ - 1) ], 1 .. $n ], $class;
 }
 
 =pod
@@ -468,7 +468,7 @@ sub scalar {
     croak "The number of rows must be equal to the number of columns"
       unless $m == $n;
 
-    bless [ map { [ (0) x ($_ - 1), $c, (0) x ($n - $_)] } 1 .. $m ], $class;
+    bless [ map [ (0) x ($_ - 1), $c, (0) x ($n - $_) ], 1 .. $m ], $class;
 }
 
 =pod
@@ -753,7 +753,7 @@ sub clone {
     croak +(caller(0))[3], " is an instance method, not a class method"
       unless $class;
 
-    my $y = [ map { [ @$_ ] } @$x ];
+    my $y = [ map [ @$_ ], @$x ];
     bless $y, $class;
 }
 
@@ -2227,7 +2227,7 @@ sub is_nan {
     croak "Too many arguments for ", (caller(0))[3] if @_ > 1;
     my $x = shift;
 
-    bless [ map { [ map { $_ != $_ ? 1 : 0 } @$_ ] } @$x ], ref $x;
+    bless [ map [ map { $_ != $_ ? 1 : 0 } @$_ ], @$x ], ref $x;
 }
 
 =pod
@@ -2444,7 +2444,7 @@ sub catrow {
             $ncol = $ncoly;
         }
 
-        push @$z, map { [ @$_] } @$y;
+        push @$z, map [ @$_ ], @$y;
     }
 
     return $z;
@@ -2948,7 +2948,7 @@ sub flipud {
     my $x = shift;
     my $class = ref $x;
 
-    my $y = [ reverse map { [ @$_ ] } @$x ];
+    my $y = [ reverse map [ @$_ ], @$x ];
     bless $y, $class;;
 }
 
@@ -3007,7 +3007,7 @@ sub rot90 {
 
     $n %= 4;
     if ($n == 0) {
-        $y = [ map { [ @$_ ] } @$x ];
+        $y = [ map [ @$_ ], @$x ];
     }
 
     # Rotate 90 degrees.
@@ -3255,7 +3255,7 @@ sub reshape {
     # No reshaping; just clone.
 
     if ($nrowx == $nrowy && $ncolx == $ncoly) {
-        $y = [ map { [ @$_ ] } @$x ];
+        $y = [ map [ @$_ ], @$x ];
     }
 
     elsif ($nrowx == 1) {
@@ -3263,7 +3263,7 @@ sub reshape {
         # Reshape from a row vector to a column vector.
 
         if ($ncoly == 1) {
-            $y = [ map { [ $_ ] } @{ $x -> [0] } ];
+            $y = [ map [ $_ ], @{ $x -> [0] } ];
         }
 
         # Reshape from a row vector to a matrix.
@@ -3870,7 +3870,7 @@ sub neg {
     croak "Not enough arguments for ", (caller(0))[3] if @_ < 1;
     croak "Too many arguments for ", (caller(0))[3] if @_ > 1;
     my $x = shift;
-    bless [ map { [ map { -$_ } @$_ ] } @$x ], ref $x;
+    bless [ map [ map -$_, @$_ ], @$x ], ref $x;
 }
 
 =pod
@@ -4398,7 +4398,7 @@ sub chol {
 
     croak "Input matrix must be a symmetric" unless $x -> is_symmetric();
 
-    my $y = [ map { [(0) x @$x ] } @$x ];       # matrix of zeros
+    my $y = [ map [ (0) x @$x ], @$x ];         # matrix of zeros
     for my $i (0 .. $#$x) {
         for my $j (0 .. $i) {
             my $z = $x->[$i][$j];
@@ -4626,12 +4626,12 @@ sub determinant {
     my $det = 0;
 
     # Create a matrix with column 0 removed. We only need to do this once.
-    my $x0 = bless [ map { [ @{$_}[1 .. $jmax]] } @$x ], $class;
+    my $x0 = bless [ map [ @{$_}[1 .. $jmax] ], @$x ], $class;
 
     for my $i (0 .. $imax) {
 
         # Create a matrix with row $i and column 0 removed.
-        my $x1 = bless [ map { [ @$_ ] } @{$x0}[ 0 .. $i-1, $i+1 .. $imax ] ], $class;
+        my $x1 = bless [ map [ @$_ ], @{$x0}[ 0 .. $i-1, $i+1 .. $imax ] ], $class;
 
         my $term = $x1 -> determinant();
         $term *= $i % 2 ? -$x->[$i][0] : $x->[$i][0];
@@ -4667,7 +4667,7 @@ sub int {
     croak "Too many arguments for ", (caller(0))[3] if @_ > 1;
     my $x = shift;
 
-    bless [ map { [ map { int($_) } @$_ ] } @$x ], ref $x;
+    bless [ map [ map int($_), @$_ ], @$x ], ref $x;
 }
 
 =pod
@@ -4735,7 +4735,7 @@ sub abs {
     croak "Too many arguments for ", (caller(0))[3] if @_ > 1;
     my $x = shift;
 
-    bless [ map { [ map { abs($_) } @$_ ] } @$x ], ref $x;
+    bless [ map [ map abs($_), @$_ ], @$x ], ref $x;
 }
 
 =pod
@@ -4757,7 +4757,7 @@ sub sign {
     croak "Too many arguments for ", (caller(0))[3] if @_ > 1;
     my $x = shift;
 
-    bless [ map { [ map { $_ <=> 0 } @$_ ] } @$x ], ref $x;
+    bless [ map [ map { $_ <=> 0 } @$_ ], @$x ], ref $x;
 }
 
 =pod
@@ -5158,7 +5158,7 @@ Returns the matrix as an unblessed Perl ARRAY, i.e., and ordinary reference.
 
 sub as_array {
     my $x = shift;
-    [ map { [ @$_ ] } @$x ];
+    [ map [ @$_ ], @$x ];
 }
 
 =pod
