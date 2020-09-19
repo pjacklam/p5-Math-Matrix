@@ -4943,6 +4943,40 @@ sub dot_product {
 
 =pod
 
+=item outer_product()
+
+Compute the outer product of two vectors. The second operand does not have to be
+an object.
+
+    # $x and $y are both objects
+    $x = Math::Matrix -> new([1, 2, 3]);
+    $y = Math::Matrix -> new([4, 5, 6, 7]);
+    $p = $x -> outer_product($y);
+
+    # Only $x is an object.
+    $p = $x -> outer_product([4, 5, 6, y]);
+
+=cut
+
+sub outer_product {
+    my $x = shift;
+    my $class = ref $x;
+
+    my $y = shift;
+    $y = $class -> new($y)
+      unless defined(blessed($y)) && $y -> isa($class);
+
+    croak "First argument must be a vector"  unless $x -> is_vector();
+    $x = $x -> to_col() unless $x -> is_col();
+
+    croak "Second argument must be a vector" unless $x -> is_vector();
+    $y = $y -> to_row() unless $x -> is_row();
+
+    $x -> multiply($y);
+}
+
+=pod
+
 =item absolute()
 
 Compute the absolute value (i.e., length) of a vector.
