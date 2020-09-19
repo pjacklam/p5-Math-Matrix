@@ -4513,6 +4513,79 @@ sub minor {
 
 =pod
 
+=item cofactormatrix()
+
+Cofactor matrix. Element (i,j) in the cofactor matrix is the (i,j) cofactor,
+which is (-1)^(i+j) multiplied by the determinant of the (i,j) minor matrix.
+
+    $y = $x -> cofactormatrix();
+
+=cut
+
+sub cofactormatrix {
+    croak "Not enough arguments for ", (caller(0))[3] if @_ < 1;
+    croak "Too many arguments for ", (caller(0))[3] if @_ > 1;
+    my $x = shift;
+    my $class = ref $x;
+
+    my ($m, $n) = $x -> size();
+    croak "matrix must be square" unless $m == $n;
+
+    my $y = [];
+    for my $i (0 .. $m - 1) {
+        for my $j (0 .. $n - 1) {
+            $y -> [$i][$j] = (-1) ** ($i + $j) * $x -> minor($i, $j);
+        }
+    }
+
+    bless $y;
+}
+
+=pod
+
+=item cofactor()
+
+Cofactor. The (i,j) cofactor of a matrix is (-1)**(i+j) times the (i,j) minor of
+the matrix.
+
+    $y = $x -> cofactor($i, $j);
+
+=cut
+
+sub cofactor {
+    croak "Not enough arguments for ", (caller(0))[3] if @_ < 3;
+    croak "Too many arguments for ", (caller(0))[3] if @_ > 3;
+    my $x = shift;
+    my $class = ref $x;
+
+    my ($m, $n) = $x -> size();
+    croak "matrix must be square" unless $m == $n;
+
+    my ($i, $j) = @_;
+    (-1) ** ($i + $j) * $x -> minor($i, $j);
+}
+
+=pod
+
+=item adjugate()
+
+Adjugate of a matrix. The adjugate, also called classical adjoint or adjunct, of
+a square matrix is the transpose of the cofactor matrix.
+
+    $y = $x -> adjugate();
+
+=cut
+
+sub adjugate {
+    croak "Not enough arguments for ", (caller(0))[3] if @_ < 1;
+    croak "Too many arguments for ", (caller(0))[3] if @_ > 1;
+    my $x = shift;
+
+    $x -> cofactormatrix() -> transpose();
+}
+
+=pod
+
 =item determinant()
 
 Determinant. Returns the determinant of a matrix. The matrix must be square.
