@@ -3980,6 +3980,58 @@ sub smul {
 
 =pod
 
+=item mmuladd()
+
+Matrix fused multiply and add. If C<$x> is a C<$p>-by-C<$q> matrix, then C<$y>
+must be a C<$q>-by-C<$r> matrix and C<$z> must be a C<$p>-by-C<$r> matrix. An
+error is thrown if the sizes don't match.
+
+    $w = $x -> mmuladd($y, $z);
+
+The fused multiply and add is equivalent to, but computed with higher accuracy
+than
+
+    $w = $x -> mmul($y) -> madd($z);
+
+=cut
+
+sub mmuladd {
+    croak "Not enough arguments for ", (caller(0))[3] if @_ < 3;
+    croak "Too many arguments for ", (caller(0))[3] if @_ > 3;
+    my $x = shift;
+    my $class = ref $x;
+
+    my ($mx, $nx) = $x -> size();
+
+    my $y = shift;
+    $y = $class -> new($y) unless defined(blessed($y)) && $y -> isa($class);
+    my ($my, $ny) = $y -> size();
+
+    croak "Can't multiply $mx-by-$nx matrix with $my-by-$ny matrix"
+      unless $nx == $my;
+
+    my $z = shift;
+    $z = $class -> new($z) unless defined(blessed($z)) && $z -> isa($class);
+    my ($mz, $nz) = $z -> size();
+
+    croak "Can't add $mz-by-$nz matrix to $mx-by-$ny matrix"
+      unless $mz == $mx && $nz == $ny;
+
+    my $w = [];
+    my $l = $nx - 1;            # "inner length"
+    for my $i (0 .. $mx - 1) {
+        for my $j (0 .. $ny - 1) {
+            $w -> [$i][$j]
+              = $class -> _sum(map($x -> [$i][$_] * $y -> [$_][$j], 0 .. $l),
+                               $z -> [$i][$j]);
+        }
+    }
+
+    bless $w, $class;
+}
+
+=pod
+
 =item kron()
 
 Kronecker tensor product.
