@@ -3077,6 +3077,27 @@ sub fliplr {
 
 =pod
 
+=item flip()
+
+Flip along various dimensions of a matrix. If the dimension argument is not
+given, the first non-singleton dimension is used.
+
+    $y = $x -> flip($dim);
+    $y = $x -> flip();
+
+See also C<L</flipud()>> and C<L</fliplr()>>.
+
+=cut
+
+sub flip {
+    croak "Not enough arguments for ", (caller(0))[3] if @_ < 1;
+    croak "Too many arguments for ", (caller(0))[3] if @_ > 2;
+    my $x = shift;
+    $x -> apply(sub { reverse @_ }, @_);
+}
+
+=pod
+
 =item rot90()
 
 Rotate 90 degrees counterclockwise.
