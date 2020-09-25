@@ -380,15 +380,32 @@ sub new_from_cols {
 
 Returns a new identity matrix.
 
-    $x = Math::Matrix -> id($n);        # $n-by-$n identity matrix
+    $I = Math::Matrix -> id($n);    # $n-by-$n identity matrix
+    $I = $x -> id($n);              # $n-by-$n identity matrix
+    $I = $x -> id();                # identity matrix with size of $x
 
 =cut
 
 sub id {
     my $self = shift;
-    my $class = ref($self) || $self;
+    my $ref = ref $self;
+    my $class = $ref || $self;
 
-    my $n = shift;
+    my $n;
+    if (@_) {
+        $n = shift;
+    } else {
+        if ($ref) {
+            my ($mx, $nx) = $self -> size();
+            croak "When id() is called as an instance method, the invocand",
+              " must be a square matrix" unless $mx == $nx;
+            $n = $mx;
+        } else {
+            croak "When id() is called as a class method, the size must be",
+              " given as an input argument";
+        }
+    }
+
     bless [ map [ (0) x ($_ - 1), 1, (0) x ($n - $_) ], 1 .. $n ], $class;
 }
 
