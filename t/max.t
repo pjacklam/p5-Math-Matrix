@@ -8,17 +8,17 @@ use Test::More tests => 36;
 
 ################################################################
 
-note('sum() on a 4-by-5 matrix');
+note('max() on a 4-by-5 matrix');
 
 {
     my $x = Math::Matrix -> new([[ 3, -1,  5,  2,  8 ],
                                  [ 4,  0,  2, -3,  1 ],
                                  [ 2,  6, -5,  1, -2 ],
                                  [ 0, -3,  4,  2,  3 ]]);
-    my $y = $x -> sum();
+    my $y = $x -> max();
 
     is(ref($y), 'Math::Matrix', '$y is a Math::Matrix');
-    is_deeply([ @$y ], [[  9,  2,  6,  2, 10 ]], '$y has the right values');
+    is_deeply([ @$y ], [[ 4, 6, 5, 2, 8 ]], '$y has the right values');
 
     # Verify that modifying $y does not modify $x.
 
@@ -35,17 +35,17 @@ note('sum() on a 4-by-5 matrix');
                         [ 0, -3,  4,  2,  3 ]], '$x is unmodified');
 }
 
-note('sum(1) on a 4-by-5 matrix');
+note('max(1) on a 4-by-5 matrix');
 
 {
     my $x = Math::Matrix -> new([[ 3, -1,  5,  2,  8 ],
                                  [ 4,  0,  2, -3,  1 ],
                                  [ 2,  6, -5,  1, -2 ],
                                  [ 0, -3,  4,  2,  3 ]]);
-    my $y = $x -> sum(1);
+    my $y = $x -> max(1);
 
     is(ref($y), 'Math::Matrix', '$y is a Math::Matrix');
-    is_deeply([ @$y ], [[  9,  2,  6,  2, 10 ]], '$y has the right values');
+    is_deeply([ @$y ], [[ 4, 6, 5, 2, 8 ]], '$y has the right values');
 
     # Verify that modifying $y does not modify $x.
 
@@ -62,20 +62,20 @@ note('sum(1) on a 4-by-5 matrix');
                         [ 0, -3,  4,  2,  3 ]], '$x is unmodified');
 }
 
-note('sum(2) on a 4-by-5 matrix');
+note('max(2) on a 4-by-5 matrix');
 
 {
     my $x = Math::Matrix -> new([[ 3, -1,  5,  2,  8 ],
                                  [ 4,  0,  2, -3,  1 ],
                                  [ 2,  6, -5,  1, -2 ],
                                  [ 0, -3,  4,  2,  3 ]]);
-    my $y = $x -> sum(2);
+    my $y = $x -> max(2);
 
     is(ref($y), 'Math::Matrix', '$y is a Math::Matrix');
-    is_deeply([ @$y ], [[ 17 ],
-                        [  4 ],
-                        [  2 ],
-                        [  6 ]], '$y has the right values');
+    is_deeply([ @$y ], [[ 8 ],
+                        [ 4 ],
+                        [ 6 ],
+                        [ 4 ]], '$y has the right values');
 
     # Verify that modifying $y does not modify $x.
 
@@ -94,17 +94,17 @@ note('sum(2) on a 4-by-5 matrix');
 
 ################################################################
 
-note('sum() on a 4-by-1 matrix');
+note('max() on a 4-by-1 matrix');
 
 {
     my $x = Math::Matrix -> new([[ 3 ],
                                  [ 4 ],
                                  [ 2 ],
                                  [ 0 ]]);
-    my $y = $x -> sum();
+    my $y = $x -> max();
 
     is(ref($y), 'Math::Matrix', '$y is a Math::Matrix');
-    is_deeply([ @$y ], [[ 9 ]], '$y has the right values');
+    is_deeply([ @$y ], [[ 4 ]], '$y has the right values');
 
     # Verify that modifying $y does not modify $x.
 
@@ -121,17 +121,17 @@ note('sum() on a 4-by-1 matrix');
                         [ 0 ]], '$x is unmodified');
 }
 
-note('sum(1) on a 4-by-1 matrix');
+note('max(1) on a 4-by-1 matrix');
 
 {
     my $x = Math::Matrix -> new([[ 3 ],
                                  [ 4 ],
                                  [ 2 ],
                                  [ 0 ]]);
-    my $y = $x -> sum(1);
+    my $y = $x -> max(1);
 
     is(ref($y), 'Math::Matrix', '$y is a Math::Matrix');
-    is_deeply([ @$y ], [[ 9 ]], '$y has the right values');
+    is_deeply([ @$y ], [[ 4 ]], '$y has the right values');
 
     # Verify that modifying $y does not modify $x.
 
@@ -148,14 +148,14 @@ note('sum(1) on a 4-by-1 matrix');
                         [ 0 ]], '$x is unmodified');
 }
 
-note('sum(2) on a 4-by-1 matrix');
+note('max(2) on a 4-by-1 matrix');
 
 {
     my $x = Math::Matrix -> new([[ 3 ],
                                  [ 4 ],
                                  [ 2 ],
                                  [ 0 ]]);
-    my $y = $x -> sum(2);
+    my $y = $x -> max(2);
 
     is(ref($y), 'Math::Matrix', '$y is a Math::Matrix');
     is_deeply([ @$y ], [[ 3 ],
@@ -180,14 +180,14 @@ note('sum(2) on a 4-by-1 matrix');
 
 ################################################################
 
-note('sum() on a 1-by-5 matrix');
+note('max() on a 1-by-5 matrix');
 
 {
     my $x = Math::Matrix -> new([[ 3, -1,  5,  2,  8 ]]);
-    my $y = $x -> sum();
+    my $y = $x -> max();
 
     is(ref($y), 'Math::Matrix', '$y is a Math::Matrix');
-    is_deeply([ @$y ], [[ 17 ]], '$y has the right values');
+    is_deeply([ @$y ], [[ 8 ]], '$y has the right values');
 
     # Verify that modifying $y does not modify $x.
 
@@ -201,11 +201,11 @@ note('sum() on a 1-by-5 matrix');
     is_deeply([ @$x ], [[ 3, -1,  5,  2,  8 ]], '$x is unmodified');
 }
 
-note('sum(1) on a 1-by-5 matrix');
+note('max(1) on a 1-by-5 matrix');
 
 {
     my $x = Math::Matrix -> new([[ 3, -1,  5,  2,  8 ]]);
-    my $y = $x -> sum(1);
+    my $y = $x -> max(1);
 
     is(ref($y), 'Math::Matrix', '$y is a Math::Matrix');
     is_deeply([ @$y ], [[ 3, -1,  5,  2,  8 ]], '$y has the right values');
@@ -222,14 +222,14 @@ note('sum(1) on a 1-by-5 matrix');
     is_deeply([ @$x ], [[ 3, -1,  5,  2,  8 ]], '$x is unmodified');
 }
 
-note('sum(2) on a 1-by-5 matrix');
+note('max(2) on a 1-by-5 matrix');
 
 {
     my $x = Math::Matrix -> new([[ 3, -1,  5,  2,  8 ]]);
-    my $y = $x -> sum(2);
+    my $y = $x -> max(2);
 
     is(ref($y), 'Math::Matrix', '$y is a Math::Matrix');
-    is_deeply([ @$y ], [[ 17 ]], '$y has the right values');
+    is_deeply([ @$y ], [[ 8 ]], '$y has the right values');
 
     # Verify that modifying $y does not modify $x.
 
@@ -245,33 +245,33 @@ note('sum(2) on a 1-by-5 matrix');
 
 ################################################################
 
-note('sum() on an empty matrix');
+note('max() on an empty matrix');
 
 {
     my $x = Math::Matrix -> new([]);
-    my $y = $x -> sum();
+    my $y = $x -> max();
 
     is(ref($y), 'Math::Matrix', '$y is a Math::Matrix');
     is_deeply([ @$y ], [], '$y has the right values');
     is_deeply([ @$x ], [], '$x is unmodified');
 }
 
-note('sum(1) on an empty matrix');
+note('max(1) on an empty matrix');
 
 {
     my $x = Math::Matrix -> new([]);
-    my $y = $x -> sum(1);
+    my $y = $x -> max(1);
 
     is(ref($y), 'Math::Matrix', '$y is a Math::Matrix');
     is_deeply([ @$y ], [], '$y has the right values');
     is_deeply([ @$x ], [], '$x is unmodified');
 }
 
-note('sum(2) on an empty matrix');
+note('max(2) on an empty matrix');
 
 {
     my $x = Math::Matrix -> new([]);
-    my $y = $x -> sum(2);
+    my $y = $x -> max(2);
 
     is(ref($y), 'Math::Matrix', '$y is a Math::Matrix');
     is_deeply([ @$y ], [], '$y has the right values');

@@ -2249,6 +2249,92 @@ sub is_nan {
 
 =pod
 
+=item all()
+
+Tests whether all of the elements along various dimensions of a matrix are
+non-zero. If the dimension argument is not given, the first non-singleton
+dimension is used.
+
+    $y = $x -> all($dim);
+    $y = $x -> all();
+
+=cut
+
+sub all {
+    croak "Not enough arguments for ", (caller(0))[3] if @_ < 1;
+    croak "Too many arguments for ", (caller(0))[3] if @_ > 2;
+    my $x = shift;
+    my $class = ref $x;
+
+    $x -> apply(\&_all, @_);
+}
+
+=pod
+
+=item any()
+
+Tests whether any of the elements along various dimensions of a matrix are
+non-zero. If the dimension argument is not given, the first non-singleton
+dimension is used.
+
+    $y = $x -> any($dim);
+    $y = $x -> any();
+
+=cut
+
+sub any {
+    croak "Not enough arguments for ", (caller(0))[3] if @_ < 1;
+    croak "Too many arguments for ", (caller(0))[3] if @_ > 2;
+    my $x = shift;
+    my $class = ref $x;
+
+    $x -> apply(\&_any, @_);
+}
+
+=pod
+
+=item cumall()
+
+A cumulative variant of C<L</all()>>. If the dimension argument is not given,
+the first non-singleton dimension is used.
+
+    $y = $x -> cumall($dim);
+    $y = $x -> cumall();
+
+=cut
+
+sub cumall {
+    croak "Not enough arguments for ", (caller(0))[3] if @_ < 1;
+    croak "Too many arguments for ", (caller(0))[3] if @_ > 2;
+    my $x = shift;
+    my $class = ref $x;
+
+    $x -> apply(\&_cumall, @_);
+}
+
+=pod
+
+=item cumany()
+
+A cumulative variant of C<L</all()>>. If the dimension argument is not given,
+the first non-singleton dimension is used.
+
+    $y = $x -> cumany($dim);
+    $y = $x -> cumany();
+
+=cut
+
+sub cumany {
+    croak "Not enough arguments for ", (caller(0))[3] if @_ < 1;
+    croak "Too many arguments for ", (caller(0))[3] if @_ > 2;
+    my $x = shift;
+    my $class = ref $x;
+
+    $x -> apply(\&_cumany, @_);
+}
+
+=pod
+
 =back
 
 =head2 Basic properties
@@ -3967,8 +4053,7 @@ sub mmul {
     my $l = $nx - 1;            # "inner length"
     for my $i (0 .. $mx - 1) {
         for my $j (0 .. $ny - 1) {
-            $z -> [$i][$j]
-              = $class -> _sum(map $x -> [$i][$_] * $y -> [$_][$j], 0 .. $l);
+            $z -> [$i][$j] = _sum(map $x -> [$i][$_] * $y -> [$_][$j], 0 .. $l);
         }
     }
 
@@ -4039,8 +4124,8 @@ sub mmuladd {
     for my $i (0 .. $mx - 1) {
         for my $j (0 .. $ny - 1) {
             $w -> [$i][$j]
-              = $class -> _sum(map($x -> [$i][$_] * $y -> [$_][$j], 0 .. $l),
-                               $z -> [$i][$j]);
+              = _sum(map($x -> [$i][$_] * $y -> [$_][$j], 0 .. $l),
+                     $z -> [$i][$j]);
         }
     }
 
@@ -4126,124 +4211,6 @@ sub multiply_scalar {
         }
     }
     $result;
-}
-
-=pod
-
-=item sum()
-
-Sum of elements. If the dimension argument is not given, the sum is computed
-along the first non-singleton dimension.
-
-    $y = $x -> sum($dim);
-    $y = $x -> sum();
-
-=cut
-
-sub sum {
-    croak "Not enough arguments for ", (caller(0))[3] if @_ < 1;
-    croak "Too many arguments for ", (caller(0))[3] if @_ > 2;
-    my $x = shift;
-    my $class = ref $x;
-
-    # Get the size of the input $x.
-
-    my ($m, $n) = $x -> size();
-
-    # Get the dimension along which to compute the sum.
-
-    my $dim;
-    if (@_) {
-        $dim = shift;
-        croak "Dimension can not be undefined" unless defined $dim;
-        if (ref $dim) {
-            $dim = $class -> new($dim)
-              unless defined(blessed($dim)) && $dim -> isa($class);
-            croak "Dimension must be a scalar" unless $dim -> is_scalar();
-            $dim = $dim -> [0][0];
-            croak "Dimension must be a positive integer"
-              unless $dim > 0 && $dim == int $dim;
-        }
-    } else {
-        $dim = $m > 1 ? 1 : 2;
-    }
-
-    my $y = [];
-    if ($dim == 1) {
-        for my $j (0 .. $n - 1) {
-            $y -> [0][$j] = $class -> _sum(map $_ -> [$j], @$x);
-        }
-    } elsif ($dim == 2) {
-        for my $i (0 .. $m - 1) {
-            $y -> [$i][0] = $class -> _sum(@{ $x -> [$i] });
-        }
-    } else {
-        @$y = map [ @$_ ], @$x;
-    }
-
-    bless $y, $class;
-}
-
-=pod
-
-=item prod()
-
-Product of elements. If the dimension argument is not given, the product is
-computed along the first non-singleton dimension.
-
-    $y = $x -> prod($dim);
-    $y = $x -> prod();
-
-=cut
-
-sub prod {
-    croak "Not enough arguments for ", (caller(0))[3] if @_ < 1;
-    croak "Too many arguments for ", (caller(0))[3] if @_ > 2;
-    my $x = shift;
-    my $class = ref $x;
-
-    # Get the size of the input $x.
-
-    my ($m, $n) = $x -> size();
-
-    # Get the dimension along which to compute the prod.
-
-    my $dim;
-    if (@_) {
-        $dim = shift;
-        croak "Dimension can not be undefined" unless defined $dim;
-        if (ref $dim) {
-            $dim = $class -> new($dim)
-              unless defined(blessed($dim)) && $dim -> isa($class);
-            croak "Dimension must be a scalar" unless $dim -> is_scalar();
-            $dim = $dim -> [0][0];
-            croak "Dimension must be a positive integer"
-              unless $dim > 0 && $dim == int $dim;
-        }
-    } else {
-        $dim = $m > 1 ? 1 : 2;
-    }
-
-    my $y = [];
-    if ($dim == 1) {
-        for my $j (0 .. $n - 1) {
-            $y -> [0][$j] = 1;
-            for my $i (0 .. $m - 1) {
-                $y -> [0][$j] *= $x -> [$i][$j];
-            }
-        }
-    } elsif ($dim == 2) {
-        for my $i (0 .. $m - 1) {
-            $y -> [$i][0] = 1;
-            for my $j (0 .. $n - 1) {
-                $y -> [$i][0] *= $x -> [$i][$j];
-            }
-        }
-    } else {
-        @$y = map [ @$_ ], @$x;
-    }
-
-    bless $y, $class;
 }
 
 =pod
@@ -4715,7 +4682,9 @@ sub determinant {
 
 =back
 
-=head3 Miscellaneous mathematical functions
+=head3 Elementwise mathematical functions
+
+These method work on each element of a matrix.
 
 =over 4
 
@@ -4833,7 +4802,351 @@ sub sign {
 
 =back
 
-=head2 Matrix comparison
+=head3 Columnwise or rowwise mathematical functions
+
+These method work along each column or row of a matrix. Some of these methods
+return a matrix with the same size as the invocand matrix. Other methods
+collapse the dimension, so that, e.g., if the method is applied to the first
+dimension a I<p>-by-I<q> matrix becomes a 1-by-I<q> matrix, and if applied to
+the second dimension, it becomes a I<p>-by-1 matrix. Others, like C<L</diff()>>,
+reduces the length along the dimension by one, so a I<p>-by-I<q> matrix becomes
+a (I<p>-1)-by-I<q> or a I<p>-by-(I<q>-1) matrix.
+
+=over 4
+
+=item sum()
+
+Sum of elements along various dimensions of a matrix. If the dimension argument
+is not given, the first non-singleton dimension is used.
+
+    $y = $x -> sum($dim);
+    $y = $x -> sum();
+
+=cut
+
+sub sum {
+    croak "Not enough arguments for ", (caller(0))[3] if @_ < 1;
+    croak "Too many arguments for ", (caller(0))[3] if @_ > 2;
+    my $x = shift;
+    my $class = ref $x;
+
+    $x -> apply(\&_sum, @_);
+}
+
+=pod
+
+=item prod()
+
+Product of elements along various dimensions of a matrix. If the dimension
+argument is not given, the first non-singleton dimension is used.
+
+    $y = $x -> prod($dim);
+    $y = $x -> prod();
+
+=cut
+
+sub prod {
+    croak "Not enough arguments for ", (caller(0))[3] if @_ < 1;
+    croak "Too many arguments for ", (caller(0))[3] if @_ > 2;
+    my $x = shift;
+    my $class = ref $x;
+
+    $x -> apply(\&_prod, @_);
+}
+
+=pod
+
+=item mean()
+
+Mean of elements along various dimensions of a matrix. If the dimension argument
+is not given, the first non-singleton dimension is used.
+
+    $y = $x -> mean($dim);
+    $y = $x -> mean();
+
+=cut
+
+sub mean {
+    croak "Not enough arguments for ", (caller(0))[3] if @_ < 1;
+    croak "Too many arguments for ", (caller(0))[3] if @_ > 2;
+    my $x = shift;
+    my $class = ref $x;
+
+    $x -> apply(\&_mean, @_);
+}
+
+=pod
+
+=item hypot()
+
+Hypotenuse. Computes the square root of the sum of the square of each element
+along various dimensions of a matrix. If the dimension argument is not given,
+the first non-singleton dimension is used.
+
+    $y = $x -> hypot($dim);
+    $y = $x -> hypot();
+
+For example,
+
+    $x = Math::Matrix -> new([[3,  4],
+                              [5, 12]]);
+    $y = $x -> hypot(2);
+
+returns the 2-by-1 matrix
+
+    [  5 ]
+    [ 13 ]
+
+=cut
+
+sub hypot {
+    croak "Not enough arguments for ", (caller(0))[3] if @_ < 1;
+    croak "Too many arguments for ", (caller(0))[3] if @_ > 2;
+    my $x = shift;
+    my $class = ref $x;
+
+    $x -> apply(\&_hypot, @_);
+}
+
+=pod
+
+=item min()
+
+Minimum of elements along various dimensions of a matrix. If the dimension
+argument is not given, the first non-singleton dimension is used.
+
+    $y = $x -> min($dim);
+    $y = $x -> min();
+
+=cut
+
+sub min {
+    croak "Not enough arguments for ", (caller(0))[3] if @_ < 1;
+    croak "Too many arguments for ", (caller(0))[3] if @_ > 2;
+    my $x = shift;
+    my $class = ref $x;
+
+    $x -> apply(\&_min, @_);
+}
+
+=pod
+
+=item max()
+
+Maximum of elements along various dimensions of a matrix. If the dimension
+argument is not given, the first non-singleton dimension is used.
+
+    $y = $x -> max($dim);
+    $y = $x -> max();
+
+=cut
+
+sub max {
+    croak "Not enough arguments for ", (caller(0))[3] if @_ < 1;
+    croak "Too many arguments for ", (caller(0))[3] if @_ > 2;
+    my $x = shift;
+    my $class = ref $x;
+
+    $x -> apply(\&_max, @_);
+}
+
+=pod
+
+=item median()
+
+Median of elements along various dimensions of a matrix. If the dimension
+argument is not given, the first non-singleton dimension is used.
+
+    $y = $x -> median($dim);
+    $y = $x -> median();
+
+=cut
+
+sub median {
+    croak "Not enough arguments for ", (caller(0))[3] if @_ < 1;
+    croak "Too many arguments for ", (caller(0))[3] if @_ > 2;
+    my $x = shift;
+    my $class = ref $x;
+
+    $x -> apply(\&_median, @_);
+}
+
+=pod
+
+=item cumsum()
+
+Returns the cumulative sum along various dimensions of a matrix. If the
+dimension argument is not given, the first non-singleton dimension is used.
+
+    $y = $x -> cumsum($dim);
+    $y = $x -> cumsum();
+
+=cut
+
+sub cumsum {
+    croak "Not enough arguments for ", (caller(0))[3] if @_ < 1;
+    croak "Too many arguments for ", (caller(0))[3] if @_ > 2;
+    my $x = shift;
+    my $class = ref $x;
+
+    $x -> apply(\&_cumsum, @_);
+}
+
+=pod
+
+=item cumprod()
+
+Returns the cumulative product along various dimensions of a matrix. If the
+dimension argument is not given, the first non-singleton dimension is used.
+
+    $y = $x -> cumprod($dim);
+    $y = $x -> cumprod();
+
+=cut
+
+sub cumprod {
+    croak "Not enough arguments for ", (caller(0))[3] if @_ < 1;
+    croak "Too many arguments for ", (caller(0))[3] if @_ > 2;
+    my $x = shift;
+    my $class = ref $x;
+
+    $x -> apply(\&_cumprod, @_);
+}
+
+=pod
+
+=item cummean()
+
+Returns the cumulative mean along various dimensions of a matrix. If the
+dimension argument is not given, the first non-singleton dimension is used.
+
+    $y = $x -> cummean($dim);
+    $y = $x -> cummean();
+
+=cut
+
+sub cummean {
+    croak "Not enough arguments for ", (caller(0))[3] if @_ < 1;
+    croak "Too many arguments for ", (caller(0))[3] if @_ > 2;
+    my $x = shift;
+    my $class = ref $x;
+
+    $x -> apply(\&_cummean, @_);
+}
+
+=pod
+
+=item diff()
+
+Returns the differences between adjacent elements. If the dimension argument is
+not given, the first non-singleton dimension is used.
+
+    $y = $x -> diff($dim);
+    $y = $x -> diff();
+
+=cut
+
+sub diff {
+    croak "Not enough arguments for ", (caller(0))[3] if @_ < 1;
+    croak "Too many arguments for ", (caller(0))[3] if @_ > 2;
+    my $x = shift;
+    my $class = ref $x;
+
+    $x -> apply(\&_diff, @_);
+}
+
+=pod
+
+=item apply()
+
+Applies a subroutine to each row or column of a matrix. If the dimension
+argument is not given, the first non-singleton dimension is used.
+
+    $y = $x -> apply($sub, $dim);
+    $y = $x -> apply($sub);
+
+The subroutine is passed a list with all elements in a single column or row.
+
+=cut
+
+sub apply {
+    my $x = shift;
+    my $class = ref $x;
+
+    my $sub = shift;
+
+    # Get the size of the input $x.
+
+    my ($nrowx, $ncolx) = $x -> size();
+
+    # Get the dimension along which to apply the subroutine.
+
+    my $dim;
+    if (@_) {
+        $dim = shift;
+        croak "Dimension can not be undefined" unless defined $dim;
+        if (ref $dim) {
+            $dim = $class -> new($dim)
+              unless defined(blessed($dim)) && $dim -> isa($class);
+            croak "Dimension must be a scalar" unless $dim -> is_scalar();
+            $dim = $dim -> [0][0];
+            croak "Dimension must be a positive integer"
+              unless $dim > 0 && $dim == CORE::int($dim);
+        }
+        croak "Dimension must be 1 or 2" unless $dim == 1 || $dim == 2;
+    } else {
+        $dim = $nrowx > 1 ? 1 : 2;
+    }
+
+    # Initialise output.
+
+    my $y = [];
+
+    # Work along the first dimension, i.e., each column.
+
+    my ($nrowy, $ncoly);
+    if ($dim == 1) {
+        $nrowy = 0;
+        for my $j (0 .. $ncolx - 1) {
+            my @col = $sub -> (map $_ -> [$j], @$x);
+            if ($j == 0) {
+                $nrowy = @col;
+            } else {
+                croak "The number of elements in each column must be the same"
+                  unless $nrowy == @col;
+            }
+            $y -> [$_][$j] = $col[$_] for 0 .. $#col;
+        }
+        $y = [] if $nrowy == 0;
+    }
+
+    # Work along the second dimension, i.e., each row.
+
+    elsif ($dim == 2) {
+        $ncoly = 0;
+        for my $i (0 .. $nrowx - 1) {
+            my @row = $sub -> (@{ $x -> [$i] });
+            if ($i == 0) {
+                $ncoly = @row;
+            } else {
+                croak "The number of elements in each row must be the same"
+                  unless $ncoly == @row;
+            }
+            $y -> [$i] = [ @row ];
+        }
+        $y = [] if $ncoly == 0;
+    }
+
+    bless $y, $class;
+}
+
+=pod
+
+=back
+
+=head2 Comparison
+
+=head3 Matrix comparison
 
 Methods matrix comparison. These methods return a scalar value.
 
@@ -4865,7 +5178,7 @@ sub equal {
 
 =back
 
-=head2 Scalar comparison
+=head3 Scalar comparison
 
 Each of these methods performs scalar (element by element) comparison and
 returns a matrix of ones and zeros. Scalar expansion is performed if necessary.
@@ -5132,7 +5445,7 @@ sub absolute {
     my $x = shift;
     croak "Argument must be a vector"  unless $x -> is_vector();
 
-    $x -> _hypot(@{ $x -> to_row() -> [0] });
+    _hypot(@{ $x -> to_row() -> [0] });
 }
 
 =pod
@@ -5275,12 +5588,60 @@ sub map {
 
 =item sapply()
 
-Scalar apply. Applies a subroutine to each element, or each set of corresponding
-elements if multiple operands are given, and returns the result. The first argument
-is the subroutine to apply. The following arguments, if any, are additional
-matrices on which to apply the subroutine.
+Applies a subroutine to each element of a matrix, or each set of corresponding
+elements if multiple matrices are given, and returns the result. The first
+argument is the subroutine to apply. The following arguments, if any, are
+additional matrices on which to apply the subroutine.
 
-See also C<L</to_permvec()>>.
+    $w = $x -> sapply($sub);            # single operand
+    $w = $x -> sapply($sub, $y);        # two operands
+    $w = $x -> sapply($sub, $y, $z);    # three operands
+
+Each matrix element, or corresponding set of elements, are passed to the
+subroutine as input arguments.
+
+When used with a single operand, this method is similar to the C<L</map()>>
+method, the syntax is different, since C<L</sapply()>> supports multiple
+operands.
+
+See also C<L</map()>>.
+
+=over 4
+
+=item *
+
+The subroutine is run in scalar context.
+
+=item *
+
+No checks are done on the return value of the subroutine.
+
+=item *
+
+The number of rows in the output matrix equals the number of rows in the operand
+with the largest number of rows. Ditto for columns. So if C<$x> is 5-by-2
+matrix, and C<$y> is a 3-by-4 matrix, the result is a 5-by-4 matrix.
+
+=item *
+
+For each operand that has a number of rows smaller than the maximum value, the
+rows are recyled. Ditto for columns.
+
+=item *
+
+Don't modify the variables $_[0], $_[1] etc. inside the subroutine. Otherwise,
+there is a risk of modifying the operand matrices.
+
+=item *
+
+If the matrix elements are objects that are not cloned when the "=" (assignment)
+operator is used, you might have to explicitly clone the objects used inside the
+subroutine. Otherwise, the elements in the output matrix might be references to
+objects in the operand matrices, rather than references to new objects.
+
+=back
+
+Some examples
 
 =over 4
 
@@ -5335,43 +5696,7 @@ to compute the sum of the four matrices C<$x>, C<$y>, C<$z>, and C<$w>,
                };
                return $sum;
            };
-    $x -> sapply($sub, $y, $z, $w);
-
-=back
-
-Note
-
-=over 4
-
-=item *
-
-The number of rows in the output matrix equals the number of rows in the operand
-with the largest number of rows. Ditto for columns.
-
-=item *
-
-For each operand that has a number of rows smaller than the maximum value, the
-rows are recyled. Ditto for columns.
-
-=item *
-
-The subroutine is run in scalar context.
-
-=item *
-
-No checks are done on the return value of the subroutine.
-
-=item *
-
-Don't modify the variables $_[0], $_[1] etc. inside the subroutine. Otherwise,
-there is a risk of modifying the operand matrices.
-
-=item *
-
-If the matrix elements are objects that are not cloned when the "=" (assignment)
-operator is used, you might have to explicitly clone any objects used inside the
-subroutine. Otherwise, the elements in the output matrix might be references to
-objects in the operand matrices, rather than references to new objects.
+    $sum = $x -> sapply($sub, $y, $z, $w);
 
 =back
 
@@ -5531,17 +5856,15 @@ sub version {
 # https://en.wikipedia.org/wiki/Kahan_summation_algorithm#Further_enhancements
 
 sub _sum {
-    my $self = shift;
-
     my $sum = 0;
     my $c = 0;
 
-    for (my $i = 0 ; $i <= $#_ ; ++$i) {
-        my $t = $sum + $_[$i];
-        if (CORE::abs($sum) >= CORE::abs($_[$i])) {
-            $c += ($sum - $t) + $_[$i];
+    for (@_) {
+        my $t = $sum + $_;
+        if (CORE::abs($sum) >= CORE::abs($_)) {
+            $c += ($sum - $t) + $_;
         } else {
-            $c += ($_[$i] - $t) + $sum;
+            $c += ($_ - $t) + $sum;
         }
         $sum = $t;
     }
@@ -5549,18 +5872,36 @@ sub _sum {
     return $sum + $c;
 }
 
+# _prod LIST
+#
+
+sub _prod {
+    my $prod = 1;
+    $prod *= $_ for @_;
+    return $prod;
+}
+
+# _mean LIST
+#
+# Method for finding the mean.
+
+sub _mean {
+    _sum(@_) / @_;
+}
+
 # Method used to calculate the length of the hypotenuse of a right-angle
 # triangle. It is designed to avoid errors arising due to limited-precision
 # calculations performed on computers. E.g., with double-precision arithmetic:
 #
-#     sqrt(3e300**2 + 4e300**2)    # = Inf, due to overflow
-#     _hypot(3e300, 4e300)         # = 5e300, which is correct
+#     sqrt(3e200**2 + 4e200**2)    # = Inf, due to overflow
+#     _hypot(3e200, 4e200)         # = 5e200, which is correct
+#
+#     sqrt(3e-200**2 + 4e-200**2)  # = 0, due to underflow
+#     _hypot(3e-200, 4e-200)       # = 5e-200, which is correct
 #
 # See https://en.wikipedia.org/wiki/Hypot
 
 sub _hypot {
-    my $class = shift;
-
     my @x = map { CORE::abs($_) } @_;
 
     # Compute the maximum value.
@@ -5577,7 +5918,153 @@ sub _hypot {
         $_ *= $_;
     }
 
-    $max * sqrt($class -> _sum(@x))
+    $max * sqrt(_sum(@x))
+}
+
+# _min LIST
+#
+# Method for finding the minimum value.
+
+sub _min {
+    my $min = shift;
+    for (@_) {
+        $min = $_ if $_ < $min;
+    }
+
+    return $min;
+}
+
+# _max LIST
+#
+# Method for finding the maximum value.
+
+sub _max {
+    my $min = shift;
+    for (@_) {
+        $min = $_ if $_ > $min;
+    }
+
+    return $min;
+}
+
+# _median LIST
+#
+# Method for finding the median.
+
+sub _median {
+    my @x = sort { $a <=> $b } @_;
+    if (@x % 2) {
+         $x[$#x / 2];
+    } else {
+        ($x[@x / 2] + $x[@x / 2 - 1]) / 2;
+    }
+}
+
+# _any LIST
+#
+# Method that returns 1 if at least one value in LIST is non-zero and 0
+# otherwise.
+
+sub _any {
+    for (@_) {
+        return 1 if $_ != 0;
+    }
+    return 0;
+}
+
+# _all LIST
+#
+# Method that returns 1 if all values in LIST are non-zero and 0 otherwise.
+
+sub _all {
+    for (@_) {
+        return 0 if $_ == 0;
+    }
+    return 1;
+}
+
+sub _cumsum {
+    my @sum = ();
+
+    my $sum = 0;
+    my $c = 0;
+
+    for (@_) {
+        my $t = $sum + $_;
+        if (CORE::abs($sum) >= CORE::abs($_)) {
+            $c += ($sum - $t) + $_;
+        } else {
+            $c += ($_ - $t) + $sum;
+        }
+        $sum = $t;
+        push @sum, $sum + $c;
+    }
+
+    return @sum;
+}
+
+sub _cumprod {
+    my @prod = shift;
+    push @prod, $prod[-1] * $_ for @_;
+    return @prod;
+}
+
+sub _cummean {
+    my @mean = ();
+    my $sum = 0;
+    for my $i (0 .. $#_) {
+        $sum += $_[$i];
+        push @mean, $sum / ($i + 1);
+    }
+    return @mean;
+}
+
+sub _cummin {
+    my @min = shift;
+    for (@_) {
+        push @min, $min[-1] < $_ ? $min[-1] : $_;
+    }
+    return @min;
+}
+
+sub _cummax {
+    my @max = shift;
+    for (@_) {
+        push @max, $max[-1] > $_ ? $max[-1] : $_;
+    }
+    return @max;
+}
+
+sub _cumany {
+    my @any = ();
+    for (@_) {
+        if ($_ != 0) {
+            push @any, (1) x (@_ - @any);
+            last;
+        }
+        push @any, 0;
+    }
+    return @any;
+}
+
+sub _cumall {
+    my @all = ();
+    for (@_) {
+        if ($_ == 0) {
+            push @all, (0) x (@_ - @all);
+            last;
+        }
+        push @all, 1;
+    }
+    return @all;
+}
+
+sub _diff {
+    my @diff = ();
+    for my $i (1 .. $#_) {
+        push @diff, $_[$i] - $_[$i - 1];
+    }
+    return @diff;
 }
 
 =pod
