@@ -43,6 +43,16 @@ use overload
               $x -> pow($y);
           },
 
+  '==' => sub {
+              my ($x, $y, $swap) = @_;
+              $x -> meq($y);
+          },
+
+  '!=' => sub {
+              my ($x, $y, $swap) = @_;
+              $x -> mne($y);
+          },
+
   'int' => sub {
                my ($x, $y, $swap) = @_;
                $x -> int();
@@ -5173,6 +5183,80 @@ Methods matrix comparison. These methods return a scalar value.
 
 =over 4
 
+=item meq()
+
+Matrix equal to. Returns 1 if two matrices are identical and 0 otherwise.
+
+    $bool = $x -> meq($y);
+
+=cut
+
+sub meq {
+    croak "Not enough arguments for ", (caller(0))[3] if @_ < 2;
+    croak "Too many arguments for ", (caller(0))[3] if @_ > 2;
+    my $x = shift;
+    my $class = ref $x;
+
+    my $y = shift;
+    $y = $class -> new($y)
+      unless defined(blessed($y)) && $y -> isa($class);
+
+    my ($nrowx, $ncolx) = $x -> size();
+    my ($nrowy, $ncoly) = $y -> size();
+
+    # Quick exit if the sizes don't match.
+
+    return 0 unless $nrowx == $nrowy && $ncolx == $ncoly;
+
+    # Compare the elements.
+
+    for my $i (0 .. $nrowx - 1) {
+        for my $j (0 .. $ncolx - 1) {
+            return 0 if $x->[$i][$j] != $y->[$i][$j];
+        }
+    }
+    return 1;
+}
+
+=pod
+
+=item mne()
+
+Matrix not equal to. Returns 1 if two matrices are different and 0 otherwise.
+
+    $bool = $x -> mne($y);
+
+=cut
+
+sub mne {
+    croak "Not enough arguments for ", (caller(0))[3] if @_ < 2;
+    croak "Too many arguments for ", (caller(0))[3] if @_ > 2;
+    my $x = shift;
+    my $class = ref $x;
+
+    my $y = shift;
+    $y = $class -> new($y)
+      unless defined(blessed($y)) && $y -> isa($class);
+
+    my ($nrowx, $ncolx) = $x -> size();
+    my ($nrowy, $ncoly) = $y -> size();
+
+    # Quick exit if the sizes don't match.
+
+    return 1 unless $nrowx == $nrowy && $ncolx == $ncoly;
+
+    # Compare the elements.
+
+    for my $i (0 .. $nrowx - 1) {
+        for my $j (0 .. $ncolx - 1) {
+            return 1 if $x->[$i][$j] != $y->[$i][$j];
+        }
+    }
+    return 0;
+}
+
+=pod
+
 =item equal()
 
 Decide if two matrices are equal. The criterion is, that each pair of elements
@@ -6131,6 +6215,18 @@ Matrix power. The second operand must be a scalar.
 
     $C  = $A * $B;      # assign $A ** $B to $C
     $A *= $B;           # assign $A ** $B to $A
+
+=item C<==>
+
+Equal to.
+
+    $A == $B;           # is $A equal to $B?
+
+=item C<!=>
+
+Not equal to.
+
+    $A != $B;           # is $A not equal to $B?
 
 =item C<neg>
 
