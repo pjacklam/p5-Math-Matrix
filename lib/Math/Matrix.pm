@@ -58,6 +58,11 @@ use overload
                $x -> int();
            },
 
+  'abs' => sub {
+               my ($x, $y, $swap) = @_;
+               $x -> abs();
+           },
+
   '~'  => 'transpose',
   '""' => 'as_string',
   '='  => 'clone';
@@ -6239,6 +6244,12 @@ Negation.
 Transpose.
 
     $B = ~$A;           # $B is the transpose of $A
+
+=item C<abs>
+
+Absolute value.
+
+    $B = abs $A;        # $B contains absolute values of $A
 
 =item C<int>
 
