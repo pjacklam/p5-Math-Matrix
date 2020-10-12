@@ -5093,6 +5093,45 @@ sub diff {
 
 =pod
 
+=item vecnorm()
+
+Return the C<$p>-norm of the elements of C<$x>. If the dimension argument is not
+given, the first non-singleton dimension is used.
+
+    $y = $x -> vecnorm($p, $dim);
+    $y = $x -> vecnorm($p);
+    $y = $x -> vecnorm();
+
+The C<$p>-norm of a vector is defined as the C<$p>th root of the sum of the
+absolute values fo the elements raised to the C<$p>th power.
+
+=cut
+
+sub vecnorm {
+    croak "Not enough arguments for ", (caller(0))[3] if @_ < 1;
+    croak "Too many arguments for ", (caller(0))[3] if @_ > 3;
+    my $x = shift;
+    my $class = ref $x;
+
+    my $p = 2;
+    if (@_) {
+        $p = shift;
+        croak 'When the \$p argument is given, it can not be undefined'
+          unless defined $p;
+        if (ref $p) {
+            $p = $class -> new($p)
+              unless defined(blessed($p)) && $p -> isa($class);
+            croak 'The $p argument must be a scalar' unless $p -> is_scalar();
+            $p = $p -> [0][0];
+        }
+    }
+
+    my $sub = sub { _vecnorm($p, @_) };
+    $x -> apply($sub, @_);
+}
+
+=pod
+
 =item apply()
 
 Applies a subroutine to each row or column of a matrix. If the dimension
@@ -6175,6 +6214,34 @@ sub _diff {
         push @diff, $_[$i] - $_[$i - 1];
     }
     return @diff;
+}
+
+sub _vecnorm {
+    my $p = shift;
+    my @x = map { CORE::abs($_) } @_;
+
+    return _sum(@x) if $p == 1;
+
+    require Math::Trig;
+    my $inf = Math::Trig::Inf();
+
+    return _max(@x) if $p == $inf;
+
+    # Compute the maximum value.
+
+    my $max = 0;
+    for (@x) {
+        $max = $_ if $_ > $max;
+    }
+
+    # Scale and apply power function.
+
+    for (@x) {
+        $_ /= $max;
+        $_ **= $p;
+    }
+
+    $max * (_sum(@x)) ** (1/$p);
 }
 
 =pod
