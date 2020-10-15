@@ -1289,7 +1289,6 @@ sub is_constant {
     croak "Not enough arguments for ", (caller(0))[3] if @_ < 1;
     croak "Too many arguments for ", (caller(0))[3] if @_ > 2;
     my $x = shift;
-    my $class = ref $x;
 
     my ($nrow, $ncol) = $x -> size();
 
@@ -1322,7 +1321,6 @@ sub is_identity {
     croak "Not enough arguments for ", (caller(0))[3] if @_ < 1;
     croak "Too many arguments for ", (caller(0))[3] if @_ > 1;
     my $x = shift;
-    my $class = ref $x;
 
     my ($nrow, $ncol) = $x -> size();
     return 0 unless $nrow == $ncol;
@@ -1357,7 +1355,6 @@ sub is_exchg {
     croak "Not enough arguments for ", (caller(0))[3] if @_ < 1;
     croak "Too many arguments for ", (caller(0))[3] if @_ > 1;
     my $x = shift;
-    my $class = ref $x;
 
     my ($nrow, $ncol) = $x -> size();
     return 0 unless $nrow == $ncol;
@@ -1393,7 +1390,6 @@ sub is_bool {
     croak "Not enough arguments for ", (caller(0))[3] if @_ < 1;
     croak "Too many arguments for ", (caller(0))[3] if @_ > 1;
     my $x = shift;
-    my $class = ref $x;
 
     my ($nrow, $ncol) = $x -> size();
 
@@ -1428,7 +1424,6 @@ sub is_perm {
     croak "Not enough arguments for ", (caller(0))[3] if @_ < 1;
     croak "Too many arguments for ", (caller(0))[3] if @_ > 1;
     my $x = shift;
-    my $class = ref $x;
 
     my ($nrow, $ncol) = $x -> size();
     return 0 unless $nrow == $ncol;
@@ -1470,7 +1465,6 @@ sub is_int {
     croak "Not enough arguments for ", (caller(0))[3] if @_ < 1;
     croak "Too many arguments for ", (caller(0))[3] if @_ > 1;
     my $x = shift;
-    my $class = ref $x;
 
     my ($nrow, $ncol) = $x -> size();
 
@@ -2279,8 +2273,6 @@ sub all {
     croak "Not enough arguments for ", (caller(0))[3] if @_ < 1;
     croak "Too many arguments for ", (caller(0))[3] if @_ > 2;
     my $x = shift;
-    my $class = ref $x;
-
     $x -> apply(\&_all, @_);
 }
 
@@ -2301,8 +2293,6 @@ sub any {
     croak "Not enough arguments for ", (caller(0))[3] if @_ < 1;
     croak "Too many arguments for ", (caller(0))[3] if @_ > 2;
     my $x = shift;
-    my $class = ref $x;
-
     $x -> apply(\&_any, @_);
 }
 
@@ -2322,8 +2312,6 @@ sub cumall {
     croak "Not enough arguments for ", (caller(0))[3] if @_ < 1;
     croak "Too many arguments for ", (caller(0))[3] if @_ > 2;
     my $x = shift;
-    my $class = ref $x;
-
     $x -> apply(\&_cumall, @_);
 }
 
@@ -2343,8 +2331,6 @@ sub cumany {
     croak "Not enough arguments for ", (caller(0))[3] if @_ < 1;
     croak "Too many arguments for ", (caller(0))[3] if @_ > 2;
     my $x = shift;
-    my $class = ref $x;
-
     $x -> apply(\&_cumany, @_);
 }
 
@@ -2725,7 +2711,7 @@ sub delrow {
         $idxdel = [ $idxdel ];
     }
 
-    my ($nrowx, $ncolx) = $x -> size();
+    my $nrowx = $x -> nrow();
 
     # This should be made faster.
 
@@ -3387,7 +3373,7 @@ sub reshape {
     my $nelmy = $nrowy * $ncoly;
 
     croak "when reshaping, the number of elements can not change in ",
-      (caller(0))[3] unless $nrowx * $ncolx == $nrowy * $ncoly;
+      (caller(0))[3] unless $nelmx == $nelmy;
 
     my $y = [];
 
@@ -4598,7 +4584,6 @@ sub cofactormatrix {
     croak "Not enough arguments for ", (caller(0))[3] if @_ < 1;
     croak "Too many arguments for ", (caller(0))[3] if @_ > 1;
     my $x = shift;
-    my $class = ref $x;
 
     my ($m, $n) = $x -> size();
     croak "matrix must be square" unless $m == $n;
@@ -4628,7 +4613,6 @@ sub cofactor {
     croak "Not enough arguments for ", (caller(0))[3] if @_ < 3;
     croak "Too many arguments for ", (caller(0))[3] if @_ > 3;
     my $x = shift;
-    my $class = ref $x;
 
     my ($m, $n) = $x -> size();
     croak "matrix must be square" unless $m == $n;
@@ -4864,8 +4848,6 @@ sub sum {
     croak "Not enough arguments for ", (caller(0))[3] if @_ < 1;
     croak "Too many arguments for ", (caller(0))[3] if @_ > 2;
     my $x = shift;
-    my $class = ref $x;
-
     $x -> apply(\&_sum, @_);
 }
 
@@ -4885,8 +4867,6 @@ sub prod {
     croak "Not enough arguments for ", (caller(0))[3] if @_ < 1;
     croak "Too many arguments for ", (caller(0))[3] if @_ > 2;
     my $x = shift;
-    my $class = ref $x;
-
     $x -> apply(\&_prod, @_);
 }
 
@@ -4906,8 +4886,6 @@ sub mean {
     croak "Not enough arguments for ", (caller(0))[3] if @_ < 1;
     croak "Too many arguments for ", (caller(0))[3] if @_ > 2;
     my $x = shift;
-    my $class = ref $x;
-
     $x -> apply(\&_mean, @_);
 }
 
@@ -4939,8 +4917,6 @@ sub hypot {
     croak "Not enough arguments for ", (caller(0))[3] if @_ < 1;
     croak "Too many arguments for ", (caller(0))[3] if @_ > 2;
     my $x = shift;
-    my $class = ref $x;
-
     $x -> apply(\&_hypot, @_);
 }
 
@@ -4960,8 +4936,6 @@ sub min {
     croak "Not enough arguments for ", (caller(0))[3] if @_ < 1;
     croak "Too many arguments for ", (caller(0))[3] if @_ > 2;
     my $x = shift;
-    my $class = ref $x;
-
     $x -> apply(\&_min, @_);
 }
 
@@ -4981,8 +4955,6 @@ sub max {
     croak "Not enough arguments for ", (caller(0))[3] if @_ < 1;
     croak "Too many arguments for ", (caller(0))[3] if @_ > 2;
     my $x = shift;
-    my $class = ref $x;
-
     $x -> apply(\&_max, @_);
 }
 
@@ -5002,8 +4974,6 @@ sub median {
     croak "Not enough arguments for ", (caller(0))[3] if @_ < 1;
     croak "Too many arguments for ", (caller(0))[3] if @_ > 2;
     my $x = shift;
-    my $class = ref $x;
-
     $x -> apply(\&_median, @_);
 }
 
@@ -5023,8 +4993,6 @@ sub cumsum {
     croak "Not enough arguments for ", (caller(0))[3] if @_ < 1;
     croak "Too many arguments for ", (caller(0))[3] if @_ > 2;
     my $x = shift;
-    my $class = ref $x;
-
     $x -> apply(\&_cumsum, @_);
 }
 
@@ -5044,8 +5012,6 @@ sub cumprod {
     croak "Not enough arguments for ", (caller(0))[3] if @_ < 1;
     croak "Too many arguments for ", (caller(0))[3] if @_ > 2;
     my $x = shift;
-    my $class = ref $x;
-
     $x -> apply(\&_cumprod, @_);
 }
 
@@ -5065,8 +5031,6 @@ sub cummean {
     croak "Not enough arguments for ", (caller(0))[3] if @_ < 1;
     croak "Too many arguments for ", (caller(0))[3] if @_ > 2;
     my $x = shift;
-    my $class = ref $x;
-
     $x -> apply(\&_cummean, @_);
 }
 
@@ -5086,8 +5050,6 @@ sub diff {
     croak "Not enough arguments for ", (caller(0))[3] if @_ < 1;
     croak "Too many arguments for ", (caller(0))[3] if @_ > 2;
     my $x = shift;
-    my $class = ref $x;
-
     $x -> apply(\&_diff, @_);
 }
 
