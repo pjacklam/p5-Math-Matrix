@@ -33,7 +33,7 @@ my %WriteMakefileArgs =
    # it.
 
    'TEST_REQUIRES'      => {
-                            'Test::More'          => 0.94,
+                            'Test::More'          => 0.82,
                            },
 
    'LICENSE'            => 'perl_5',
