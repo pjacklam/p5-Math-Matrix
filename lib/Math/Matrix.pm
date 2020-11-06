@@ -8,7 +8,7 @@ use warnings;
 use Carp;
 use Scalar::Util 'blessed';
 
-our $VERSION = '0.91';
+our $VERSION = '0.92';
 our $eps = 0.00001;
 
 use overload
@@ -1501,7 +1501,6 @@ sub is_diag {
     croak "Not enough arguments for ", (caller(0))[3] if @_ < 1;
     croak "Too many arguments for ", (caller(0))[3] if @_ > 1;
     my $x = shift;
-
     $x -> is_band(0);
 }
 
@@ -1529,7 +1528,6 @@ sub is_adiag {
     croak "Not enough arguments for ", (caller(0))[3] if @_ < 1;
     croak "Too many arguments for ", (caller(0))[3] if @_ > 1;
     my $x = shift;
-
     $x -> is_aband(0);
 }
 
@@ -1558,7 +1556,6 @@ sub is_tridiag {
     croak "Not enough arguments for ", (caller(0))[3] if @_ < 1;
     croak "Too many arguments for ", (caller(0))[3] if @_ > 1;
     my $x = shift;
-
     $x -> is_band(1);
 }
 
@@ -1587,7 +1584,6 @@ sub is_atridiag {
     croak "Not enough arguments for ", (caller(0))[3] if @_ < 1;
     croak "Too many arguments for ", (caller(0))[3] if @_ > 1;
     my $x = shift;
-
     $x -> is_aband(1);
 }
 
@@ -1616,7 +1612,6 @@ sub is_pentadiag {
     croak "Not enough arguments for ", (caller(0))[3] if @_ < 1;
     croak "Too many arguments for ", (caller(0))[3] if @_ > 1;
     my $x = shift;
-
     $x -> is_band(2);
 }
 
@@ -1646,7 +1641,6 @@ sub is_apentadiag {
     croak "Not enough arguments for ", (caller(0))[3] if @_ < 1;
     croak "Too many arguments for ", (caller(0))[3] if @_ > 1;
     my $x = shift;
-
     $x -> is_aband(2);
 }
 
@@ -1675,7 +1669,6 @@ sub is_heptadiag {
     croak "Not enough arguments for ", (caller(0))[3] if @_ < 1;
     croak "Too many arguments for ", (caller(0))[3] if @_ > 1;
     my $x = shift;
-
     $x -> is_band(3);
 }
 
@@ -1705,7 +1698,6 @@ sub is_aheptadiag {
     croak "Not enough arguments for ", (caller(0))[3] if @_ < 1;
     croak "Too many arguments for ", (caller(0))[3] if @_ > 1;
     my $x = shift;
-
     $x -> is_aband(3);
 }
 
@@ -4117,6 +4109,8 @@ than
 
     $w = $x -> mmul($y) -> madd($z);
 
+This method can be used to improve the solution of linear systems.
+
 =cut
 
 sub mmuladd {
@@ -4349,6 +4343,19 @@ sub spow {
 
 =over 4
 
+=item inv()
+
+This is an alias for C<L</minv()>>.
+
+=cut
+
+sub inv {
+    my $x = shift;
+    $x -> minv();
+}
+
+=pod
+
 =item invert()
 
 Invert a Matrix using C<solve>.
@@ -4366,17 +4373,418 @@ sub invert {
 
 =pod
 
+=item minv()
+
+Matrix inverse. Invert a matrix.
+
+    $y = $x -> inv();
+
+See the section L</IMPROVING THE SOLUTION OF LINEAR SYSTEMS> for a list of
+additional parameters that can be used for trying to obtain a better solution
+through iteration.
+
+=cut
+
+sub minv {
+    croak "Not enough arguments for ", (caller(0))[3] if @_ < 1;
+    #croak "Too many arguments for ", (caller(0))[3] if @_ > 1;
+    my $x = shift;
+    my $class = ref $x;
+
+    my $n = $x -> nrow();
+    return $class -> id($n) -> mldiv($x, @_);
+}
+
+=pod
+
+=item sinv()
+
+Scalar (element by element) inverse. Invert each element in a matrix.
+
+    $y = $x -> sinv();
+
+=cut
+
+sub sinv {
+    croak "Not enough arguments for ", (caller(0))[3] if @_ < 1;
+    croak "Too many arguments for ", (caller(0))[3] if @_ > 1;
+    my $x = shift;
+
+    bless [ map [ map 1/$_, @$_ ], @$x ], ref $x;
+}
+
+=pod
+
+=item mldiv()
+
+Matrix left division. Returns the solution x of the linear system of equations
+A*x = y, by computing A^(-1)*y.
+
+    $x = $y -> mldiv($A);
+
+This method also handles overdetermined and underdetermined systems. There are
+three cases
+
+=over 4
+
+=item *
+
+If A is a square matrix, then
+
+    x = A\y = inv(A)*y
+
+so that A*x = y to within round-off accuracy.
+
+=item *
+
+If A is an M-by-N matrix where M > N, then A\y is computed as
+
+    A\y = (A'*A)\(A'*y) = inv(A'*A)*(A'*y)
+
+where A' denotes the transpose of A. The returned matrix is the least squares
+solution to the linear system of equations A*x = y, if it exists. The matrix
+A'*A must be non-singular.
+
+=item *
+
+If A is an where M < N, then A\y is computed as
+
+    A\y = A'*((A*A')\y)
+
+This solution is not unique. The matrix A*A' must be non-singular.
+
+=back
+
+See the section L</IMPROVING THE SOLUTION OF LINEAR SYSTEMS> for a list of
+additional parameters that can be used for trying to obtain a better solution
+through iteration.
+
+=cut
+
+sub mldiv {
+    croak "Not enough arguments for ", (caller(0))[3] if @_ < 2;
+    #croak "Too many arguments for ", (caller(0))[3] if @_ > 2;
+    my $y = shift;
+    my $class = ref $y;
+
+    my $A = shift;
+    $A = $class -> new($A) unless defined(blessed($A)) && $A -> isa($class);
+
+    my ($m, $n) = $A -> size();
+
+    if ($m > $n) {
+
+        # If A is an M-by-N matrix where M > N, i.e., an overdetermined system,
+        # compute (A'*A)\(A'*y) by doing a one level deep recursion.
+
+        my $At = $A -> transpose();
+        return $At -> mmul($y) -> mldiv($At -> mmul($A), @_);
+
+    } elsif ($m < $n) {
+
+        # If A is an M-by-N matrix where M < N, i.e., and underdetermined
+        # system, compute A'*((A*A')\y) by doing a one level deep recursion.
+        # This solution is not unique.
+
+        my $At = $A -> transpose();
+        return $At -> mldiv($At -> mmul($A), @_);
+    }
+
+    # If extra arguments are given ...
+
+    if (@_) {
+
+        require Config;
+        my $max_iter = 20;
+        my $rel_tol  = ($Config::Config{uselongdouble} ||
+                        $Config::Config{usequadmath}) ? 1e-19 : 1e-9;
+        my $abs_tol  = 0;
+        my $debug;
+
+        while (@_) {
+            my $param = shift;
+            croak "parameter name can not be undefined" unless defined $param;
+
+            croak "missing value for parameter '$param'" unless @_;
+            my $value = shift;
+
+            if ($param eq 'MaxIter') {
+                croak "value for parameter 'MaxIter' can not be undefined"
+                  unless defined $value;
+                croak "value for parameter 'MaxIter' must be a positive integer"
+                  unless $value > 0 && $value == int $value;
+                $max_iter = $value;
+                next;
+            }
+
+            if ($param eq 'RelTol') {
+                croak "value for parameter 'RelTol' can not be undefined"
+                  unless defined $value;
+                croak "value for parameter 'RelTol' must be non-negative"
+                  unless $value >= 0;
+                $rel_tol = $value;
+                next;
+            }
+
+            if ($param eq 'AbsTol') {
+                croak "value for parameter 'AbsTol' can not be undefined"
+                  unless defined $value;
+                croak "value for parameter 'AbsTol' must be non-negative"
+                  unless $value >= 0;
+                $abs_tol = $value;
+                next;
+            }
+
+            if ($param eq 'Debug') {
+                $debug = $value;
+                next;
+            }
+
+            croak "unknown parameter '$param'";
+        }
+
+        if ($debug) {
+            printf "\n";
+            printf "max_iter = %24d\n", $max_iter;
+            printf "rel_tol  = %24.15e\n", $rel_tol;
+            printf "abs_tol  = %24.15e\n", $abs_tol;
+        }
+
+        my $y_norm = _hypot(map { @$_ } @$y);
+
+        my $x = $y -> mldiv($A);
+
+        my $x_best;
+        my $iter_best;
+        my $abs_err_best;
+        my $rel_err_best;
+
+        for (my $iter = 1 ; ; $iter++) {
+
+            # Compute the residuals.
+
+            my $r = $A -> mmuladd($x, -$y);
+
+            # Compute the errors.
+
+            my $r_norm  = _hypot(map @$_, @$r);
+            my $abs_err = $r_norm;
+            my $rel_err = $y_norm == 0 ? $r_norm : $r_norm / $y_norm;
+
+            if ($debug) {
+                printf "\n";
+                printf "iter     = %24d\n", $iter;
+                printf "r_norm   = %24.15e\n", $r_norm;
+                printf "y_norm   = %24.15e\n", $y_norm;
+                printf "abs_err  = %24.15e\n", $abs_err;
+                printf "rel_err  = %24.15e\n", $rel_err;
+            }
+
+            # See if this is the first round or we have an new all-time best.
+
+            if ($iter == 1 ||
+                $abs_err < $abs_err_best ||
+                $rel_err < $rel_err_best)
+            {
+                $x_best       = $x;
+                $iter_best    = $iter;
+                $abs_err_best = $abs_err;
+                $rel_err_best = $rel_err;
+            }
+
+            if ($abs_err_best <= $abs_tol || $rel_err_best <= $rel_tol) {
+                last;
+            } else {
+
+                # If we still haven't got the desired result, but have reached
+                # the maximum number of iterations, display a warning.
+
+                if ($iter == $max_iter) {
+                    carp "mldiv() stopped because the maximum number of",
+                      " iterations (max. iter = $max_iter) was reached without",
+                      " converging to any of the desired tolerances (",
+                      "rel_tol = ", $rel_tol, ", ",
+                      "abs_tol = ", $abs_tol, ").",
+                      " The best iterate (iter. = ", $iter_best, ") has",
+                      " a relative residual of ", $rel_err_best, " and",
+                      " an absolute residual of ", $abs_err_best, ".";
+                    last;
+                }
+            }
+
+            # Compute delta $x.
+
+            my $d = $r -> mldiv($A);
+
+            # Compute the improved solution $x.
+
+            $x -= $d;
+        }
+
+        return $x_best, $rel_err_best, $abs_err_best, $iter_best if wantarray;
+        return $x_best;
+    }
+
+    # If A is an M-by-M, compute A\y directly.
+
+    croak "mldiv(): sizes don't match" unless $y -> nrow() == $n;
+
+    # Create the augmented matrix.
+
+    my $x = $A -> catcol($y);
+
+    # Perform forward elimination.
+
+    my ($rowperm, $colperm);
+    eval { ($x, $rowperm, $colperm) = $x -> felim_fp() };
+    croak "mldiv(): matrix is singular or close to singular" if $@;
+
+    # Perform backward substitution.
+
+    eval { $x = $x -> bsubs() };
+    croak "mldiv(): matrix is singular or close to singular" if $@;
+
+    # Remove left half to keep only the augmented matrix.
+
+    $x = $x -> splicecol(0, $n);
+
+    # Reordering the rows is only necessary when full (complete) pivoting is
+    # used above. If partial pivoting is used, this reordeing could be skipped,
+    # but it executes so fast that it causes no harm to do it anyway.
+
+    @$x[ @$colperm ] = @$x;
+
+    return $x;
+}
+
+=pod
+
+=item sldiv()
+
+Scalar (left) division.
+
+    $x -> sldiv($y);
+
+For scalars, there is no difference between left and right division, so this is
+just an alias for C<L</sdiv()>>.
+
+=cut
+
+sub sldiv {
+    my $x = shift;
+    $x -> sdiv(@_)
+}
+
+=pod
+
+=item mrdiv()
+
+Matrix right division. Returns the solution x of the linear system of equations
+x*A = y, by computing x = y/A = y*inv(A) = (A'\y')', where A' and y' denote the
+transpose of A and y, respectively, and \ is matrix left division (see
+C<L</mldiv()>>).
+
+    $x = $y -> mrdiv($A);
+
+See the section L</IMPROVING THE SOLUTION OF LINEAR SYSTEMS> for a list of
+additional parameters that can be used for trying to obtain a better solution
+through iteration.
+
+=cut
+
+sub mrdiv {
+    croak "Not enough arguments for ", (caller(0))[3] if @_ < 2;
+    #croak "Too many arguments for ", (caller(0))[3] if @_ > 2;
+    my $y = shift;
+    my $class = ref $y;
+
+    my $A = shift;
+    $A = $class -> new($A) unless defined(blessed($A)) && $A -> isa($class);
+
+    $y -> transpose() -> mldiv($A -> transpose(), @_) -> transpose();
+}
+
+=pod
+
+=item srdiv()
+
+Scalar (right) division.
+
+    $x -> srdiv($y);
+
+For scalars, there is no difference between left and right division, so this is
+just an alias for C<L</sdiv()>>.
+
+=cut
+
+sub srdiv {
+    my $x = shift;
+    $x -> sdiv(@_)
+}
+
+=pod
+
+=item sdiv()
+
+Scalar division. Performs scalar (element by element) division.
+
+    $x -> sdiv($y);
+
+=cut
+
+sub sdiv {
+    croak "Not enough arguments for ", (caller(0))[3] if @_ < 2;
+    croak "Too many arguments for ", (caller(0))[3] if @_ > 2;
+    my $x = shift;
+
+    my $sub = sub { $_[0] / $_[1] };
+    $x -> sapply($sub, @_);
+}
+
+=pod
+
+=item mpinv()
+
+Matrix pseudo-inverse, C<(A'*A)^(-1)*A'>, where "C<'>" is the transpose
+operator.
+
+See the section L</IMPROVING THE SOLUTION OF LINEAR SYSTEMS> for a list of
+additional parameters that can be used for trying to obtain a better solution
+through iteration.
+
+=cut
+
+sub mpinv {
+    my $A = shift;
+
+    my $At = $A -> transpose();
+    return $At -> mldiv($At -> mmul($A), @_);
+}
+
+=pod
+
+=item pinv()
+
+This is an alias for C<L</mpinv()>>.
+
+=cut
+
+sub pinv {
+    my $x = shift;
+    $x -> mpinv();
+}
+
+=pod
+
 =item pinvert()
 
-Compute the pseudo-inverse of the matrix: ((A'A)^-1)A'
+This is an alias for C<L</mpinv()>>.
 
 =cut
 
 sub pinvert {
-    my $self  = shift;
-    my $m    = $self->clone();
-
-    $m->transpose->multiply($m)->invert->multiply($m->transpose);
+    my $x = shift;
+    $x -> mpinv();
 }
 
 =pod
@@ -4642,17 +5050,77 @@ sub adjugate {
 
 =pod
 
+=item det()
+
+Determinant. Returns the determinant of a matrix. The matrix must be square.
+
+    $y = $x -> det();
+
+The matrix is computed by forward elimination, which might cause round-off
+errors. So for example, the determinant might be a non-integer even for an
+integer matrix.
+
+=cut
+
+sub det {
+    croak "Not enough arguments for ", (caller(0))[3] if @_ < 1;
+    croak "Too many arguments for ", (caller(0))[3] if @_ > 1;
+    my $x = shift;
+    my $class = ref $x;
+
+    my ($nrowx, $ncolx) = $x -> size();
+    croak "matrix must be square" unless $nrowx == $ncolx;
+
+    # Create the augmented matrix.
+
+    $x = $x -> catcol($class -> id($nrowx));
+
+    # Perform forward elimination.
+
+    my ($iperm, $jperm, $iswap, $jswap);
+    eval { ($x, $iperm, $jperm, $iswap, $jswap) = $x -> felim_fp() };
+
+    # Compute the product of the elements on the diagonal.
+
+    my $det = 1;
+    for (my $i = 0 ; $i < $nrowx ; ++$i) {
+        last if ($det *= $x -> [$i][$i]) == 0;
+    }
+
+    # Adjust the sign according to the number of inversions.
+
+    $det = ($iswap + $jswap) % 2 ? -$det : $det;
+
+    return $det;
+}
+
+=pod
+
 =item determinant()
+
+This is an alias for C<L</det()>>.
+
+=cut
+
+sub determinant {
+    my $x = shift;
+    $x -> det(@_);
+}
+
+=pod
+
+=item detr()
 
 Determinant. Returns the determinant of a matrix. The matrix must be square.
 
     $y = $x -> determinant();
 
-The matrix is computed by recursion.
+The determinant is computed by recursion, so it is generally much slower than
+C<L</det()>>.
 
 =cut
 
-sub determinant {
+sub detr {
     my $x = shift;
     my $class = ref($x);
     my $imax = $#$x;
@@ -5643,7 +6111,8 @@ sub as_string {
 
 =item as_array()
 
-Returns the matrix as an unblessed Perl ARRAY, i.e., and ordinary reference.
+Returns the matrix as an unblessed Perl array, i.e., and ordinary, unblessed
+reference.
 
     $y = $x -> as_array();      # ref($y) returns 'ARRAY'
 
@@ -5659,6 +6128,8 @@ sub as_array {
 =back
 
 =head2 Matrix utilities
+
+=head3 Apply a subroutine to each element
 
 =over 4
 
@@ -5928,6 +6399,624 @@ sub sapply {
 
 =back
 
+=head3 Forward elimination
+
+These methods take a matrix as input, performs forward elimination, and returns
+a matrix where all elements below the main diagonal are zero. In list context,
+four additional arguments are returned: an array with the row permutations, an
+array with the column permutations, an integer with the number of row swaps and
+an integer with the number of column swaps performed during elimination.
+
+The permutation vectors can be converted to permutation matrices with
+C<L</to_permmat()>>.
+
+=over
+
+=item felim_np()
+
+Perform forward elimination with no pivoting.
+
+    $y = $x -> felim_np();
+
+Forward elimination without pivoting may fail even when the matrix is
+non-singular.
+
+This method is provided mostly for illustration purposes.
+
+=cut
+
+sub felim_np {
+    croak "Not enough arguments for ", (caller(0))[3] if @_ < 1;
+    croak "Too many arguments for ", (caller(0))[3] if @_ > 1;
+    my $x = shift;
+
+    $x = $x -> clone();
+    my $nrow = $x -> nrow();
+    my $ncol = $x -> ncol();
+
+    my $imax = $nrow - 1;
+    my $jmax = $ncol - 1;
+
+    my $iperm = [ 0 .. $imax ];         # row permutation vector
+    my $jperm = [ 0 .. $imax ];         # column permutation vector
+    my $iswap = 0;                      # number of row swaps
+    my $jswap = 0;                      # number of column swaps
+
+    my $debug = 0;
+
+    printf "\nfelim_np(): before 0:\n\n%s\n", $x if $debug;
+
+    for (my $i = 0 ; $i <= $imax && $i <= $jmax ; ++$i) {
+
+        # The so far remaining unreduced submatrix starts at element ($i,$i).
+
+        # Skip this round, if all elements below (i,i) are zero.
+
+        my $saw_non_zero = 0;
+        for (my $u = $i + 1 ; $u <= $imax ; ++$u) {
+            if ($x->[$u][$i] != 0) {
+                $saw_non_zero = 1;
+                last;
+            }
+        }
+        next unless $saw_non_zero;
+
+        # Since we don't use pivoting, element ($i,$i) must be non-zero.
+
+        if ($x->[$i][$i] == 0) {
+            croak "No pivot element found for row $i";
+        }
+
+        # Subtract row $i from each row $u below $i.
+
+        for (my $u = $i + 1 ; $u <= $imax ; ++$u) {
+            for (my $j = $jmax ; $j >= $i ; --$j) {
+                $x->[$u][$j] -= ($x->[$i][$j] * $x->[$u][$i]) / $x->[$i][$i];
+            }
+
+            # In case of round-off errors.
+
+            $x->[$u][$i] *= 0;
+        }
+
+        printf "\nfelim_np(): after %u:\n\n%s\n\n", $i, $x if $debug;
+    }
+
+    return $x, $iperm, $jperm, $iswap, $jswap if wantarray;
+    return $x;
+}
+
+=pod
+
+=item felim_tp()
+
+Perform forward elimination with trivial pivoting, a variant of partial
+pivoting.
+
+    $y = $x -> felim_tp();
+
+If A is a p-by-q matrix, and the so far remaining unreduced submatrix starts at
+element (i,i), the pivot element is the first element in column i that is
+non-zero.
+
+This method is provided mostly for illustration purposes.
+
+=cut
+
+sub felim_tp {
+    croak "Not enough arguments for ", (caller(0))[3] if @_ < 1;
+    croak "Too many arguments for ", (caller(0))[3] if @_ > 1;
+    my $x = shift;
+
+    croak "felim_tp(): too many input arguments" if @_ > 0;
+
+    $x = $x -> clone();
+    my $nrow = $x -> nrow();
+    my $ncol = $x -> ncol();
+
+    my $imax = $nrow - 1;
+    my $jmax = $ncol - 1;
+
+    my $iperm = [ 0 .. $imax ];         # row permutation vector
+    my $jperm = [ 0 .. $imax ];         # column permutation vector
+    my $iswap = 0;                      # number of row swaps
+    my $jswap = 0;                      # number of column swaps
+
+    my $debug = 0;
+
+    printf "\nfelim_tp(): before 0:\n\n%s\n", $x if $debug;
+
+    for (my $i = 0 ; $i <= $imax && $i <= $jmax ; ++$i) {
+
+        # The so far remaining unreduced submatrix starts at element ($i,$i).
+
+        # Skip this round, if all elements below (i,i) are zero.
+
+        my $saw_non_zero = 0;
+        for (my $u = $i + 1 ; $u <= $imax ; ++$u) {
+            if ($x->[$u][$i] != 0) {
+                $saw_non_zero = 1;
+                last;
+            }
+        }
+        next unless $saw_non_zero;
+
+        # The pivot element is the first element in column $i (in the unreduced
+        # submatrix) that is non-zero.
+
+        my $p;          # index of pivot row
+
+        for (my $u = $i ; $u <= $imax ; ++$u) {
+            if ($x->[$u][$i] != 0) {
+                $p = $u;
+                last;
+            }
+        }
+
+        printf "\nfelim_tp(): pivot element is (%u,%u)\n", $p, $i if $debug;
+
+        # Swap rows $i and $p.
+
+        if ($p != $i) {
+            ($x->[$i], $x->[$p]) = ($x->[$p], $x->[$i]);
+            ($iperm->[$i], $iperm->[$p]) = ($iperm->[$p], $iperm->[$i]);
+            $iswap++;
+        }
+
+        # Subtract row $i from all following rows.
+
+        for (my $u = $i + 1 ; $u <= $imax ; ++$u) {
+
+            for (my $j = $jmax ; $j >= $i ; --$j) {
+                $x->[$u][$j] -= ($x->[$i][$j] * $x->[$u][$i]) / $x->[$i][$i];
+            }
+
+            # In case of round-off errors.
+
+            $x->[$u][$i] *= 0;
+        }
+
+        printf "\nfelim_tp(): after %u:\n\n%s\n\n", $i, $x if $debug;
+    }
+
+    return $x, $iperm, $jperm, $iswap, $jswap if wantarray;
+    return $x;
+}
+
+=pod
+
+=item felim_pp()
+
+Perform forward elimination with (unscaled) partial pivoting.
+
+    $y = $x -> felim_pp();
+
+If A is a p-by-q matrix, and the so far remaining unreduced submatrix starts at
+element (i,i), the pivot element is the element in column i that has the largest
+absolute value.
+
+This method is provided mostly for illustration purposes.
+
+=cut
+
+sub felim_pp {
+    croak "Not enough arguments for ", (caller(0))[3] if @_ < 1;
+    croak "Too many arguments for ", (caller(0))[3] if @_ > 1;
+    my $x = shift;
+
+    croak "felim_pp(): too many input arguments" if @_ > 0;
+
+    $x = $x -> clone();
+    my $nrow = $x -> nrow();
+    my $ncol = $x -> ncol();
+
+    my $imax = $nrow - 1;
+    my $jmax = $ncol - 1;
+
+    my $iperm = [ 0 .. $imax ];         # row permutation vector
+    my $jperm = [ 0 .. $imax ];         # column permutation vector
+    my $iswap = 0;                      # number of row swaps
+    my $jswap = 0;                      # number of column swaps
+
+    my $debug = 0;
+
+    printf "\nfelim_pp(): before 0:\n\n%s\n", $x if $debug;
+
+    for (my $i = 0 ; $i <= $imax && $i <= $jmax ; ++$i) {
+
+        # The so far remaining unreduced submatrix starts at element ($i,$i).
+
+        # Skip this round, if all elements below (i,i) are zero.
+
+        my $saw_non_zero = 0;
+        for (my $u = $i + 1 ; $u <= $imax ; ++$u) {
+            if ($x->[$u][$i] != 0) {
+                $saw_non_zero = 1;
+                last;
+            }
+        }
+        next unless $saw_non_zero;
+
+        # The pivot element is the element in column $i (in the unreduced
+        # submatrix) that has the largest absolute value.
+
+        my $p;                  # index of pivot row
+        my $max_abs_val = 0;
+
+        for (my $u = $i ; $u <= $imax ; ++$u) {
+            my $abs_val = CORE::abs($x->[$u][$i]);
+            if ($abs_val > $max_abs_val) {
+                $max_abs_val = $abs_val;
+                $p = $u;
+            }
+        }
+
+        printf "\nfelim_pp(): pivot element is (%u,%u)\n", $p, $i if $debug;
+
+        # Swap rows $i and $p.
+
+        if ($p != $i) {
+            ($x->[$p], $x->[$i]) = ($x->[$i], $x->[$p]);
+            ($iperm->[$p], $iperm->[$i]) = ($iperm->[$i], $iperm->[$p]);
+            $iswap++;
+        }
+
+        # Subtract row $i from all following rows.
+
+        for (my $u = $i + 1 ; $u <= $imax ; ++$u) {
+
+            for (my $j = $jmax ; $j >= $i ; --$j) {
+                $x->[$u][$j] -= ($x->[$i][$j] * $x->[$u][$i]) / $x->[$i][$i];
+            }
+
+            # In case of round-off errors.
+
+            $x->[$u][$i] *= 0;
+        }
+
+        printf "\nfelim_pp(): after %u:\n\n%s\n\n", $i, $x if $debug;
+    }
+
+    return $x, $iperm, $jperm, $iswap, $jswap if wantarray;
+    return $x;
+}
+
+=pod
+
+=item felim_sp()
+
+Perform forward elimination with scaled pivoting, a variant of partial pivoting.
+
+    $y = $x -> felim_sp();
+
+If A is a p-by-q matrix, and the so far remaining unreduced submatrix starts at
+element (i,i), the pivot element is the element in column i that has the largest
+absolute value relative to the other elements on the same row.
+
+=cut
+
+sub felim_sp {
+    croak "Not enough arguments for ", (caller(0))[3] if @_ < 1;
+    croak "Too many arguments for ", (caller(0))[3] if @_ > 1;
+    my $x = shift;
+
+    croak "felim_sp(): too many input arguments" if @_ > 0;
+
+    $x = $x -> clone();
+    my $nrow = $x -> nrow();
+    my $ncol = $x -> ncol();
+
+    my $imax = $nrow - 1;
+    my $jmax = $ncol - 1;
+
+    my $iperm = [ 0 .. $imax ];         # row permutation vector
+    my $jperm = [ 0 .. $imax ];         # column permutation vector
+    my $iswap = 0;                      # number of row swaps
+    my $jswap = 0;                      # number of column swaps
+
+    my $debug = 0;
+
+    printf "\nfelim_sp(): before 0:\n\n%s\n", $x if $debug;
+
+    for (my $i = 0 ; $i <= $imax && $i <= $jmax ; ++$i) {
+
+        # The so far remaining unreduced submatrix starts at element ($i,$i).
+
+        # Skip this round, if all elements below (i,i) are zero.
+
+        my $saw_non_zero = 0;
+        for (my $u = $i + 1 ; $u <= $imax ; ++$u) {
+            if ($x->[$u][$i] != 0) {
+                $saw_non_zero = 1;
+                last;
+            }
+        }
+        next unless $saw_non_zero;
+
+        # The pivot element is the element in column $i (in the unreduced
+        # submatrix) that has the largest absolute value relative to the other
+        # elements on the same row.
+
+        my $p;
+        my $max_abs_ratio = 0;
+
+        for (my $u = $i ; $u <= $imax ; ++$u) {
+
+            # Find the element with the largest absolute value in row $u.
+
+            my $max_abs_val = 0;
+            for (my $v = $i ; $v <= $jmax ; ++$v) {
+                my $abs_val = CORE::abs($x->[$u][$v]);
+                $max_abs_val = $abs_val if $abs_val > $max_abs_val;
+            }
+
+            next if $max_abs_val == 0;
+
+            # Find the ratio for this row and see if it the best so far.
+
+            my $abs_ratio = CORE::abs($x->[$u][$i]) / $max_abs_val;
+            #croak "column ", $i + 1, " has only zeros"
+            #  if $ratio == 0;
+
+            if ($abs_ratio > $max_abs_ratio) {
+                $max_abs_ratio = $abs_ratio;
+                $p = $u;
+            }
+
+        }
+
+        printf "\nfelim_sp(): pivot element is (%u,%u)\n", $p, $i if $debug;
+
+        # Swap rows $i and $p.
+
+        if ($p != $i) {
+            ($x->[$p], $x->[$i]) = ($x->[$i], $x->[$p]);
+            ($iperm->[$p], $iperm->[$i]) = ($iperm->[$i], $iperm->[$p]);
+            $iswap++;
+        }
+
+        # Subtract row $i from all following rows.
+
+        for (my $u = $i + 1 ; $u <= $imax ; ++$u) {
+
+            for (my $j = $jmax ; $j >= $i ; --$j) {
+                $x->[$u][$j] -= ($x->[$i][$j] * $x->[$u][$i]) / $x->[$i][$i];
+            }
+
+            # In case of round-off errors.
+
+            $x->[$u][$i] *= 0;
+        }
+
+        printf "\nfelim_sp(): after %u:\n\n%s\n\n", $i, $x if $debug;
+    }
+
+    return $x, $iperm, $jperm, $iswap, $jswap if wantarray;
+    return $x;
+}
+
+=pod
+
+=item felim_fp()
+
+Performs forward elimination with full pivoting.
+
+    $y = $x -> felim_fp();
+
+The elimination is done with full pivoting, also called complete pivoting or
+total pivoting. If A is a p-by-q matrix, and the so far remaining unreduced
+submatrix starts at element (i,i), the pivot element is the element in the whole
+submatrix that has the largest absolute value. With full pivoting, both rows and
+columns might be swapped.
+
+=cut
+
+sub felim_fp {
+    croak "Not enough arguments for ", (caller(0))[3] if @_ < 1;
+    croak "Too many arguments for ", (caller(0))[3] if @_ > 1;
+    my $x = shift;
+
+    croak "felim_fp(): too many input arguments" if @_ > 0;
+
+    $x = $x -> clone();
+    my $nrow = $x -> nrow();
+    my $ncol = $x -> ncol();
+
+    my $imax = $nrow - 1;
+    my $jmax = $ncol - 1;
+
+    my $iperm = [ 0 .. $imax ];         # row permutation vector
+    my $jperm = [ 0 .. $imax ];         # column permutation vector
+    my $iswap = 0;                      # number of row swaps
+    my $jswap = 0;                      # number of column swaps
+
+    my $debug = 0;
+
+    printf "\nfelim_fp(): before 0:\n\n%s\n", $x if $debug;
+
+    for (my $i = 0 ; $i <= $imax && $i <= $jmax ; ++$i) {
+
+        # The so far remaining unreduced submatrix starts at element ($i,$i).
+        # The pivot element is the element in the whole submatrix that has the
+        # largest absolute value.
+
+        my $p;                  # index of pivot row
+        my $q;                  # index of pivot column
+
+        # Loop over each row and column in the submatrix to find the element
+        # with the largest absolute value.
+
+        my $max_abs_val = 0;
+        for (my $u = $i ; $u <= $imax ; ++$u) {
+            for (my $v = $i ; $v <= $imax && $v <= $jmax ; ++$v) {
+                my $abs_val = CORE::abs($x->[$u][$v]);
+                if ($abs_val > $max_abs_val) {
+                    $max_abs_val = $abs_val;
+                    $p = $u;
+                    $q = $v;
+                }
+            }
+        }
+
+        # If we didn't find a pivot element, it means that the so far unreduced
+        # submatrix contains zeros only, in which case we're done.
+
+        last unless defined $p;
+
+        printf "\nfelim_fp(): pivot element is (%u,%u)\n", $p, $q if $debug;
+
+        # Swap rows $i and $p.
+
+        if ($p != $i) {
+            printf "\nfelim_fp(): swapping rows %u and %u\n", $p, $i if $debug;
+            printf "\nfrom this:\n\n%s\n", $x if $debug;
+            ($x->[$p], $x->[$i]) = ($x->[$i], $x->[$p]);
+            printf "\nto this:\n\n%s\n", $x if $debug;
+            ($iperm->[$p], $iperm->[$i]) = ($iperm->[$i], $iperm->[$p]);
+            $iswap++;
+        }
+
+        # Swap columns $i and $q.
+
+        if ($q != $i) {
+            printf "\nfelim_fp(): swapping columns %u and %u\n", $q, $i if $debug;
+            printf "\nfrom this:\n\n%s\n", $x if $debug;
+            for (my $u = 0 ; $u <= $imax ; ++$u) {
+                ($x->[$u][$q], $x->[$u][$i]) = ($x->[$u][$i], $x->[$u][$q]);
+            }
+            printf "\nto this:\n\n%s\n", $x if $debug;
+            ($jperm->[$q], $jperm->[$i]) = ($jperm->[$i], $jperm->[$q]);
+            $jswap++;
+        }
+
+        # Subtract row $i from all following rows.
+
+        for (my $u = $i + 1 ; $u <= $imax ; ++$u) {
+
+            for (my $j = $jmax ; $j >= $i ; --$j) {
+                $x->[$u][$j] -= ($x->[$i][$j] * $x->[$u][$i]) / $x->[$i][$i];
+            }
+
+            # In case of round-off errors.
+
+            $x->[$u][$i] *= 0;
+        }
+
+        printf "\nfelim_fp(): after %u:\n\n%s\n\n", $i, $x if $debug;
+    }
+
+    return $x, $iperm, $jperm, $iswap, $jswap if wantarray;
+    return $x;
+}
+
+=pod
+
+=back
+
+=head3 Back-substitution
+
+=over 4
+
+=item bsubs()
+
+Performs back-substitution.
+
+    $y = $x -> bsubs();
+
+The leftmost square portion of the matrix must be upper triangular.
+
+=cut
+
+sub bsubs {
+    croak "Not enough arguments for ", (caller(0))[3] if @_ < 1;
+    croak "Too many arguments for ", (caller(0))[3] if @_ > 1;
+    my $x = shift;
+
+    croak "bsubs(): too many input arguments" if @_ > 0;
+
+    my $nrow = $x -> nrow();
+    my $ncol = $x -> ncol();
+
+    my $imax = $nrow - 1;
+    my $jmax = $ncol - 1;
+
+    my $debug = 0;
+
+    printf "\nbsubs(): before 0:\n\n%s\n", $x if $debug;
+
+    for (my $i = 0 ; $i <= $imax ; ++$i) {
+
+        # Check the elements below ($i,$i). They should all be zero.
+
+        for (my $k = $i + 1 ; $k <= $imax ; ++$k) {
+            croak "matrix is not upper triangular; element ($i,$i) is non-zero"
+              unless $x->[$k][$i] == 0;
+        }
+
+        # There is no rows above the first row to perform back-substitution on.
+
+        next if $i == 0;
+
+        # If the element on the diagonal is zero, we can't use it to perform
+        # back-substitution. However, this is not a problem if all the elements
+        # above ($i,$i) are zero.
+
+        if ($x->[$i][$i] == 0) {
+            my $non_zero = 0;
+            my $k;
+            for ($k = 0 ; $k < $i ; ++$k) {
+                if ($x->[$k][$i] != 0) {
+                    $non_zero++;
+                    last;
+                }
+            }
+            if ($non_zero) {
+                croak "bsubs(): back substitution failed; diagonal element",
+                  " ($i,$i) is zero, but ($k,$i) isn't";
+                next;
+            }
+        }
+
+        # Subtract row $i from each row $u above row $i.
+
+        for (my $u = $i - 1 ; $u >= 0 ; --$u) {
+
+            # From row $u subtract $c times of row $i.
+
+            my $c = $x->[$u][$i] / $x->[$i][$i];
+
+            for (my $j = $jmax ; $j >= $i ; --$j) {
+                $x->[$u][$j] -= $c * $x->[$i][$j];
+            }
+
+            # In case of round-off errors.  (Will they ever happen?)
+
+            $x->[$u][$i] *= 0;
+        }
+
+        printf "\nbsubs(): after %u:\n\n%s\n\n", $i, $x if $debug;
+    }
+
+    # Normalise.
+
+    for (my $i = 0 ; $i <= $imax ; ++$i) {
+        next if $x->[$i][$i] == 1;      # row is already normalized
+        next if $x->[$i][$i] == 0;      # row can't be normalized
+        for (my $j = $imax + 1 ; $j <= $jmax ; ++$j) {
+            $x->[$i][$j] /= $x->[$i][$i];
+        }
+        $x->[$i][$i] = 1;
+    }
+
+    printf "\nbsubs(): after normalisation:\n\n%s\n\n", $x if $debug;
+
+    return $x;
+}
+
+=pod
+
+=back
+
 =head2 Miscellaneous methods
 
 =over 4
@@ -5997,6 +7086,7 @@ sub _prod {
 # Method for finding the mean.
 
 sub _mean {
+    return 0 unless @_;
     _sum(@_) / @_;
 }
 
@@ -6017,10 +7107,8 @@ sub _hypot {
 
     # Compute the maximum value.
 
-    my $max = 0;
-    for (@x) {
-        $max = $_ if $_ > $max;
-    }
+    my $max = _max(@x);
+    return 0 if $max == 0;
 
     # Scale and square the values.
 
@@ -6032,9 +7120,51 @@ sub _hypot {
     $max * sqrt(_sum(@x))
 }
 
+# _sumsq LIST
+#
+# Sum of squared absolute values.
+
+sub _sumsq {
+    _sum(map { $_ * $_ } map { CORE::abs($_) } @_);
+}
+
+# _vecnorm P, LIST
+#
+# Vector P-norm. If the input is $x[0], $x[1], ..., then the output is
+#
+#   (abs($x[0])**$p + abs($x[1])**$p + ...)**(1/$p)
+
+sub _vecnorm {
+    my $p = shift;
+    my @x = map { CORE::abs($_) } @_;
+
+    return _sum(@x) if $p == 1;
+
+    require Math::Trig;
+    my $inf = Math::Trig::Inf();
+
+    return _max(@x) if $p == $inf;
+
+    # Compute the maximum value.
+
+    my $max = 0;
+    for (@x) {
+        $max = $_ if $_ > $max;
+    }
+
+    # Scale and apply power function.
+
+    for (@x) {
+        $_ /= $max;
+        $_ **= $p;
+    }
+
+    $max * _sum(@x) ** (1/$p);
+}
+
 # _min LIST
 #
-# Method for finding the minimum value.
+# Minimum value.
 
 sub _min {
     my $min = shift;
@@ -6047,15 +7177,15 @@ sub _min {
 
 # _max LIST
 #
-# Method for finding the maximum value.
+# Maximum value.
 
 sub _max {
-    my $min = shift;
+    my $max = shift;
     for (@_) {
-        $min = $_ if $_ > $min;
+        $max = $_ if $_ > $max;
     }
 
-    return $min;
+    return $max;
 }
 
 # _median LIST
@@ -6094,6 +7224,11 @@ sub _all {
     return 1;
 }
 
+# _cumsum LIST
+#
+# Cumulative sum. If the input is $x[0], $x[1], ..., then output element $y[$i]
+# is the sum of the elements $x[0], $x[1], ..., $x[$i].
+
 sub _cumsum {
     my @sum = ();
 
@@ -6114,11 +7249,21 @@ sub _cumsum {
     return @sum;
 }
 
+# _cumprod LIST
+#
+# Cumulative product. If the input is $x[0], $x[1], ..., then output element
+# $y[$i] is the product of the elements $x[0], $x[1], ..., $x[$i].
+
 sub _cumprod {
     my @prod = shift;
     push @prod, $prod[-1] * $_ for @_;
     return @prod;
 }
+
+# _cummean LIST
+#
+# Cumulative mean. If the input is $x[0], $x[1], ..., then output element $y[$i]
+# is the mean of the elements $x[0], $x[1], ..., $x[$i].
 
 sub _cummean {
     my @mean = ();
@@ -6130,6 +7275,11 @@ sub _cummean {
     return @mean;
 }
 
+# _cummean LIST
+#
+# Cumulative minimum. If the input is $x[0], $x[1], ..., then output element
+# $y[$i] is the minimum of the elements $x[0], $x[1], ..., $x[$i].
+
 sub _cummin {
     my @min = shift;
     for (@_) {
@@ -6138,6 +7288,11 @@ sub _cummin {
     return @min;
 }
 
+# _cummax LIST
+#
+# Cumulative maximum. If the input is $x[0], $x[1], ..., then output element
+# $y[$i] is the maximum of the elements $x[0], $x[1], ..., $x[$i].
+
 sub _cummax {
     my @max = shift;
     for (@_) {
@@ -6145,6 +7300,12 @@ sub _cummax {
     }
     return @max;
 }
+
+# _cumany LIST
+#
+# Cumulative any. If the input is $x[0], $x[1], ..., then output element $y[$i]
+# is 1 if at least one of the elements $x[0], $x[1], ..., $x[$i] is non-zero,
+# and 0 otherwise.
 
 sub _cumany {
     my @any = ();
@@ -6158,6 +7319,12 @@ sub _cumany {
     return @any;
 }
 
+# _cumall LIST
+#
+# Cumulative all. If the input is $x[0], $x[1], ..., then output element $y[$i]
+# is 1 if all of the elements $x[0], $x[1], ..., $x[$i] are non-zero, and 0
+# otherwise.
+
 sub _cumall {
     my @all = ();
     for (@_) {
@@ -6170,40 +7337,17 @@ sub _cumall {
     return @all;
 }
 
+# _diff LIST
+#
+# Difference. If the input is $x[0], $x[1], ..., then output element $y[$i] =
+# $x[$i+1] - $x[$i].
+
 sub _diff {
     my @diff = ();
     for my $i (1 .. $#_) {
         push @diff, $_[$i] - $_[$i - 1];
     }
     return @diff;
-}
-
-sub _vecnorm {
-    my $p = shift;
-    my @x = map { CORE::abs($_) } @_;
-
-    return _sum(@x) if $p == 1;
-
-    require Math::Trig;
-    my $inf = Math::Trig::Inf();
-
-    return _max(@x) if $p == $inf;
-
-    # Compute the maximum value.
-
-    my $max = 0;
-    for (@x) {
-        $max = $_ if $_ > $max;
-    }
-
-    # Scale and apply power function.
-
-    for (@x) {
-        $_ /= $max;
-        $_ **= $p;
-    }
-
-    $max * (_sum(@x)) ** (1/$p);
 }
 
 =pod
@@ -6288,15 +7432,140 @@ Truncate to integer.
 
 =back
 
+=head1 IMPROVING THE SOLUTION OF LINEAR SYSTEMS
+
+The methods that do an explicit or implicit matrix left division accept some
+additional parameters. If these parameters are specified, the matrix left
+division is done repeatedly in an iterative way, which often gives a better
+solution.
+
+=head2 Background
+
+The linear system of equations
+
+    $A * $x = $y
+
+can be solved for C<$x> with
+
+    $x = $y -> mldiv($A);
+
+Ideally C<$A * $x> should equal C<$y>, but due to numerical errors, this is not
+always the case. The following illustrates how to improve the solution C<$x>
+computed above:
+
+    $r = $A -> mmuladd($x, -$y);    # compute the residual $A*$x-$y
+    $d = $r -> mldiv($A);           # compute the delta for $x
+    $x -= $d;                       # improve the solution $x
+
+This procedure is repeated, and at each step, the absolute error
+
+    ||$A*$x - $y|| = ||$r||
+
+and the relative error
+
+    ||$A*$x - $y|| / ||$y|| = ||$r|| / ||$y||
+
+are computed and compared to the tolerances. Once one of the stopping criteria
+is satisfied, the algorithm terminates.
+
+=head2 Stopping criteria
+
+The algorithm stops when at least one of the errors are within the specified
+tolerances or the maximum number of iterations is reached. If the maximum number
+of iterations is reached, but noen of the errors are within the tolerances, a
+warning is displayed and the best solution so far is returned.
+
+=head2 Parameters
+
+=over 4
+
+=item MaxIter
+
+The maximum number of iterations to perform. The value must be a positive
+integer. The default is 20.
+
+=item RelTol
+
+The limit for the relative error. The value must be a non-negative. The default
+value is 1e-19 when perl is compiled with long doubles or quadruple precision,
+and 1e-9 otherwise.
+
+=item AbsTol
+
+The limit for the absolute error. The value must be a non-negative. The default
+value is 0.
+
+=item Debug
+
+If this parameter does not affect when the algorithm terminates, but when set to
+non-zero, some information is displayed at each step.
+
+=back
+
+=head2 Example
+
+If
+
+    $A = [[  8, -8, -5,  6, -1,  3 ],
+          [ -7, -1,  5, -9,  5,  6 ],
+          [ -7,  8,  9, -2, -4,  3 ],
+          [  3, -4,  5,  5,  3,  3 ],
+          [  9,  8, -3, -4,  1,  6 ],
+          [ -8,  9, -1,  3,  5,  2 ]];
+
+    $y = [[  80, -13 ],
+          [  -2, 104 ],
+          [ -57, -27 ],
+          [  47, -28 ],
+          [   5,  77 ],
+          [  91, 133 ]];
+
+the result of C<< $x = $y -> mldiv($A); >>, using double precision arithmetic,
+is the approximate solution
+
+    $x = [[ -2.999999999999998, -5.000000000000000 ],
+          [ -1.000000000000000,  3.000000000000001 ],
+          [ -5.999999999999997, -8.999999999999996 ],
+          [  8.000000000000000, -2.000000000000003 ],
+          [  6.000000000000003,  9.000000000000002 ],
+          [  7.999999999999997,  8.999999999999995 ]];
+
+The residual C<< $res = $A -> mmuladd($x, -$y); >> is
+
+    $res = [[  1.24344978758018e-14,  1.77635683940025e-15 ],
+            [  8.88178419700125e-15, -5.32907051820075e-15 ],
+            [ -1.24344978758018e-14,  1.77635683940025e-15 ],
+            [ -7.10542735760100e-15, -4.08562073062058e-14 ],
+            [ -1.77635683940025e-14, -3.81916720471054e-14 ],
+            [  1.24344978758018e-14,  8.43769498715119e-15 ]];
+
+and the delta C<< $dx = $res -> mldiv($A); >> is
+
+    $dx = [[   -8.592098303124e-16, -2.86724066474914e-15 ],
+           [ -7.92220125658508e-16, -2.99693950082398e-15 ],
+           [ -2.22533360993874e-16,  3.03465504177947e-16 ],
+           [  6.47376093198353e-17, -1.12378127899388e-15 ],
+           [  6.35204502123966e-16,  2.40938179521241e-15 ],
+           [  1.55166908001001e-15,  2.08339859425849e-15 ]];
+
+giving the improved, and in this case exact, solution C<< $x -= $dx; >>,
+
+    $x = [[ -3, -5 ],
+          [ -1,  3 ],
+          [ -6, -9 ],
+          [  8, -2 ],
+          [  6,  9 ],
+          [  8,  9 ]];
+
 =head1 SUBCLASSING
 
-The majority of methods work fine with any kind of numerical objects, provided
-that the assignment operator C<=> returns a clone of the object and not just a
-reference to the same object.
+The methods should work fine with any kind of numerical objects, provided that
+the assignment operator C<=> is overloaded, so that Perl knows how to create a
+copy.
 
 You can check the behaviour of the assignment operator by assigning a value to a
 new variable, modify the new variable, and check whether this also modifies the
-original value, like this:
+original value. Here is an example:
 
     $x = Some::Class -> new(0);           # create object $x
     $y = $x;                              # create new variable $y
