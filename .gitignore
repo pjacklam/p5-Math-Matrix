@@ -1,5 +1,6 @@
 .*
 !.gitignore
+!.github/
 /MANIFEST*
 !/MANIFEST.SKIP
 /META.json
