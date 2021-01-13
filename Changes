@@ -1,3 +1,8 @@
+0.94 2021-01-13
+
+ * Fix broken test in t/mldiv.t The rounding performed for values that are very
+   close to an integer was performed on the wrong matrix.
+
 0.93 2021-01-12
 
  * The test is_deeply() does string comparison, so avoid negative zeros in test

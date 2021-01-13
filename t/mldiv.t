@@ -75,7 +75,7 @@ note('mldiv() when "denominator" is an M-by-N matrix with M > N');
     # Avoid tiny errors. If an element is very close to an integer, round it to
     # that integer, otherwise use the original value.
 
-    $y = $y -> sapply(sub {
+    $x = $x -> sapply(sub {
                           my $r = sprintf('%.0f', $_[0]);
                           abs($r - $_[0]) < 1e-12 ? $r : $_[0];
                       });

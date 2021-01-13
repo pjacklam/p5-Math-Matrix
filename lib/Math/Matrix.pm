@@ -8,7 +8,7 @@ use warnings;
 use Carp;
 use Scalar::Util 'blessed';
 
-our $VERSION = '0.93';
+our $VERSION = '0.94';
 our $eps = 0.00001;
 
 use overload
