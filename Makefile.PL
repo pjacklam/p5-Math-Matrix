@@ -52,6 +52,7 @@ my %WriteMakefileArgs =
                 url  => 'https://github.com/pjacklam/p5-Math-Matrix.git',
                 web  => 'https://github.com/pjacklam/p5-Math-Matrix',
             },
+            bugtracker => 'https://github.com/pjacklam/p5-Math-Matrix/issues',
         },
     },
   );

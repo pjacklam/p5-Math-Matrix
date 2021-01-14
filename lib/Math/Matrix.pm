@@ -138,7 +138,7 @@ array, a 1-by-1 matrix is returned.
 
     $x = Math::Matrix->new(1);                      # 1-by-1 matrix
 
-Note that all the folling cases result in an empty matrix:
+Note that all the following cases result in an empty matrix:
 
     $x = Math::Matrix->new([[], [], []]);
     $x = Math::Matrix->new([[]]);
@@ -841,7 +841,7 @@ A constructor method that creates a matrix from vectors of numbers.
     $r = Math::Matrix->tridiagonal([1, 4, 4, 8], [9, 12, 15], [4, 3, 2]);
 
 In the first case, the main diagonal takes the values of the vector, while both
-of the upper and lower diagonals's values are all set to one.
+of the upper and lower diagonals' values are all set to one.
 
 In the second case, the main diagonal takes the values of the first vector,
 while the upper and lower diagonals are each set to the values of the second
@@ -988,7 +988,7 @@ sub blkdiag {
 
 =item is_empty()
 
-Returns 1 is the invocand is empty, i.e., it has no elements.
+Returns 1 if the invocand is empty, i.e., it has no elements.
 
     $bool = $x -> is_empty();
 
@@ -1005,7 +1005,7 @@ sub is_empty {
 
 =item is_scalar()
 
-Returns 1 is the invocand is a scalar, i.e., it has one element.
+Returns 1 if the invocand is a scalar, i.e., it has one element.
 
     $bool = $x -> is_scalar();
 
@@ -1022,7 +1022,7 @@ sub is_scalar {
 
 =item is_vector()
 
-Returns 1 is the invocand is a vector, i.e., a row vector or a column vector.
+Returns 1 if the invocand is a vector, i.e., a row vector or a column vector.
 
     $bool = $x -> is_vector();
 
@@ -1073,7 +1073,7 @@ sub is_col {
 
 =item is_square()
 
-Returns 1 is the invocand is square, and 0 otherwise.
+Returns 1 if the invocand is square, and 0 otherwise.
 
     $bool = $x -> is_square();
 
@@ -1091,11 +1091,11 @@ sub is_square {
 
 =item is_symmetric()
 
-Returns 1 is the invocand is symmetric, and 0 otherwise.
+Returns 1 if the invocand is symmetric, and 0 otherwise.
 
     $bool = $x -> is_symmetric();
 
-An symmetric matrix satisfies x(i,j) = x(j,i) for all i and j, for example
+A symmetric matrix satisfies x(i,j) = x(j,i) for all i and j, for example
 
     [  1  2 -3 ]
     [  2 -4  5 ]
@@ -1124,7 +1124,7 @@ sub is_symmetric {
 
 =item is_antisymmetric()
 
-Returns 1 is the invocand is antisymmetric a.k.a. skew-symmetric, and 0
+Returns 1 if the invocand is antisymmetric a.k.a. skew-symmetric, and 0
 otherwise.
 
     $bool = $x -> is_antisymmetric();
@@ -1167,7 +1167,7 @@ sub is_antisymmetric {
 
 =item is_persymmetric()
 
-Returns 1 is the invocand is persymmetric, and 0 otherwise.
+Returns 1 if the invocand is persymmetric, and 0 otherwise.
 
     $bool = $x -> is_persymmetric();
 
@@ -1193,7 +1193,7 @@ sub is_persymmetric {
 
 =item is_hankel()
 
-Returns 1 is the invocand is a Hankel matric a.k.a. a catalecticant matrix, and
+Returns 1 if the invocand is a Hankel matric a.k.a. a catalecticant matrix, and
 0 otherwise.
 
     $bool = $x -> is_hankel();
@@ -1242,7 +1242,7 @@ sub is_hankel {
 
 =item is_zero()
 
-Returns 1 is the invocand is a zero matrix, and 0 otherwise. A zero matrix
+Returns 1 if the invocand is a zero matrix, and 0 otherwise. A zero matrix
 contains no element whose value is different from zero.
 
     $bool = $x -> is_zero();
@@ -1260,7 +1260,7 @@ sub is_zero {
 
 =item is_one()
 
-Returns 1 is the invocand is a matrix of ones, and 0 otherwise. A matrix of
+Returns 1 if the invocand is a matrix of ones, and 0 otherwise. A matrix of
 ones contains no element whose value is different from one.
 
     $bool = $x -> is_one();
@@ -1278,7 +1278,7 @@ sub is_one {
 
 =item is_constant()
 
-Returns 1 is the invocand is a constant matrix, and 0 otherwise. A constant
+Returns 1 if the invocand is a constant matrix, and 0 otherwise. A constant
 matrix is a matrix where no two elements have different values.
 
     $bool = $x -> is_constant();
@@ -1310,7 +1310,7 @@ sub is_constant {
 
 =item is_identity()
 
-Returns 1 is the invocand is an identity matrix, and 0 otherwise. An
+Returns 1 if the invocand is an identity matrix, and 0 otherwise. An
 identity matrix contains ones on the main diagonal and zeros elsewhere.
 
     $bool = $x -> is_identity();
@@ -1338,7 +1338,7 @@ sub is_identity {
 
 =item is_exchg()
 
-Returns 1 is the invocand is an exchange matrix, and 0 otherwise.
+Returns 1 if the invocand is an exchange matrix, and 0 otherwise.
 
     $bool = $x -> is_exchg();
 
@@ -1373,7 +1373,7 @@ sub is_exchg {
 
 =item is_bool()
 
-Returns 1 is the invocand is a boolean matrix, and 0 otherwise.
+Returns 1 if the invocand is a boolean matrix, and 0 otherwise.
 
     $bool = $x -> is_bool();
 
@@ -1407,7 +1407,7 @@ sub is_bool {
 
 =item is_perm()
 
-Returns 1 is the invocand is an permutation matrix, and 0 otherwise.
+Returns 1 if the invocand is a permutation matrix, and 0 otherwise.
 
     $bool = $x -> is_perm();
 
@@ -1454,7 +1454,7 @@ sub is_perm {
 
 =item is_int()
 
-Returns 1 is the invocand is an integer matrix, i.e., a matrix of integers, and
+Returns 1 if the invocand is an integer matrix, i.e., a matrix of integers, and
 0 otherwise.
 
     $bool = $x -> is_int();
@@ -1481,7 +1481,7 @@ sub is_int {
 
 =item is_diag()
 
-Returns 1 is the invocand is diagonal, and 0 otherwise.
+Returns 1 if the invocand is diagonal, and 0 otherwise.
 
     $bool = $x -> is_diag();
 
@@ -1508,7 +1508,7 @@ sub is_diag {
 
 =item is_adiag()
 
-Returns 1 is the invocand is anti-diagonal, and 0 otherwise.
+Returns 1 if the invocand is anti-diagonal, and 0 otherwise.
 
     $bool = $x -> is_adiag();
 
@@ -1535,12 +1535,12 @@ sub is_adiag {
 
 =item is_tridiag()
 
-Returns 1 is the invocand is tridiagonal, and 0 otherwise.
+Returns 1 if the invocand is tridiagonal, and 0 otherwise.
 
     $bool = $x -> is_tridiag();
 
 A tridiagonal matrix is a square matrix with nonzero elements only on the
-diagonal and slots horizontally or vertically adjacent the diagonal (i.e., along
+diagonal and slots horizontally or vertically adjacent to the diagonal (i.e., along
 the subdiagonal and superdiagonal). It has the following pattern, where only the
 elements marked as C<x> can be non-zero,
 
@@ -1563,11 +1563,11 @@ sub is_tridiag {
 
 =item is_atridiag()
 
-Returns 1 is the invocand is anti-tridiagonal, and 0 otherwise.
+Returns 1 if the invocand is anti-tridiagonal, and 0 otherwise.
 
     $bool = $x -> is_tridiag();
 
-A anti-tridiagonal matrix is a square matrix with nonzero elements only on the
+An anti-tridiagonal matrix is a square matrix with nonzero elements only on the
 anti-diagonal and slots horizontally or vertically adjacent the diagonal (i.e.,
 along the anti-subdiagonal and anti-superdiagonal). It has the following
 pattern, where only the elements marked as C<x> can be non-zero,
@@ -1591,7 +1591,7 @@ sub is_atridiag {
 
 =item is_pentadiag()
 
-Returns 1 is the invocand is pentadiagonal, and 0 otherwise.
+Returns 1 if the invocand is pentadiagonal, and 0 otherwise.
 
     $bool = $x -> is_pentadiag();
 
@@ -1619,7 +1619,7 @@ sub is_pentadiag {
 
 =item is_apentadiag()
 
-Returns 1 is the invocand is anti-pentadiagonal, and 0 otherwise.
+Returns 1 if the invocand is anti-pentadiagonal, and 0 otherwise.
 
     $bool = $x -> is_pentadiag();
 
@@ -1648,7 +1648,7 @@ sub is_apentadiag {
 
 =item is_heptadiag()
 
-Returns 1 is the invocand is heptadiagonal, and 0 otherwise.
+Returns 1 if the invocand is heptadiagonal, and 0 otherwise.
 
     $bool = $x -> is_heptadiag();
 
@@ -1676,11 +1676,11 @@ sub is_heptadiag {
 
 =item is_aheptadiag()
 
-Returns 1 is the invocand is anti-heptadiagonal, and 0 otherwise.
+Returns 1 if the invocand is anti-heptadiagonal, and 0 otherwise.
 
     $bool = $x -> is_heptadiag();
 
-A anti-heptadiagonal matrix is a square matrix with nonzero elements only on the
+An anti-heptadiagonal matrix is a square matrix with nonzero elements only on the
 anti-diagonal and two anti-diagonals above and below the main anti-diagonal. It
 has the following pattern, where only the elements marked as C<x> can be
 non-zero,
@@ -1705,7 +1705,7 @@ sub is_aheptadiag {
 
 =item is_band()
 
-Returns 1 is the invocand is a band matrix with a specified bandwidth, and 0
+Returns 1 if the invocand is a band matrix with a specified bandwidth, and 0
 otherwise.
 
     $bool = $x -> is_band($k);
@@ -1758,7 +1758,7 @@ sub is_band {
 
 =item is_aband()
 
-Returns 1 is the invocand is "anti-banded" with a specified bandwidth, and 0
+Returns 1 if the invocand is "anti-banded" with a specified bandwidth, and 0
 otherwise.
 
     $bool = $x -> is_aband($k);
@@ -1825,7 +1825,7 @@ sub is_aband {
 
 =item is_triu()
 
-Returns 1 is the invocand is upper triangular, and 0 otherwise.
+Returns 1 if the invocand is upper triangular, and 0 otherwise.
 
     $bool = $x -> is_triu();
 
@@ -1864,7 +1864,7 @@ sub is_triu {
 
 =item is_striu()
 
-Returns 1 is the invocand is strictly upper triangular, and 0 otherwise.
+Returns 1 if the invocand is strictly upper triangular, and 0 otherwise.
 
     $bool = $x -> is_striu();
 
@@ -1902,7 +1902,7 @@ sub is_striu {
 
 =item is_tril()
 
-Returns 1 is the invocand is lower triangular, and 0 otherwise.
+Returns 1 if the invocand is lower triangular, and 0 otherwise.
 
     $bool = $x -> is_tril();
 
@@ -1940,7 +1940,7 @@ sub is_tril {
 
 =item is_stril()
 
-Returns 1 is the invocand is strictly lower triangular, and 0 otherwise.
+Returns 1 if the invocand is strictly lower triangular, and 0 otherwise.
 
     $bool = $x -> is_stril();
 
@@ -1978,7 +1978,7 @@ sub is_stril {
 
 =item is_atriu()
 
-Returns 1 is the invocand is upper anti-triangular, and 0 otherwise.
+Returns 1 if the invocand is upper anti-triangular, and 0 otherwise.
 
     $bool = $x -> is_atriu();
 
@@ -2016,7 +2016,7 @@ sub is_atriu {
 
 =item is_satriu()
 
-Returns 1 is the invocand is strictly upper anti-triangular, and 0 otherwise.
+Returns 1 if the invocand is strictly upper anti-triangular, and 0 otherwise.
 
     $bool = $x -> is_satriu();
 
@@ -2054,7 +2054,7 @@ sub is_satriu {
 
 =item is_atril()
 
-Returns 1 is the invocand is lower anti-triangular, and 0 otherwise.
+Returns 1 if the invocand is lower anti-triangular, and 0 otherwise.
 
     $bool = $x -> is_atril();
 
@@ -2092,7 +2092,7 @@ sub is_atril {
 
 =item is_satril()
 
-Returns 1 is the invocand is strictly lower anti-triangular, and 0 otherwise.
+Returns 1 if the invocand is strictly lower anti-triangular, and 0 otherwise.
 
     $bool = $x -> is_satril();
 
@@ -7502,7 +7502,7 @@ value is 0.
 
 =item Debug
 
-If this parameter does not affect when the algorithm terminates, but when set to
+This parameter does not affect when the algorithm terminates, but when set to
 non-zero, some information is displayed at each step.
 
 =back
@@ -7569,7 +7569,7 @@ the assignment operator C<=> is overloaded, so that Perl knows how to create a
 copy.
 
 You can check the behaviour of the assignment operator by assigning a value to a
-new variable, modify the new variable, and check whether this also modifies the
+new variable, modifying the new variable, and checking whether this also modifies the
 original value. Here is an example:
 
     $x = Some::Class -> new(0);           # create object $x
@@ -7578,8 +7578,8 @@ original value. Here is an example:
     print "it's a clone\n" if $x != $y;   # is $x modified?
 
 The subclass might need to implement some methods of its own. For instance, if
-each element is a complex number, a transpose() method needs to be implemented
-to take the complex conjugate of each value. An as_string() method might also be
+each element is a complex number, a C<transpose()> method needs to be implemented
+to take the complex conjugate of each value. An C<as_string()> method might also be
 useful for displaying the matrix in a format more suitable for the subclass.
 
 Here is an example showing Math::Matrix::Complex, a fully-working subclass of
